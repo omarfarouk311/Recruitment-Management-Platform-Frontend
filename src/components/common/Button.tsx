@@ -1,5 +1,5 @@
 import React from "react";
-import { Loader2 } from "lucide-react";
+import { Loader } from "lucide-react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
@@ -34,14 +34,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={loading}
         {...props}
       >
-        {loading ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Loading...
-          </>
-        ) : (
-          children
-        )}
+        {loading ? <Loader className="w-5 h-5 animate-spin" /> : children}
       </button>
     );
   }
