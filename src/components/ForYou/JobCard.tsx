@@ -67,7 +67,7 @@ const JobCard = ({
             </div>
           </div>
           <div className="space-y-5">
-            <Button className="border-black w-full bg-black text-white rounded-full px-14 py-1">
+            <Button className="border-black w-full bg-black text-white rounded-full w-40 py-1">
               Apply
             </Button>
             <Button variant="report">Report</Button>

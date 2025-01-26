@@ -1,4 +1,4 @@
-import { useEffect, useRef} from "react";
+import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 
 interface JobListProps {
@@ -45,7 +45,7 @@ const JobList = ({
   }, [hasMore, isLoading, onLoadMore]);
 
   return (
-    <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-6 rounded-3xl">
+    <div className="h-[800px] overflow-y-auto space-y-6 bg-white p-6 rounded-3xl custom-scrollbar">
       {jobs.map((job, index) => (
         <JobCard
           key={`${job.company}-${index}`}
