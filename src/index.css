@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global CSS (add this to your main stylesheet) */
+input[type="password"]::-webkit-reveal-password {
+  display: none !important;
+}
+
+input[type="password"]::-webkit-contacts-auto-fill-button {
+  display: none !important;
+}
+
+/* For Firefox */
+input[type="password"][autocomplete="current-password"]::-ms-reveal {
+  display: none;
+}
+
+/* Modern standard approach */
+input[type="password"]::-ms-reveal {
+  display: none;
+}
