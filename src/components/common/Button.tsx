@@ -3,7 +3,7 @@ import { Loader } from "lucide-react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
-  variant?: "primary" | "outline" | "currentTab";
+  variant?: "primary" | "outline" | "currentTab" | "report";
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -12,13 +12,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "w-full px-6 py-2 rounded-full font-medium transition-all duration-200 ease-in-out flex items-center justify-center border-2";
+      "w-full px-6 py-2 rounded-full font-medium transition-all duration-200 ease-in-out flex items-center justify-center border-2 border-black";
 
     const variants = {
       primary:
-        "border-black bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
-      outline: "border-black text-black hover:bg-black hover:text-white",
-      currentTab: "border-black bg-black text-white",
+        "bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
+      outline: "text-black hover:bg-black hover:text-white",
+      currentTab: "bg-black text-white",
+      report:
+        "border-red-600 bg-red-600 text-white hover:bg-transparent hover:text-red-600 hover:border-red-600",
     };
 
     return (
