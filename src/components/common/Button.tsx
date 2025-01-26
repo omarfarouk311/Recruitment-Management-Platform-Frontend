@@ -16,10 +16,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
-      outline:
-        "border-2 border-black text-black hover:bg-black hover:text-white",
-      currentTab: "bg-black text-white",
+        "border-black bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
+      outline: "border-black text-black hover:bg-black hover:text-white",
+      currentTab: "border-black bg-black text-white",
     };
 
     return (

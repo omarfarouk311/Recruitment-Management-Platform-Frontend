@@ -1,11 +1,38 @@
 import { ChevronDown, Loader } from "lucide-react";
 import filterLogo from "../../assets/filter-logo.png";
 import { useState } from "react";
+import Button from "../common/Button";
 
 interface Option {
   value: string;
   label: string;
 }
+
+// Filter options
+const dateOptions: Option[] = [
+  { value: "any", label: "Any" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+  { value: "year", label: "This Year" },
+];
+
+const ratingOptions: Option[] = [
+  { value: "any", label: "Any" },
+  { value: "5", label: "5 stars" },
+  { value: "4", label: "4 stars & up" },
+  { value: "3", label: "3 stars & up" },
+  { value: "2", label: "2 stars & up" },
+];
+
+const industryOptions: Option[] = [
+  { value: "any", label: "Any Industry" },
+  { value: "tech", label: "Technology" },
+  { value: "health", label: "Healthcare" },
+  { value: "finance", label: "Finance" },
+  { value: "manufacturing", label: "Manufacturing" },
+  { value: "retail", label: "Retail" },
+];
 
 const FilterBar = () => {
   const [isDateOpen, setIsDateOpen] = useState(false);
@@ -15,32 +42,6 @@ const FilterBar = () => {
   const [selectedRating, setSelectedRating] = useState<string>("any");
   const [selectedIndustry, setSelectedIndustry] = useState<string>("any");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Filter options
-  const dateOptions: Option[] = [
-    { value: "any", label: "Any" },
-    { value: "today", label: "Today" },
-    { value: "week", label: "This Week" },
-    { value: "month", label: "This Month" },
-    { value: "year", label: "This Year" },
-  ];
-
-  const ratingOptions: Option[] = [
-    { value: "any", label: "Any" },
-    { value: "5", label: "5 stars" },
-    { value: "4", label: "4 stars & up" },
-    { value: "3", label: "3 stars & up" },
-    { value: "2", label: "2 stars & up" },
-  ];
-
-  const industryOptions: Option[] = [
-    { value: "any", label: "Any Industry" },
-    { value: "tech", label: "Technology" },
-    { value: "health", label: "Healthcare" },
-    { value: "finance", label: "Finance" },
-    { value: "manufacturing", label: "Manufacturing" },
-    { value: "retail", label: "Retail" },
-  ];
 
   const hasActiveFilters = [
     selectedDate,
@@ -62,7 +63,7 @@ const FilterBar = () => {
   };
 
   return (
-    <div className="flex items-center space-x-4 mb-6 ml-36 relative">
+    <div className="flex items-center space-x-6">
       <button
         onClick={handleApplyFilters}
         disabled={isLoading || !hasActiveFilters}
@@ -91,8 +92,9 @@ const FilterBar = () => {
 
       {/* Date Posted Dropdown */}
       <div className="relative">
-        <button
-          className="flex items-center space-x-2 bg-gray-200 rounded-full px-4 py-2"
+        <Button
+          variant="outline"
+          className={`py-1 ${selectedDate !== "any" ? "bg-neutral-300" : ""}`}
           onClick={() => setIsDateOpen(!isDateOpen)}
         >
           <span>
@@ -100,8 +102,8 @@ const FilterBar = () => {
             {selectedDate !== "any" &&
               ` (${dateOptions.find((o) => o.value === selectedDate)?.label})`}
           </span>
-          <ChevronDown className="w-4 h-4" />
-        </button>
+          <ChevronDown className="w-4 h-4 ml-2 mt-1" />
+        </Button>
 
         {isDateOpen && (
           <div className="absolute top-12 left-0 bg-white border rounded-lg shadow-lg z-10 w-48">
@@ -123,8 +125,11 @@ const FilterBar = () => {
 
       {/* Industry Dropdown */}
       <div className="relative">
-        <button
-          className="flex items-center space-x-2 bg-gray-200 rounded-full px-4 py-2"
+        <Button
+          variant="outline"
+          className={`py-1 ${
+            selectedIndustry !== "any" ? "bg-neutral-300" : ""
+          }`}
           onClick={() => setIsIndustryOpen(!isIndustryOpen)}
         >
           <span>
@@ -134,8 +139,8 @@ const FilterBar = () => {
                 industryOptions.find((o) => o.value === selectedIndustry)?.label
               })`}
           </span>
-          <ChevronDown className="w-4 h-4" />
-        </button>
+          <ChevronDown className="w-4 h-4 ml-2 mt-1" />
+        </Button>
 
         {isIndustryOpen && (
           <div className="absolute top-12 left-0 bg-white border rounded-lg shadow-lg z-10 w-48">
@@ -157,8 +162,9 @@ const FilterBar = () => {
 
       {/* Company Rating Dropdown */}
       <div className="relative">
-        <button
-          className="flex items-center space-x-2 bg-gray-200 rounded-full px-4 py-2"
+        <Button
+          variant="outline"
+          className={`py-1 ${selectedRating !== "any" ? "bg-neutral-300" : ""}`}
           onClick={() => setIsRatingOpen(!isRatingOpen)}
         >
           <span>
@@ -168,8 +174,8 @@ const FilterBar = () => {
                 ratingOptions.find((o) => o.value === selectedRating)?.label
               })`}
           </span>
-          <ChevronDown className="w-4 h-4" />
-        </button>
+          <ChevronDown className="w-4 h-4 ml-2 mt-1" />
+        </Button>
 
         {isRatingOpen && (
           <div className="absolute top-12 left-0 bg-white border rounded-lg shadow-lg z-10 w-48">
