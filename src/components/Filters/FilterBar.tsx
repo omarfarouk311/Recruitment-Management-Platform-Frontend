@@ -69,11 +69,7 @@ const FilterBar = () => {
         disabled={isLoading || !hasActiveFilters}
         className={`p-1 border-2 rounded-full transition-all ${
           hasActiveFilters ? "border-blue-500" : "border-transparent"
-        } ${
-          !hasActiveFilters || isLoading
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:border-blue-600"
-        }`}
+        } ${!hasActiveFilters ? "opacity-50" : "hover:border-blue-600"}`}
       >
         <div className="w-7 h-7 flex items-center justify-center">
           {isLoading ? (
@@ -93,8 +89,8 @@ const FilterBar = () => {
       {/* Date Posted Dropdown */}
       <div className="relative">
         <Button
-          variant="outline"
-          className={`py-1 ${selectedDate !== "any" ? "bg-neutral-300" : ""}`}
+          variant={selectedDate !== "any" ? "currentTab" : "outline"}
+          className="py-0.5 text-sm"
           onClick={() => setIsDateOpen(!isDateOpen)}
         >
           <span>
@@ -126,10 +122,8 @@ const FilterBar = () => {
       {/* Industry Dropdown */}
       <div className="relative">
         <Button
-          variant="outline"
-          className={`py-1 ${
-            selectedIndustry !== "any" ? "bg-neutral-300" : ""
-          }`}
+          variant={selectedIndustry !== "any" ? "currentTab" : "outline"}
+          className={`py-0.5 text-sm`}
           onClick={() => setIsIndustryOpen(!isIndustryOpen)}
         >
           <span>
@@ -163,8 +157,8 @@ const FilterBar = () => {
       {/* Company Rating Dropdown */}
       <div className="relative">
         <Button
-          variant="outline"
-          className={`py-1 ${selectedRating !== "any" ? "bg-neutral-300" : ""}`}
+          variant={selectedRating !== "any" ? "currentTab" : "outline"}
+          className="py-0.5 text-sm"
           onClick={() => setIsRatingOpen(!isRatingOpen)}
         >
           <span>
