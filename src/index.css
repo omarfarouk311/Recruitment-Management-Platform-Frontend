@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global CSS (add this to your main stylesheet) */
 input[type="password"]::-webkit-reveal-password {
   display: none !important;
 }
@@ -11,12 +10,26 @@ input[type="password"]::-webkit-contacts-auto-fill-button {
   display: none !important;
 }
 
-/* For Firefox */
 input[type="password"][autocomplete="current-password"]::-ms-reveal {
   display: none;
 }
 
-/* Modern standard approach */
 input[type="password"]::-ms-reveal {
   display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  height: 8px;
+  width: 8px;
+  display: block;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+  min-height: 40px;
 }
