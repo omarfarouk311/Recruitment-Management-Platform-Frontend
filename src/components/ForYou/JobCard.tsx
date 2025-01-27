@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Star } from "lucide-react";
 import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
+import JobDialog from "./JobDialog";
 
 interface JobCardProps {
   company: string;
@@ -16,14 +18,21 @@ interface JobCardProps {
     type: string;
     industry: string;
   };
-  review?: {
+  reviews?: {
     title: string;
     date: string;
     rating: number;
     content: string;
-  };
+  }[];
   onClick?: () => void;
 }
+
+const cvs = [
+  "Frontend_Developer_CV.pdf",
+  "FullStack_Engineer_CV.pdf",
+  "Senior_React_CV.pdf",
+  "Web_Developer_Portfolio.pdf",
+];
 
 const JobCard = ({
   company,
@@ -33,12 +42,14 @@ const JobCard = ({
   isDetailed,
   description,
   companyDetails,
-  review,
+  reviews,
   onClick,
 }: JobCardProps) => {
+  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
+
   if (isDetailed) {
     return (
-      <div className="bg-white p-6 rounded-3xl bg-white p-6 rounded-3xl">
+      <div className="bg-white p-6 rounded-3xl h-[800px] overflow-y-auto custom-scrollbar max-w-3xl border-2 border-gray-200">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 bg-blue-100 flex items-center justify-center">
@@ -66,17 +77,25 @@ const JobCard = ({
               <p>{location}</p>
             </div>
           </div>
-          <div className="space-y-5">
-            <Button className="border-black w-full bg-black text-white rounded-full w-40 py-1">
+          <div className="space-y-4 w-40">
+            <Button className="h-8" onClick={() => setDialogType("apply")}>
               Apply
             </Button>
-            <Button variant="report">Report</Button>
+            <Button
+              variant="report"
+              className="h-8"
+              onClick={() => setDialogType("report")}
+            >
+              Report
+            </Button>
           </div>
         </div>
 
         {description && (
           <div className="mb-6">
-            <p className="text-black">{description}</p>
+            <p className="text-black whitespace-pre-line break-words">
+              {description}
+            </p>
           </div>
         )}
 
@@ -86,7 +105,7 @@ const JobCard = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h4 className="font-medium">Size</h4>
-                <p>{companyDetails.size}</p>
+                <p>{companyDetails.size + " Employees"}</p>
               </div>
               <div>
                 <h4 className="font-medium">Founded</h4>
@@ -104,42 +123,61 @@ const JobCard = ({
           </div>
         )}
 
-        {review && (
+        {reviews && reviews.length > 0 && (
           <div className="border-t border-black">
             <div className="flex items-center space-x-2">
               <h3 className="text-lg font-semibold mb-4 pt-4">Reviews</h3>
               <Link
-                to="/company-profile#reviews" //Add anchor ID in the company profile reviews section later
+                to="/company-profile#reviews"
                 className="ml-2 hover:text-blue-600 transition-colors"
               >
                 <ExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-600" />
               </Link>
             </div>
 
-            <div className="bg-gray-100 p-4 rounded-xl">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium">{review.title}</h4>
-                <span className="text-black">{review.date}</span>
-              </div>
-              <div className="flex items-center space-x-1 mb-2">
-                {[...Array(review.rating)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-4 h-4 fill-current text-yellow-400"
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700">{review.content}</p>
+            <div className="space-y-4">
+              {reviews.slice(0, 2).map((review, index) => (
+                <div key={index} className="bg-gray-100 p-4 rounded-xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">{review.title}</h4>
+                    <span className="text-black">{review.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-1 mb-2">
+                    {[...Array(Math.floor(review.rating))].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-4 h-4 fill-current text-yellow-400"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-gray-800 whitespace-pre-line break-words">
+                    {review.content}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}
+
+        <JobDialog
+          type={dialogType}
+          cvs={cvs}
+          onClose={() => setDialogType(null)}
+          onSubmit={(type, data) => {
+            if (type === "apply") {
+              // Handle application submission
+            } else {
+              // Handle report submission
+            }
+          }}
+        />
       </div>
     );
   }
 
   return (
     <div
-      className="bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors"
+      className="bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full"
       onClick={onClick}
       role="button"
       tabIndex={0}

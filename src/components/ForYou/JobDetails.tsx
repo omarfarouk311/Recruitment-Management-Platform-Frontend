@@ -13,17 +13,21 @@ interface JobDetailsProps {
       type: string;
       industry: string;
     };
-    review: {
+    reviews: {
       title: string;
       date: string;
       rating: number;
       content: string;
-    };
+    }[];
   };
 }
 
 const JobDetails = ({ job }: JobDetailsProps) => {
-  return <JobCard {...job} isDetailed={true} />;
+  return (
+    <div>
+      <JobCard {...job} isDetailed={true} />
+    </div>
+  );
 };
 
 export default JobDetails;

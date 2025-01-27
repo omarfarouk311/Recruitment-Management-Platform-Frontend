@@ -45,7 +45,9 @@ const JobList = ({
   }, [hasMore, isLoading, onLoadMore]);
 
   return (
-    <div className="h-[800px] overflow-y-auto space-y-6 bg-white p-6 rounded-3xl custom-scrollbar">
+    <div
+      className="h-[800px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl custom-scrollbar max-w-[500px] border-2 border-gray-200"
+    >
       {jobs.map((job, index) => (
         <JobCard
           key={`${job.company}-${index}`}

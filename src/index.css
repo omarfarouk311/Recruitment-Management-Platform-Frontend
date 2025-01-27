@@ -23,7 +23,7 @@ input[type="password"]::-ms-reveal {
 }
 
 .custom-scrollbar::-webkit-scrollbar-button {
-  height: 8px;
+  height: 10px;
   width: 8px;
   display: block;
 }

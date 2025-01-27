@@ -21,18 +21,26 @@ const baseDetailedJob = {
   description:
     "Are you ready to shape the digital future of the cloud? Join the Microsoft Azure Network Manager team and be at the forefront of innovation in the world of cloud technology. As a Software Engineer II on this team, you'll have the unique opportunity to architect, build, and deliver a seamless, reliable, and high-performance cloud infrastructure.",
   companyDetails: {
-    size: "18000 Employees",
+    size: "18000",
     founded: "1975",
     type: "Public",
     industry: "Information Technology",
   },
-  review: {
-    title: "Current software engineer",
-    date: "Dec 2, 2024",
-    rating: 4,
-    content:
-      "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits such as childcare support, commuter allowances, and employee discounts.",
-  },
+  reviews: [
+    {
+      title: "Current software engineer",
+      date: "Dec 2, 2024",
+      rating: 4,
+      content:
+        "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits  such as childcare support, commuter allowances, and employee discounts.",
+    },
+    {
+      title: "Former team lead",
+      date: "Nov 15, 2024",
+      rating: 4.5,
+      content: "Excellent growth opportunities and supportive management...",
+    },
+  ],
 };
 
 // Define filter options
@@ -163,7 +171,7 @@ const ForYouPage = () => {
         </FilterBar>
       </div>
 
-      <div className="grid grid-cols-2 gap-10">
+      <div className="grid grid-cols-[1fr_1.6fr] gap-8">
         <JobList
           jobs={jobs}
           onJobSelect={handleJobSelect}
@@ -172,7 +180,7 @@ const ForYouPage = () => {
           isLoading={isJobsLoading}
         />
 
-        <div className="sticky top-4 h-min">
+        <div className="sticky top-4">
           {isDetailsLoading ? (
             <div className="bg-white p-6 rounded-3xl animate-pulse">
               <div className="h-8 bg-gray-200 rounded mb-4 w-3/4"></div>
