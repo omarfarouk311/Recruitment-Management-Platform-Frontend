@@ -8,6 +8,7 @@ interface FilterDropdownProps {
   selectedValue: string;
   onSelect: (value: string) => void;
   variant?: "primary" | "outline" | "currentTab";
+  className?: string;
 }
 
 const FilterDropdown = ({
@@ -16,6 +17,7 @@ const FilterDropdown = ({
   selectedValue,
   onSelect,
   variant = "outline",
+  className = "",
 }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedLabel = options.find((o) => o.value === selectedValue)?.label;
@@ -23,8 +25,8 @@ const FilterDropdown = ({
   return (
     <div className="relative">
       <Button
-        variant={selectedValue !== "any" ? "currentTab" : variant}
-        className="py-[4px] text-sm"
+        variant={selectedValue !== "any" ? "filterApplied" : variant}
+        className={"h-7 text-sm " + className}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>
