@@ -1,33 +1,25 @@
-import { User, Home, LayoutDashboard, Search, Loader } from "lucide-react";
+import { User, Home, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { Country, City } from "country-state-city";
-import { useState } from "react";
+import { SearchBar } from "../common/SearchBar";
+import { LocationSearch } from "../common/LocationSearch";
+import { TextInput } from "../common/TextInput";
+import useJobStore from "../../stores/useJobStore";
 
 const UserNav = () => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const [jobQuery, setJobQuery] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [companyQuery, setCompanyQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const { searchCriteria, setSearchCriteria, isLoading, applySearch } =
+    useJobStore();
 
-  // Get all countries
-  const countries = Country.getAllCountries();
-
-  // Get cities based on selected country
-  const cities = selectedCountry
-    ? City.getCitiesOfCountry(selectedCountry)
-    : [];
+  const isSearchDisabled =
+    !searchCriteria.jobQuery &&
+    !searchCriteria.country &&
+    !searchCriteria.city &&
+    !searchCriteria.companyQuery;
 
   const handleSearch = async () => {
-    if (jobQuery || selectedCountry || selectedCity || companyQuery) {
-      setIsSearching(true);
-
-      // Mock search with 1.5 second delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setIsSearching(false);
+    if (!isSearchDisabled) {
+      await applySearch();
     }
   };
 
@@ -73,87 +65,33 @@ const UserNav = () => {
         )}
       </div>
 
-      <div className="flex items-center space-x-4">
-        {/* Search Button */}
-        <button
-          onClick={handleSearch}
-          disabled={
-            isSearching ||
-            !(jobQuery || selectedCountry || selectedCity || companyQuery)
-          }
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
+      {/* Search Bar */}
+      <div className="flex">
+        <SearchBar
+          onSearch={handleSearch}
+          isSearching={isLoading}
+          disabled={isSearchDisabled}
         >
-          {isSearching ? (
-            <Loader className="w-6 h-6 animate-spin" />
-          ) : (
-            <Search className="w-6 h-6" />
-          )}
-        </button>
-
-        {/* Job Search */}
-        <div className="flex items-center w-48 bg-gray-100 rounded-full px-4 py-2">
-          <input
-            type="text"
+          <TextInput
+            value={searchCriteria.jobQuery}
+            onChange={(value) => setSearchCriteria({ jobQuery: value })}
             placeholder="Job title"
-            className="bg-transparent outline-none w-full"
-            value={jobQuery}
-            onChange={(e) => setJobQuery(e.target.value)}
+            disabled={isLoading}
           />
-        </div>
-
-        {/* Country Select */}
-        <div className="w-48 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors cursor-pointer">
-          <select
-            value={selectedCountry}
-            onChange={(e) => {
-              setSelectedCountry(e.target.value);
-              setSelectedCity("");
-            }}
-            className="bg-transparent outline-none w-full cursor-pointer"
-          >
-            <option value="">Select country</option>
-            {countries.map((country) => (
-              <option key={country.isoCode} value={country.isoCode}>
-                {country.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* City Select */}
-        <div
-          className={`w-48 bg-gray-100 rounded-full px-4 py-2 transition-colors ${
-            !selectedCountry || isSearching
-              ? "opacity-50"
-              : "hover:bg-gray-200 cursor-pointer"
-          }`}
-        >
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="bg-transparent outline-none w-full cursor-pointer"
-            disabled={!selectedCountry || isSearching}
-          >
-            <option value="">Select city</option>
-            {cities?.map((city) => (
-              <option key={city.name} value={city.name}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Company Search */}
-        <div className="flex items-center w-48 bg-gray-100 rounded-full px-4 py-2">
-          <input
-            type="text"
+          <LocationSearch
+            selectedCountry={searchCriteria.country}
+            onCountryChange={(value) => setSearchCriteria({ country: value })}
+            selectedCity={searchCriteria.city}
+            onCityChange={(value) => setSearchCriteria({ city: value })}
+            disabled={isLoading}
+          />
+          <TextInput
+            value={searchCriteria.companyQuery}
+            onChange={(value) => setSearchCriteria({ companyQuery: value })}
             placeholder="Company"
-            className="bg-transparent outline-none w-full"
-            value={companyQuery}
-            onChange={(e) => setCompanyQuery(e.target.value)}
-            disabled={isSearching}
+            disabled={isLoading}
           />
-        </div>
+        </SearchBar>
       </div>
 
       {/* Home Button */}
