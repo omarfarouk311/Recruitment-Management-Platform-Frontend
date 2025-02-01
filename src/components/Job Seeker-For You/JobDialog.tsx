@@ -46,12 +46,7 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
   if (!type) return null;
 
   return (
-    <Dialog
-      open={!!type}
-      onClose={onClose}
-      className="relative z-50"
-      aria-labelledby="dialog-heading"
-    >
+    <Dialog open={!!type} onClose={onClose} className="relative z-50">
       <div
         className="fixed inset-0 bg-black/30 backdrop-blur-sm"
         aria-hidden="true"
@@ -59,7 +54,7 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div
-          className="w-full max-w-2xl bg-white rounded-3xl shadow-xl min-h-[300px]" // Added minimum height
+          className="w-full max-w-2xl bg-white rounded-3xl shadow-xl min-h-[300px]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="dialog-heading"
@@ -92,9 +87,7 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
 
                 {type === "apply" ? (
                   <div className="space-y-4">
-                    <p className="text-gray-600 mb-4">
-                      Select a CV to apply:
-                    </p>
+                    <p className="text-gray-600 mb-4">Select a CV to apply:</p>
                     <div className="grid gap-3">
                       {cvs.slice(0, 5).map((cv) => (
                         <label
@@ -148,7 +141,14 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                   <Button
                     onClick={handleSubmit}
                     disabled={!isValid}
-                    variant={type === "apply" ? "primary" : "report"}
+                    variant={
+                      isValid
+                        ? type === "apply"
+                          ? "primary"
+                          : "report"
+                        : "currentTab"
+                    }
+                    className={!isValid ? (type === "apply" ? "bg-black/70" : "bg-red-600/70") : ""}
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}
                   </Button>
