@@ -4,6 +4,7 @@ import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
 import JobDialog from "./JobDialog";
+import cvs from "../../mock data/CVs";
 
 interface JobCardProps {
   company: string;
@@ -26,13 +27,6 @@ interface JobCardProps {
   }[];
   onClick?: () => void;
 }
-
-const cvs = [
-  "Frontend_Developer_CV.pdf",
-  "FullStack_Engineer_CV.pdf",
-  "Senior_React_CV.pdf",
-  "Web_Developer_Portfolio.pdf",
-];
 
 const JobCard = ({
   company,
@@ -165,9 +159,9 @@ const JobCard = ({
           onClose={() => setDialogType(null)}
           onSubmit={(type, data) => {
             if (type === "apply") {
-              // Handle application submission
+              // Handle application submission API call
             } else {
-              // Handle report submission
+              // Handle report submission API call
             }
           }}
         />

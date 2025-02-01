@@ -1,6 +1,6 @@
 import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
-import ForYouPage from "../components/ForYou/ForYou";
+import ForYouPage from "../components/Job Seeker-For You/ForYou";
 
 const JobSeekerHome = () => {
   return (
