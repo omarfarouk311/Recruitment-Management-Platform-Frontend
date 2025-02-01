@@ -5,6 +5,8 @@ export const baseJobs = Array(6)
         rating: 4.5,
         position: "Software Engineer II",
         location: "Cairo, Egypt",
+        datePosted: "",
+        industry: ""
     }));
 
 export const baseDetailedJob = {
