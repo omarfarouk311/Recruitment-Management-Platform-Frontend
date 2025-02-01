@@ -27,27 +27,13 @@ interface JobStore {
     isLoading: boolean;
     hasMore: boolean;
     fetchJobs: () => Promise<void>;
-    setFilters: (filters: Partial<JobStore['filters']>) => void;
+    setFilters: (filters: Partial<JobStore['filters']>) => Promise<void>;
     setSearchCriteria: (criteria: Partial<JobStore['searchCriteria']>) => void;
     loadMoreJobs: () => Promise<void>;
     applySearch: () => Promise<void>;
 }
 
-const debounce = <T extends (...args: any[]) => Promise<void>>(
-    fn: T,
-    delay: number
-) => {
-    let timeoutId: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
-        clearTimeout(timeoutId);
-        return new Promise<void>((resolve) => {
-            timeoutId = setTimeout(async () => {
-                await fn(...args);
-                resolve();
-            }, delay);
-        });
-    };
-};
+const NUMBER_OF_JOBS = 5;
 
 const useJobStore = create<JobStore>((set, get) => ({
     jobs: baseJobs,
@@ -64,36 +50,37 @@ const useJobStore = create<JobStore>((set, get) => ({
         companyQuery: '',
     },
     isLoading: false,
-    hasMore: true,
+    hasMore: baseJobs.length >= NUMBER_OF_JOBS,
 
-    fetchJobs: debounce(async () => {
+    fetchJobs: async () => {
         const { filters, searchCriteria } = get();
         set({ isLoading: true });
-
         try {
+            // Simulate an async API call
             await new Promise<void>(resolve => setTimeout(() => {
-                // Call the API with filters and search criteria
+                // Apply filters and search criteria here (currently mocked)
                 const result = baseJobs;
                 filters;
                 searchCriteria;
                 ///
                 set({
                     jobs: result,
-                    hasMore: result.length < 20,
-                    isLoading: false
+                    hasMore: result.length >= NUMBER_OF_JOBS,
+                    isLoading: false,
                 });
-
                 resolve();
             }, 500));
-        }
-
-        catch (err) {
+        } catch (err) {
             set({ isLoading: false });
         }
-    }, 300),
+    },
 
-    setFilters: (filters) => {
-        set(state => ({ filters: { ...state.filters, ...filters } }));
+    setFilters: async (filters) => {
+        set(state => ({
+            filters: { ...state.filters, ...filters },
+        }));
+        const { fetchJobs } = get();
+        await fetchJobs();
     },
 
     setSearchCriteria: (criteria) => {
@@ -110,9 +97,9 @@ const useJobStore = create<JobStore>((set, get) => ({
         if (!hasMore || isLoading) return;
 
         set({ isLoading: true });
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
 
-        const newJobs = Array(5).fill({}).map((_, i) => ({
+        const newJobs = Array(NUMBER_OF_JOBS).fill({}).map((_, i) => ({
             company: `Microsoft ${jobs.length + i + 1}`,
             rating: 4.5,
             position: "Software Engineer II",
@@ -123,7 +110,7 @@ const useJobStore = create<JobStore>((set, get) => ({
 
         set(state => ({
             jobs: [...state.jobs, ...newJobs],
-            hasMore: state.jobs.length + newJobs.length < 20,
+            hasMore: newJobs.length >= NUMBER_OF_JOBS,
             isLoading: false,
         }));
     },
