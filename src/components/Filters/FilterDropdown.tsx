@@ -25,15 +25,15 @@ const FilterDropdown = ({
   return (
     <div className="relative">
       <Button
-        variant={selectedValue !== "any" ? "filterApplied" : variant}
+        variant={selectedValue !== "any" ? "currentTab" : variant}
         className={"h-7 text-sm " + className}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span>
+        <div className="flex items-center">
           {label}
           {selectedValue !== "any" && selectedLabel && ` (${selectedLabel})`}
-        </span>
-        <ChevronDown className="w-4 h-4 ml-2 mt-1" />
+          <ChevronDown className="w-4 h-4 ml-2" />
+        </div>
       </Button>
 
       {isOpen && (
