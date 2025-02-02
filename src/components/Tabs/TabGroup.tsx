@@ -1,12 +1,15 @@
 import Button from "../common/Button";
 import { useState } from "react";
 
-const TabGroup = () => {
+interface TabGroupProps {
+  tabs: string[];
+}
+
+const TabGroup: React.FC<TabGroupProps> = ({ tabs }) => {
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
-  const [tabStatus, setTabStatus] = useState<("currentTab" | "outline")[]>([
-    "currentTab",
-    "outline",
-  ]);
+  const [tabStatus, setTabStatus] = useState<("currentTab" | "outline")[]>(
+    tabs.map((_, index) => (index === 0 ? "currentTab" : "outline"))
+  );
 
   const handleClick = async (index: number) => {
     // Prevent action if clicking active tab or during loading
@@ -23,23 +26,26 @@ const TabGroup = () => {
   };
 
   return (
-    <div className="flex justify-center space-x-6 my-6">
-      <Button
-        variant={tabStatus[0]}
-        loading={loadingIndex === 0}
-        onClick={() => handleClick(0)}
-        className="text-sm"
-      >
-        For You
-      </Button>
-      <Button
-        variant={tabStatus[1]}
-        loading={loadingIndex === 1}
-        onClick={() => handleClick(1)}
-        className="text-sm"
-      >
-        Companies
-      </Button>
+    <div className="bg-white rounded-3xl shadow-sm p-2 mt-10 mb-3 border-2 border-gray-200">
+      {/* White rounded container */}
+      <div className="flex justify-center gap-4">
+        {tabs.map((tab, index) => (
+          <div
+            key={tab}
+            className="flex-1"
+            style={{ minWidth: "100px" }} // Set a minimum width for the tabs
+          >
+            <Button
+              variant={tabStatus[index]}
+              loading={loadingIndex === index}
+              onClick={() => handleClick(index)}
+              className="text-sm w-full"
+            >
+              {tab}
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
