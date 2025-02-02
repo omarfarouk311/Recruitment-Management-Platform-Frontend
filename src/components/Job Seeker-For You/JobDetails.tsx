@@ -1,7 +1,7 @@
 import JobCard from "./JobCard";
 
 interface JobDetailsProps {
-  job: {
+  job?: {
     company: string;
     rating: number;
     position: string;
@@ -23,6 +23,14 @@ interface JobDetailsProps {
 }
 
 const JobDetails = ({ job }: JobDetailsProps) => {
+  if (!job) {
+    return (
+      <div className="bg-white p-6 rounded-3xl h-[800px] flex items-center justify-center border-2 border-gray-200">
+        <p className="text-gray-500 text-lg">Select a job to show details</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <JobCard {...job} isDetailed={true} />

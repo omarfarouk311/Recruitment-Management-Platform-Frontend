@@ -12,11 +12,12 @@ interface Job {
 
 interface JobStore {
     jobs: Job[];
+    page: number; // Track the current page
     filters: {
         date: string;
         rating: string;
         industry: string;
-        remoteOnly: boolean
+        remoteOnly: boolean;
     };
     searchCriteria: {
         jobQuery: string;
@@ -26,22 +27,24 @@ interface JobStore {
     };
     isLoading: boolean;
     hasMore: boolean;
+    selectedJobIndex: number | null;
+    isDetailsLoading: boolean;
     fetchJobs: () => Promise<void>;
     setFilters: (filters: Partial<JobStore['filters']>) => Promise<void>;
     setSearchCriteria: (criteria: Partial<JobStore['searchCriteria']>) => void;
-    loadMoreJobs: () => Promise<void>;
     applySearch: () => Promise<void>;
+    setSelectedJobIndex: (index: number) => void;
+    setIsDetailsLoading: (loading: boolean) => void;
 }
 
-const NUMBER_OF_JOBS = 5;
-
 const useJobStore = create<JobStore>((set, get) => ({
-    jobs: baseJobs,
+    jobs: [],
+    page: 1, // Start with page 1
     filters: {
         date: 'any',
         rating: 'any',
         industry: 'any',
-        remoteOnly: false
+        remoteOnly: false,
     },
     searchCriteria: {
         jobQuery: '',
@@ -50,24 +53,32 @@ const useJobStore = create<JobStore>((set, get) => ({
         companyQuery: '',
     },
     isLoading: false,
-    hasMore: baseJobs.length >= NUMBER_OF_JOBS,
+    hasMore: true,
+    selectedJobIndex: null,
+    isDetailsLoading: false,
 
     fetchJobs: async () => {
-        const { filters, searchCriteria } = get();
+        const { filters, searchCriteria, page, hasMore, isLoading } = get();
+        if (!hasMore || isLoading) return;
         set({ isLoading: true });
+
         try {
             // Simulate an async API call
-            await new Promise<void>(resolve => setTimeout(() => {
-                // Apply filters and search criteria here (currently mocked)
-                const result = baseJobs;
-                filters;
-                searchCriteria;
-                ///
-                set({
-                    jobs: result,
-                    hasMore: result.length >= NUMBER_OF_JOBS,
+            await new Promise<void>((resolve) => setTimeout(() => {
+                // Calculate the start and end indices for the current page
+                const startIndex = (page - 1) * 5; // 5 jobs per page
+                const endIndex = startIndex + 5;
+
+                // Get the jobs for the current page
+                const newJobs = baseJobs.slice(startIndex, endIndex);
+
+                // Update the state
+                set((state) => ({
+                    jobs: [...state.jobs, ...newJobs],
+                    hasMore: endIndex < baseJobs.length, // Check if there are more jobs to load
                     isLoading: false,
-                });
+                    page: state.page + 1, // Increment the page
+                }));
                 resolve();
             }, 500));
         } catch (err) {
@@ -76,43 +87,43 @@ const useJobStore = create<JobStore>((set, get) => ({
     },
 
     setFilters: async (filters) => {
-        set(state => ({
+        set((state) => ({
             filters: { ...state.filters, ...filters },
+            jobs: [],
+            page: 1,
+            selectedJobIndex: null,
+            isLoading: false,
+            hasMore: true,
+            isDetailsLoading: false,
         }));
         const { fetchJobs } = get();
         await fetchJobs();
     },
 
     setSearchCriteria: (criteria) => {
-        set(state => ({ searchCriteria: { ...state.searchCriteria, ...criteria } }));
+        set((state) => ({
+            searchCriteria: { ...state.searchCriteria, ...criteria },
+        }));
     },
 
     applySearch: async () => {
+        set({
+            jobs: [],
+            page: 1,
+            selectedJobIndex: null,
+            isLoading: false,
+            hasMore: true,
+            isDetailsLoading: false,
+        });
         const { fetchJobs } = get();
         await fetchJobs();
     },
+    setSelectedJobIndex: (index: number) => {
+        set({ selectedJobIndex: index });
+    },
 
-    loadMoreJobs: async () => {
-        const { jobs, isLoading, hasMore } = get();
-        if (!hasMore || isLoading) return;
-
-        set({ isLoading: true });
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
-
-        const newJobs = Array(NUMBER_OF_JOBS).fill({}).map((_, i) => ({
-            company: `Microsoft ${jobs.length + i + 1}`,
-            rating: 4.5,
-            position: "Software Engineer II",
-            location: "Cairo, Egypt",
-            datePosted: "2023-10-15",
-            industry: "Technology"
-        }));
-
-        set(state => ({
-            jobs: [...state.jobs, ...newJobs],
-            hasMore: newJobs.length >= NUMBER_OF_JOBS,
-            isLoading: false,
-        }));
+    setIsDetailsLoading: (loading: boolean) => {
+        set({ isDetailsLoading: loading });
     },
 }));
 

@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import JobList from "./JobList";
 import JobDetails from "./JobDetails";
 import FilterBar from "../Filters/FilterBar";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import useJobStore from "../../stores/useJobStore";
-import { baseDetailedJob } from "../../mock data/jobs";
+import { baseDetailedJobs } from "../../mock data/jobs";
 import {
   dateOptions,
   industryOptions,
@@ -13,10 +13,15 @@ import {
 } from "../../data/filterOptions";
 
 const ForYouPage = () => {
-  const [selectedJobIndex, setSelectedJobIndex] = useState<number>(0);
-  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
-
-  const { jobs, filters, setFilters, fetchJobs } = useJobStore();
+  const {
+    filters,
+    setFilters,
+    fetchJobs,
+    selectedJobIndex,
+    setSelectedJobIndex,
+    isDetailsLoading,
+    setIsDetailsLoading,
+  } = useJobStore();
 
   // Fetch jobs on initial render and when filters/search criteria change
   useEffect(() => {
@@ -30,15 +35,8 @@ const ForYouPage = () => {
     setTimeout(() => setIsDetailsLoading(false), 1000);
   };
 
-  // Get detailed job information
-  const getDetailedJob = () => {
-    if (selectedJobIndex === null) return baseDetailedJob;
-
-    return {
-      ...baseDetailedJob,
-      company: jobs[selectedJobIndex].company,
-    };
-  };
+  // Determine if a job is selected
+  const isJobSelected = selectedJobIndex !== null;
 
   return (
     <>
@@ -86,8 +84,10 @@ const ForYouPage = () => {
               <div className="h-4 bg-gray-200 rounded mb-2 w-1/3"></div>
               <div className="h-32 bg-gray-200 rounded mt-4"></div>
             </div>
+          ) : isJobSelected ? (
+            <JobDetails job={baseDetailedJobs[selectedJobIndex]} />
           ) : (
-            <JobDetails job={getDetailedJob()} />
+            <JobDetails />
           )}
         </div>
       </div>

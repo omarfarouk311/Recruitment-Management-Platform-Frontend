@@ -26,6 +26,7 @@ interface JobCardProps {
     content: string;
   }[];
   onClick?: () => void;
+  isSelected?: boolean;
 }
 
 const JobCard = ({
@@ -38,12 +39,13 @@ const JobCard = ({
   companyDetails,
   reviews,
   onClick,
+  isSelected,
 }: JobCardProps) => {
   const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
 
   if (isDetailed) {
     return (
-      <div className="bg-white p-6 rounded-3xl h-[800px] overflow-y-auto custom-scrollbar max-w-3xl border-2 border-gray-200">
+      <div className="bg-white p-6 rounded-3xl h-[800px] overflow-y-auto hide-scrollbar max-w-3xl border-2 border-gray-200">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-start space-x-4">
             <div className="w-12 h-12 bg-blue-100 flex items-center justify-center">
@@ -171,7 +173,9 @@ const JobCard = ({
 
   return (
     <div
-      className="bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full"
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full ${
+        isSelected ? "border-2 border-black" : ""
+      }`}
       onClick={onClick}
       role="button"
       tabIndex={0}

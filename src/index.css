@@ -18,18 +18,11 @@ input[type="password"]::-ms-reveal {
   display: none;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 7px;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.custom-scrollbar::-webkit-scrollbar-button {
-  height: 10px;
-  width: 8px;
-  display: block;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-  min-height: 90px;
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

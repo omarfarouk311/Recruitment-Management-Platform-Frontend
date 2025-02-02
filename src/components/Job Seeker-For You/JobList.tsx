@@ -8,15 +8,15 @@ interface JobListProps {
 
 const JobList = ({ onJobSelect }: JobListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const { jobs, hasMore, isLoading, loadMoreJobs } = useJobStore();
+  const { jobs, hasMore, isLoading, fetchJobs, selectedJobIndex } =
+    useJobStore();
 
   // Infinite scroll logic
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMoreJobs();
+          fetchJobs();
         }
       },
       { threshold: 1.0 }
@@ -32,32 +32,38 @@ const JobList = ({ onJobSelect }: JobListProps) => {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, isLoading, loadMoreJobs]);
+  }, [hasMore, isLoading]);
 
   return (
     <div
-      ref={listContainerRef}
-      className="h-[800px] overflow-y-scroll space-y-6 bg-white p-4 rounded-3xl custom-scrollbar max-w-[500px]
-    border-2 border-gray-200"
+      className="min-h-[800px] h-[800px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px]
+      border-2 border-gray-200"
     >
-      {jobs.map((job, index) => (
-        <JobCard
-          key={`${job.company}-${job.datePosted}-${index}`}
-          {...job}
-          onClick={() => onJobSelect?.(index)}
-        />
-      ))}
-      {isLoading && (
-        <div className="flex justify-center py-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
+      {jobs.length === 0 && !isLoading ? (
+        <div className="text-center py-4 text-gray-500">No jobs found.</div>
+      ) : (
+        <>
+          {jobs.map((job, index) => (
+            <JobCard
+              key={`${job.company}-${job.datePosted}-${index}`}
+              {...job}
+              onClick={() => onJobSelect?.(index)}
+              isSelected={index === selectedJobIndex}
+            />
+          ))}
+          {isLoading && (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          )}
+          {!hasMore && (
+            <div className="text-center py-4 text-gray-500">
+              No more jobs to show
+            </div>
+          )}
+          <div ref={observerTarget} className="h-2" />
+        </>
       )}
-      {!hasMore && (
-        <div className="text-center py-4 text-gray-500">
-          No more jobs to show
-        </div>
-      )}
-      <div ref={observerTarget} className="h-2" />
     </div>
   );
 };
