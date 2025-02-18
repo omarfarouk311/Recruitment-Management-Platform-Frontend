@@ -4,7 +4,7 @@ import JobDetails from "./JobDetails";
 import FilterBar from "../Filters/FilterBar";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
-import useJobStore from "../../stores/useJobStore";
+import useJobStore from "../../stores/JobStore";
 import { baseDetailedJobs } from "../../mock data/jobs";
 import {
   dateOptions,
@@ -12,16 +12,14 @@ import {
   ratingOptions,
 } from "../../data/filterOptions";
 
-const ForYouPage = () => {
-  const {
-    filters,
-    setFilters,
-    fetchJobs,
-    selectedJobIndex,
-    setSelectedJobIndex,
-    isDetailsLoading,
-    setIsDetailsLoading,
-  } = useJobStore();
+const ForYou = () => {
+  const filters = useJobStore.useFilters();
+  const setFilters = useJobStore.useSetFilters();
+  const fetchJobs = useJobStore.useFetchJobs();
+  const selectedJobIndex = useJobStore.useSelectedJobIndex();
+  const setSelectedJobIndex = useJobStore.useSetSelectedJobIndex();
+  const isDetailsLoading = useJobStore.useIsDetailsLoading();
+  const setIsDetailsLoading = useJobStore.useSetIsDetailsLoading();
 
   // Fetch jobs on initial render and when filters/search criteria change
   useEffect(() => {
@@ -73,7 +71,7 @@ const ForYouPage = () => {
         </FilterBar>
       </div>
 
-      <div className="grid grid-cols-[1fr_1.6fr] gap-8">
+      <div className="grid grid-cols-[1fr_1.7fr] gap-8">
         <JobList onJobSelect={handleJobSelect} />
 
         <div className="sticky top-4">
@@ -95,4 +93,4 @@ const ForYouPage = () => {
   );
 };
 
-export default ForYouPage;
+export default ForYou;

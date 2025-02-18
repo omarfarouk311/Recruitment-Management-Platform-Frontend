@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
-import useJobStore from "../../stores/useJobStore";
+import useJobStore from "../../stores/JobStore";
 
 interface JobListProps {
   onJobSelect?: (jobId: number) => void;
@@ -8,8 +8,11 @@ interface JobListProps {
 
 const JobList = ({ onJobSelect }: JobListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
-  const { jobs, hasMore, isLoading, fetchJobs, selectedJobIndex } =
-    useJobStore();
+  const jobs = useJobStore.useJobs();
+  const hasMore = useJobStore.useHasMore();
+  const isLoading = useJobStore.useIsLoading();
+  const fetchJobs = useJobStore.useFetchJobs();
+  const selectedJobIndex = useJobStore.useSelectedJobIndex();
 
   // Infinite scroll logic
   useEffect(() => {
@@ -36,7 +39,7 @@ const JobList = ({ onJobSelect }: JobListProps) => {
 
   return (
     <div
-      className="min-h-[800px] h-[800px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px]
+      className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px]
       border-2 border-gray-200"
     >
       {jobs.length === 0 && !isLoading ? (

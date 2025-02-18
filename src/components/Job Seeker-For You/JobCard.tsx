@@ -45,14 +45,13 @@ const JobCard = ({
 
   if (isDetailed) {
     return (
-      <div className="bg-white p-6 rounded-3xl h-[800px] overflow-y-auto hide-scrollbar max-w-3xl border-2 border-gray-200">
+      <div className="bg-white p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-3xl border-2 border-gray-200">
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-start space-x-4">
-            <div className="w-12 h-12 bg-blue-100 flex items-center justify-center">
+            <div className="w-12 h-12 flex items-center justify-center">
               <img
                 src="https://www.microsoft.com/favicon.ico"
                 alt="Microsoft"
-                className="w-8 h-8"
               />
             </div>
             <div>
@@ -60,9 +59,9 @@ const JobCard = ({
                 <h2 className="text-xl font-bold">{company}</h2>
                 <Link
                   to="/company-profile"
-                  className="ml-2 hover:text-blue-600 transition-colors"
+                  className="px-2"
                 >
-                  <ExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-600" />
+                  <ExternalLink className="w-5 h-5 cursor-pointer text-blue-600" />
                 </Link>
               </div>
               <div className="flex items-center space-x-2">
@@ -173,20 +172,16 @@ const JobCard = ({
 
   return (
     <div
-      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full ${
-        isSelected ? "border-2 border-black" : ""
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
+        isSelected ? "border-black" : ""
       }`}
       onClick={onClick}
       role="button"
       tabIndex={0}
     >
       <div className="flex items-center space-x-4">
-        <div className="w-12 h-12 bg-blue-100 flex items-center justify-center">
-          <img
-            src="https://www.microsoft.com/favicon.ico"
-            alt="Microsoft"
-            className="w-8 h-8"
-          />
+        <div className="w-11 h-11 flex items-center justify-center">
+          <img src="https://www.microsoft.com/favicon.ico" alt="Microsoft" />
         </div>
         <div>
           <div className="flex items-center space-x-2">

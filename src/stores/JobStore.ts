@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { baseJobs } from "../mock data/jobs";
+import { createSelectorHooks } from "auto-zustand-selectors-hook";
 
 interface Job {
     company: string;
@@ -37,7 +38,7 @@ interface JobStore {
     setIsDetailsLoading: (loading: boolean) => void;
 }
 
-const useJobStore = create<JobStore>((set, get) => ({
+const useJobStoreBase = create<JobStore>((set, get) => ({
     jobs: [],
     page: 1, // Start with page 1
     filters: {
@@ -127,4 +128,4 @@ const useJobStore = create<JobStore>((set, get) => ({
     },
 }));
 
-export default useJobStore;
+export default createSelectorHooks(useJobStoreBase);
