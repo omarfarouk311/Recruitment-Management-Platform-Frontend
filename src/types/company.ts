@@ -1,5 +1,6 @@
 export interface CompanyCard {
-    image: string;
+    id: number
+    image?: string;
     name: string;
     overview: string;
     size: number;
@@ -14,8 +15,9 @@ export interface CompaniesPageFilters {
     country: string;
     city: string;
     industry: string;
-    size: number;
-    rating: [number, number];
+    sizeFrom: string;
+    sizeTo: string
+    rating: string;
     type: string;
 }
 

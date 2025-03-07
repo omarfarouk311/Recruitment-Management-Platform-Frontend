@@ -1,21 +1,29 @@
 import { User, Home, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { SearchBar } from "../common/SearchBar";
-import { LocationSearch } from "../common/LocationSearch";
-import { TextInput } from "../common/TextInput";
-import useJobStore from "../../stores/useJobStore";
+import SearchBar from "../common/SearchBar";
+import TextInput from "../common/TextInput";
+import useJobStore from "../../stores/GlobalStore";
 
 const UserNav = () => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { searchCriteria, setSearchCriteria, isLoading, applySearch } =
-    useJobStore();
+  const activeTab = useJobStore.useHomeActiveTab();
+  const isLoading = useJobStore.useIsLoading();
+  let searchCriteria: string;
+  let setSearchCriteria: (query: string) => void;
+  let applySearch: () => Promise<void>;
 
-  const isSearchDisabled =
-    !searchCriteria.jobQuery &&
-    !searchCriteria.country &&
-    !searchCriteria.city &&
-    !searchCriteria.companyQuery;
+  if (activeTab === "For You") {
+    searchCriteria = useJobStore.useJobSearchQuery();
+    setSearchCriteria = useJobStore.useSetJobSearchQuery();
+    applySearch = useJobStore.useApplyJobSearch();
+  } else {
+    searchCriteria = useJobStore.useCompanySearchQuery();
+    setSearchCriteria = useJobStore.useSetCompanySearchQuery();
+    applySearch = useJobStore.useApplyJobSearch();
+  }
+
+  const isSearchDisabled = !searchCriteria;
 
   const handleSearch = async () => {
     if (!isSearchDisabled) {
@@ -24,8 +32,9 @@ const UserNav = () => {
   };
 
   return (
-    <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm border-b-2 border-gray-300">
-      <div className="flex items-center space-x-4">
+    <div className="flex items-center px-6 py-4 h-20 bg-white shadow-sm border-b-2 border-gray-300 relative">
+      {/* Left Section (Profile and Dashboard Buttons) */}
+      <div className="flex items-center space-x-4 absolute left-6">
         {/* Profile Button */}
         {currentPath === "/profile" ? (
           <span
@@ -65,51 +74,44 @@ const UserNav = () => {
         )}
       </div>
 
-      {/* Search Bar */}
-      <div className="flex">
+      {/* Centered Search Bar */}
+      <div className="flex justify-center flex-grow">
         <SearchBar
           onSearch={handleSearch}
           isSearching={isLoading}
           disabled={isSearchDisabled}
         >
           <TextInput
-            value={searchCriteria.jobQuery}
-            onChange={(value) => setSearchCriteria({ jobQuery: value })}
-            placeholder="Job title"
-            disabled={isLoading}
-          />
-          <LocationSearch
-            selectedCountry={searchCriteria.country}
-            onCountryChange={(value) => setSearchCriteria({ country: value })}
-            selectedCity={searchCriteria.city}
-            onCityChange={(value) => setSearchCriteria({ city: value })}
-            disabled={isLoading}
-          />
-          <TextInput
-            value={searchCriteria.companyQuery}
-            onChange={(value) => setSearchCriteria({ companyQuery: value })}
-            placeholder="Company"
+            value={searchCriteria}
+            onChange={(value) => setSearchCriteria(value)}
+            placeholder={
+              activeTab === "For You"
+                ? "Find your next job"
+                : "Search for a company"
+            }
             disabled={isLoading}
           />
         </SearchBar>
       </div>
 
-      {/* Home Button */}
-      {currentPath === "/home" ? (
-        <span
-          className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-          role="button"
-        >
-          <Home className="w-6 h-6" />
-        </span>
-      ) : (
-        <Link
-          to="/home"
-          className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-        >
-          <Home className="w-6 h-6" />
-        </Link>
-      )}
+      {/* Right Section (Home Button) */}
+      <div className="absolute right-6">
+        {currentPath === "/home" ? (
+          <span
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            role="button"
+          >
+            <Home className="w-6 h-6" />
+          </span>
+        ) : (
+          <Link
+            to="/home"
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            <Home className="w-6 h-6" />
+          </Link>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,23 +1,17 @@
 import { Review } from "./review";
 
-interface ComapnyInfo {
-    image?: string;
-    name: string;
-    rating: number;
-    overview: string;
-    size: number;
-    foundedIn: number;
-    type: string;
-    industriesCount: number;
-}
-
 export interface Job {
-    company: string;
-    companyRating: number;
+    id: number;
     title: string;
     country: string;
-    city: string;
+    city?: string;
     datePosted: string;
+    companyData: {
+        id: number
+        name: string;
+        rating: number;
+        image?: string;
+    }
 }
 
 export interface JobDetails {
@@ -29,13 +23,22 @@ export interface JobDetails {
     matchingSkillsCount: number;
     jobSkillsCount: number;
     remote: boolean;
-    companyData: ComapnyInfo;
+    companyData: {
+        image?: string;
+        name: string;
+        rating: number;
+        overview: string;
+        size: number;
+        foundedIn: number;
+        type: string;
+        industriesCount: number;
+    };
     companyReviews: Review[];
 }
 
 export interface ForYouPageFilters {
     datePosted: string;
-    companyRating: number;
+    companyRating: string;
     industry: string;
     country: string;
     city: string;

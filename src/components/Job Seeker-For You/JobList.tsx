@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
-import useJobStore from "../../stores/JobStore";
+import useJobStore from "../../stores/GlobalStore";
 
 interface JobListProps {
-  onJobSelect?: (jobId: number) => void;
+  onJobSelect: (jobId: number) => void;
 }
 
 const JobList = ({ onJobSelect }: JobListProps) => {
@@ -12,7 +12,7 @@ const JobList = ({ onJobSelect }: JobListProps) => {
   const hasMore = useJobStore.useHasMore();
   const isLoading = useJobStore.useIsLoading();
   const fetchJobs = useJobStore.useFetchJobs();
-  const selectedJobIndex = useJobStore.useSelectedJobIndex();
+  const selectedJobId = useJobStore.useSelectedJobId();
 
   // Infinite scroll logic
   useEffect(() => {
@@ -46,12 +46,12 @@ const JobList = ({ onJobSelect }: JobListProps) => {
         <div className="text-center py-4 text-gray-500">No jobs found.</div>
       ) : (
         <>
-          {jobs.map((job, index) => (
+          {jobs.map((job) => (
             <JobCard
-              key={`${job.company}-${job.datePosted}-${index}`}
-              {...job}
-              onClick={() => onJobSelect?.(index)}
-              isSelected={index === selectedJobIndex}
+              key={job.id}
+              job={job}
+              onClick={() => onJobSelect(job.id)}
+              isSelected={job.id === selectedJobId}
             />
           ))}
           {isLoading && (

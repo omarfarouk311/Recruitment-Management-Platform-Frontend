@@ -8,7 +8,7 @@ interface SearchBarProps {
   disabled?: boolean;
 }
 
-export const SearchBar = ({
+const SearchBar = ({
   onSearch,
   isSearching,
   children,
@@ -20,7 +20,10 @@ export const SearchBar = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-4">
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center gap-4 w-full max-w-sm"
+    >
       <button
         type="submit"
         disabled={isSearching || disabled}
@@ -32,3 +35,5 @@ export const SearchBar = ({
     </form>
   );
 };
+
+export default SearchBar;

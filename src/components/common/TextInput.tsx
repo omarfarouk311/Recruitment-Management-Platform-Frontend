@@ -3,16 +3,23 @@ interface TextInputProps {
   onChange: (value: string) => void;
   placeholder: string;
   disabled?: boolean;
+  className?: string;
 }
 
-export const TextInput = ({
+const TextInput = ({
   value,
   onChange,
   placeholder,
   disabled,
+  className = "",
 }: TextInputProps) => {
   return (
-    <div className="flex items-center w-48 bg-gray-100 rounded-full px-4 py-2 border-2 border-gray-200">
+    <div
+      className={
+        "flex items-center bg-gray-100 rounded-full px-4 py-2 border-2 border-black w-full" +
+        className
+      }
+    >
       <input
         type="text"
         placeholder={placeholder}
@@ -24,3 +31,5 @@ export const TextInput = ({
     </div>
   );
 };
+
+export default TextInput;

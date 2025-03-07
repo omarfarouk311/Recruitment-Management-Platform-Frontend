@@ -1,11 +1,9 @@
 import { useEffect } from "react";
 import JobList from "./JobList";
 import JobDetails from "./JobDetails";
-import FilterBar from "../Filters/FilterBar";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
-import useJobStore from "../../stores/JobStore";
-import { baseDetailedJobs } from "../../mock data/jobs";
+import useStore from "../../stores/GlobalStore";
 import {
   dateOptions,
   industryOptions,
@@ -13,66 +11,53 @@ import {
 } from "../../data/filterOptions";
 
 const ForYou = () => {
-  const filters = useJobStore.useFilters();
-  const setFilters = useJobStore.useSetFilters();
-  const fetchJobs = useJobStore.useFetchJobs();
-  const selectedJobIndex = useJobStore.useSelectedJobIndex();
-  const setSelectedJobIndex = useJobStore.useSetSelectedJobIndex();
-  const isDetailsLoading = useJobStore.useIsDetailsLoading();
-  const setIsDetailsLoading = useJobStore.useSetIsDetailsLoading();
+  const filters = useStore.useJobsFilters();
+  const setFilters = useStore.useSetJobsFilters();
+  const fetchJobs = useStore.useFetchJobs();
+  const setSelectedJobId = useStore.useSetSelectedJobId();
+  const isDetailsLoading = useStore.useIsDetailsLoading();
+  const detailedJob = useStore.useDetailedJob();
 
   // Fetch jobs on initial render and when filters/search criteria change
   useEffect(() => {
     fetchJobs();
   }, []);
 
-  // Handle job selection
-  const handleJobSelect = (index: number) => {
-    setIsDetailsLoading(true);
-    setSelectedJobIndex(index);
-    setTimeout(() => setIsDetailsLoading(false), 1000);
-  };
-
-  // Determine if a job is selected
-  const isJobSelected = selectedJobIndex !== null;
-
   return (
     <>
-      <div className="flex mb-8">
-        <FilterBar>
-          <FilterDropdown
-            label="Date Posted"
-            options={dateOptions}
-            selectedValue={filters.date}
-            onSelect={(value) => setFilters({ date: value })}
-          />
+      <div className="flex mb-8 items-center space-x-6 flex-nowrap">
+        <FilterDropdown
+          label="Date Posted"
+          options={dateOptions}
+          selectedValue={filters.datePosted}
+          onSelect={(value) => setFilters({ datePosted: value })}
+        />
 
-          <FilterDropdown
-            label="Company Rating"
-            options={ratingOptions}
-            selectedValue={filters.rating}
-            onSelect={(value) => setFilters({ rating: value })}
-          />
+        <FilterDropdown
+          label="Company Rating"
+          options={ratingOptions}
+          selectedValue={filters.companyRating}
+          onSelect={(value) => setFilters({ companyRating: value })}
+        />
 
-          <FilterDropdown
-            label="Industry"
-            options={industryOptions}
-            selectedValue={filters.industry}
-            onSelect={(value) => setFilters({ industry: value })}
-          />
+        <FilterDropdown
+          label="Industry"
+          options={industryOptions}
+          selectedValue={filters.industry}
+          onSelect={(value) => setFilters({ industry: value })}
+        />
 
-          <Button
-            variant={filters.remoteOnly ? "currentTab" : "outline"}
-            className="h-7 text-sm"
-            onClick={() => setFilters({ remoteOnly: !filters.remoteOnly })}
-          >
-            Remote only
-          </Button>
-        </FilterBar>
+        <Button
+          variant={filters.remote ? "currentTab" : "outline"}
+          className="h-7 text-sm"
+          onClick={() => setFilters({ remote: !filters.remote })}
+        >
+          Remote only
+        </Button>
       </div>
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">
-        <JobList onJobSelect={handleJobSelect} />
+        <JobList onJobSelect={setSelectedJobId} />
 
         <div className="sticky top-4">
           {isDetailsLoading ? (
@@ -82,10 +67,8 @@ const ForYou = () => {
               <div className="h-4 bg-gray-200 rounded mb-2 w-1/3"></div>
               <div className="h-32 bg-gray-200 rounded mt-4"></div>
             </div>
-          ) : isJobSelected ? (
-            <JobDetails job={baseDetailedJobs[selectedJobIndex]} />
           ) : (
-            <JobDetails />
+            <JobDetails job={detailedJob} />
           )}
         </div>
       </div>

@@ -3,13 +3,17 @@ import { Job, JobDetails } from "../types/job";
 export const mockJobs: Job[] = Array(20)
     .fill({})
     .map((_, index) => ({
-        company: `Microsoft ${index + 1}`,
-        companyRating: 4.5,
+        id: index,
         title: "Software Engineer II",
         country: "Egypt",
         city: "Cairo",
         datePosted: new Date().toISOString(),
-        industry: "Technology"
+        companyData: {
+            id: index + 1,
+            name: `Microsoft ${index + 1}`,
+            rating: 4.5,
+            image: "https://www.microsoft.com/favicon.ico"
+        }
     }));
 
 export const mockDetailedJobs: JobDetails[] = Array(20)
@@ -18,7 +22,7 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
         title: "Software Engineer II",
         country: "Egypt",
         city: "Cairo",
-        datePosted: "2025-03-5T21:00:00.00Z",
+        datePosted: "2025-03-05T15:27:06.997Z",
         applicantsCount: 3,
         matchingSkillsCount: 7,
         jobSkillsCount: 10,
