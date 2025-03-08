@@ -1,12 +1,12 @@
 export const dateOptions = [
-    { value: "", label: "" },
+    { value: "", label: "Any" },
     { value: "today", label: "Today" },
     { value: "last week", label: "Last Week" },
     { value: "last month", label: "Last Month" }
 ];
 
 export const ratingOptions = [
-    { value: "", label: "" },
+    { value: "", label: "Any" },
     { value: "1", label: "1 star" },
     { value: "2", label: "2 stars" },
     { value: "3", label: "3 stars" },
@@ -15,7 +15,7 @@ export const ratingOptions = [
 ];
 
 export const industryOptions = [
-    { value: "", label: "" },
+    { value: "", label: "Any" },
     { value: "Technology", label: "Technology" },
     { value: "Healthcare", label: "Healthcare" },
     { value: "Finance", label: "Finance" },
@@ -24,13 +24,13 @@ export const industryOptions = [
 ];
 
 export const typeOptions = [
-    { value: "", label: "" },
+    { value: "", label: "Any" },
     { value: "true", label: "Public" },
     { value: "false", label: "Private" },
 ];
 
 export const sizeOptions = [
-    { value: "", label: "" },
+    { value: "", label: "Any" },
     { value: "1-50", label: "1-50" },
     { value: "51-200", label: "51-200" },
     { value: "201-500", label: "201-500" },

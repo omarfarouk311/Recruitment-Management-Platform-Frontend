@@ -4,11 +4,19 @@ import { Loader } from "lucide-react";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   variant?: "primary" | "outline" | "currentTab" | "report";
+  disabled?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { children, className = "", loading, variant = "primary", ...props },
+    {
+      children,
+      className = "",
+      loading,
+      variant = "primary",
+      disabled = false,
+      ...props
+    },
     ref
   ) => {
     const baseStyles =
@@ -17,10 +25,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       primary:
         "bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
-      outline: "text-black hover:bg-black hover:text-white",
+      outline:
+        "text-black hover:bg-black hover:text-white disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400",
       currentTab: "bg-black text-white",
       report:
         "border-red-600 bg-red-600 text-white hover:bg-transparent hover:text-red-600 hover:border-red-600",
+      disabled: "",
     };
 
     return (
@@ -32,7 +42,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ${loading ? "opacity-70 cursor-not-allowed" : ""}
           ${className}
         `}
-        disabled={loading}
+        disabled={loading || disabled}
         {...props}
       >
         {loading ? <Loader className="w-5 h-5 animate-spin" /> : children}

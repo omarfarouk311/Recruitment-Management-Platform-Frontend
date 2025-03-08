@@ -9,7 +9,7 @@ export const mockJobs: Job[] = Array(20)
         city: "Cairo",
         datePosted: new Date().toISOString(),
         companyData: {
-            id: index + 1,
+            id: index,
             name: `Microsoft ${index + 1}`,
             rating: 4.5,
             image: "https://www.microsoft.com/favicon.ico"
@@ -28,8 +28,9 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
         jobSkillsCount: 10,
         remote: true,
         companyData: {
+            id: index,
             name: `Microsoft ${index + 1}`,
-            size: 18000,
+            size: 1100,
             foundedIn: 1980,
             overview: "Are you ready to shape the digital future of the cloud? Join the Microsoft Azure Network Manager team and be at the forefront of innovation in the world of cloud technology. As a Software Engineer II on this team, you'll have the unique opportunity to architect, build, and deliver a seamless, reliable, and high-performance cloud infrastructure.",
             rating: 4.5,

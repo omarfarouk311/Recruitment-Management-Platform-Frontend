@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import JobList from "./JobList";
 import JobDetails from "./JobDetails";
 import FilterDropdown from "../Filters/FilterDropdown";
+import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/GlobalStore";
 import {
@@ -49,11 +50,18 @@ const ForYou = () => {
 
         <Button
           variant={filters.remote ? "currentTab" : "outline"}
-          className="h-7 text-sm"
+          className="h-7 text-sm w-auto"
           onClick={() => setFilters({ remote: !filters.remote })}
         >
-          Remote only
+          Remote
         </Button>
+
+        <LocationSearch
+          selectedCountry={filters.country}
+          onCountryChange={(value) => setFilters({ country: value, city: "" })}
+          selectedCity={filters.city}
+          onCityChange={(value) => setFilters({ city: value })}
+        />
       </div>
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">

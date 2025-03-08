@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import Button from "../common/Button";
 
@@ -9,6 +9,7 @@ interface FilterDropdownProps {
   onSelect: (value: string) => void;
   variant?: "primary" | "outline" | "currentTab";
   className?: string;
+  disabled?: boolean;
 }
 
 const FilterDropdown = ({
@@ -18,37 +19,59 @@ const FilterDropdown = ({
   onSelect,
   variant = "outline",
   className = "",
+  disabled = false,
 }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const selectedLabel = options.find((o) => o.value === selectedValue)?.label;
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const selectedLabel =
+    options.find((o) => o.value === selectedValue)?.label || "";
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <Button
-        variant={selectedValue !== "any" ? "currentTab" : variant}
-        className={"h-7 text-sm " + className}
-        onClick={() => setIsOpen(!isOpen)}
+        variant={selectedValue !== "" ? "currentTab" : variant}
+        className={"h-7 w-auto text-sm " + className}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        type="button"
+        disabled={disabled}
       >
-        <div className="flex items-center">
+        <div className="flex items-center pe-4">
           {label}
-          {selectedValue !== "any" && selectedLabel && ` (${selectedLabel})`}
-          <ChevronDown className="w-4 h-4 ml-2" />
+          {selectedValue !== "" && selectedLabel && ` (${selectedLabel})`}
+          <ChevronDown className="w-4 h-4 absolute right-3" />
         </div>
       </Button>
 
-      {isOpen && (
-        <div className="absolute top-12 left-0 bg-white border rounded-lg shadow-lg z-10 w-40">
+      {isOpen && !disabled && (
+        <div className="absolute top-8 left-0 bg-white border rounded-lg shadow-lg z-10 w-48 max-h-72 overflow-y-auto">
           {options.map((option) => (
-            <div
+            <button
               key={option.value}
               onClick={() => {
                 onSelect(option.value);
                 setIsOpen(false);
               }}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              className={`w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer ${
+                option.value === selectedValue ? "bg-gray-200 font-medium" : ""
+              }`}
+              role="option"
             >
               {option.label}
-            </div>
+            </button>
           ))}
         </div>
       )}

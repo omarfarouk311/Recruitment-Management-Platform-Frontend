@@ -24,6 +24,7 @@ export interface JobDetails {
     jobSkillsCount: number;
     remote: boolean;
     companyData: {
+        id: number;
         image?: string;
         name: string;
         rating: number;
