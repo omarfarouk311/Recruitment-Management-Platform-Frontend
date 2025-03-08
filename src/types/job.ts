@@ -37,7 +37,7 @@ export interface JobDetails {
     companyReviews: Review[];
 }
 
-export interface ForYouPageFilters {
+export interface ForYouTabFilters {
     datePosted: string;
     companyRating: string;
     industry: string;

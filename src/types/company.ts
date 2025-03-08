@@ -11,7 +11,7 @@ export interface CompanyCard {
     industriesCount: number;
 }
 
-export interface CompaniesPageFilters {
+export interface CompaniesTabFilters {
     country: string;
     city: string;
     industry: string;
