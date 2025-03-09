@@ -6,12 +6,32 @@ import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
 import cvs from "../../mock data/CVs";
 import { useState } from "react";
+import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
 interface JobDetailsProps {
-  job: JobDetails | null;
+  useDetailedjob: () => ForYouTabSlice["forYouTabDetailedJob"];
+  useIsDetailsLoading: () => ForYouTabSlice["forYouTabIsDetailsLoading"];
 }
 
-const JobDetails = ({ job }: JobDetailsProps) => {
+const JobDetails = ({
+  useDetailedjob,
+  useIsDetailsLoading,
+}: JobDetailsProps) => {
+  const job = useDetailedjob();
+  const isDetailsLoading = useIsDetailsLoading();
+  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
+
+  if (isDetailsLoading) {
+    return (
+      <div className="bg-white p-6 rounded-3xl animate-pulse">
+        <div className="h-8 bg-gray-200 rounded mb-4 w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded mb-2 w-1/2"></div>
+        <div className="h-4 bg-gray-200 rounded mb-2 w-1/3"></div>
+        <div className="h-32 bg-gray-200 rounded mt-4"></div>
+      </div>
+    );
+  }
+
   if (!job) {
     return (
       <div className="bg-white p-6 rounded-3xl h-[700px] flex items-center justify-center border-2 border-gray-200">
@@ -42,14 +62,16 @@ const JobDetails = ({ job }: JobDetailsProps) => {
     companyReviews,
   } = job;
 
-  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
-
   return (
     <div className="bg-white p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-3xl border-2 border-gray-200">
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 flex items-center justify-center">
-            {image ? <img src={image} /> : <UserSquare2 className="w-16 h-16"/>}
+            {image ? (
+              <img src={image} />
+            ) : (
+              <UserSquare2 className="w-16 h-16" />
+            )}
           </div>
           <div>
             <div className="flex items-center space-x-2">
@@ -95,43 +117,60 @@ const JobDetails = ({ job }: JobDetailsProps) => {
         </div>
       )}
 
-      <div className="mb-6 pt-4 border-t border-black">
-        <h3 className="text-lg font-semibold mb-4">Company Overview</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+      <div className="mb-6 pt-4 relative">
+        {/* Full-width border line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-black -mx-6" />
+
+        <h3 className="text-lg font-semibold mb-6">Company Overview</h3>
+        <div className="grid grid-cols-2 gap-x-32 ml-16 gap-y-6">
+          <div className="grid grid-cols-[50px_1fr]">
             <h4 className="font-medium">Size</h4>
-            <p>{size + " Employees"}</p>
+            <p>
+              {new Intl.NumberFormat("en-US", {
+                notation: "compact",
+                compactDisplay: "short",
+                maximumFractionDigits: 1,
+                maximumSignificantDigits: 3,
+                signDisplay: "never",
+              }).format(size) + " Employees"}
+            </p>
           </div>
-          <div>
+
+          <div className="grid grid-cols-[90px_1fr]">
             <h4 className="font-medium">Founded</h4>
             <p>{foundedIn}</p>
           </div>
-          <div>
+
+          <div className="grid grid-cols-[50px_1fr]">
             <h4 className="font-medium">Type</h4>
             <p>{type}</p>
           </div>
-          <div>
-            <h4 className="font-medium">Industry</h4>
-            <p>{industriesCount}</p>
+
+          <div className="grid grid-cols-[90px_1fr]">
+            <h4 className="font-medium">Industries</h4>
+            <p className="text-blue-600">
+              {industriesCount}{" "}
+              {industriesCount > 1 ? "Industries" : "Industry"}
+            </p>
           </div>
         </div>
       </div>
 
       {companyReviews && companyReviews.length > 0 && (
-        <div className="border-t border-black">
+        <div className="mb-6 pt-1 relative">
+          {/* Full-width border line */}
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-black -mx-6" />
+
           <div className="flex items-center space-x-2">
             <h3 className="text-lg font-semibold mb-4 pt-4">Reviews</h3>
-            <Link
-              to="/company-profile#reviews"
-              className="ml-2 hover:text-blue-600 transition-colors"
-            >
-              <ExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-600" />
+            <Link to="/company-profile#reviews" className="px-2">
+              <ExternalLink className="w-5 h-5 cursor-pointer text-blue-600" />
             </Link>
           </div>
 
           <div className="space-y-4">
             {companyReviews.slice(0, 2).map((review, index) => (
-              <div key={index} className="bg-gray-100 p-4 rounded-xl">
+              <div key={index} className="bg-gray-100 p-4 rounded-2xl">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium">{review.role}</h4>
                   <span className="text-black">

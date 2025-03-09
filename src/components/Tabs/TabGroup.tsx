@@ -1,21 +1,22 @@
 import Button from "../common/Button";
+import { HomePageSlice } from "../../stores/Seeker Home Slices/homePageSlice";
+
 interface TabGroupProps {
   tabs: string[];
-  activeTab: number;
-  loadingTab: number | null;
-  onTabChange: (index: number) => void;
+  useActiveTab: () => HomePageSlice["homePageActiveTab"];
+  useLoadingTab: () => HomePageSlice["homePageLoadingTab"];
+  useSetActiveTab: () => HomePageSlice["setHomePageActiveTab"];
 }
 
 const TabGroup: React.FC<TabGroupProps> = ({
   tabs,
-  activeTab,
-  loadingTab,
-  onTabChange,
+  useActiveTab,
+  useLoadingTab,
+  useSetActiveTab,
 }) => {
-  const handleClick = (index: number) => {
-    if (index === activeTab || loadingTab !== null) return;
-    onTabChange(index);
-  };
+  const activeTab = useActiveTab();
+  const loadingTab = useLoadingTab();
+  const setActiveTab = useSetActiveTab();
 
   return (
     <div className="bg-white rounded-3xl shadow-sm p-2 mt-10 mb-3 border-2 border-gray-200">
@@ -25,7 +26,8 @@ const TabGroup: React.FC<TabGroupProps> = ({
             <Button
               variant={index === activeTab ? "currentTab" : "outline"}
               loading={loadingTab === index}
-              onClick={() => handleClick(index)}
+              disabled={loadingTab !== null}
+              onClick={() => setActiveTab(index)}
               className="text-sm w-full"
             >
               {tab}

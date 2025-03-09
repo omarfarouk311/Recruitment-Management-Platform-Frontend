@@ -1,30 +1,36 @@
 import { Star, UserSquare2, Dot } from "lucide-react";
 import { Job } from "../../types/job";
 import { formatDistanceToNow } from "date-fns";
+import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
 interface JobCardProps {
   job: Job;
-  isSelected: boolean;
-  onClick: () => void;
+  useSelectedJobId: () => ForYouTabSlice["forYouTabSelectedJobId"];
+  useSetSelectedJobId: () => ForYouTabSlice["forYouTabSetSelectedJobId"];
 }
 
 const JobCard = ({
   job: {
+    id,
     title,
     country,
     city,
     datePosted,
     companyData: { rating, name, image },
   },
-  isSelected,
-  onClick,
+  useSelectedJobId,
+  useSetSelectedJobId,
 }: JobCardProps) => {
+  const selectedJobId = useSelectedJobId();
+  const setSelectedJobId = useSetSelectedJobId();
+  const isSelected = id === selectedJobId;
+
   return (
     <div
       className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
         isSelected ? "border-black" : ""
       }`}
-      onClick={onClick}
+      onClick={() => setSelectedJobId(id)}
       role="button"
       tabIndex={0}
     >

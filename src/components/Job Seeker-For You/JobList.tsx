@@ -1,18 +1,29 @@
 import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
-import useJobStore from "../../stores/GlobalStore";
+import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
 interface JobListProps {
-  onJobSelect: (jobId: number) => void;
+  useJobs: () => ForYouTabSlice["forYouTabJobs"];
+  useHasMore: () => ForYouTabSlice["forYouTabHasMore"];
+  useIsLoading: () => ForYouTabSlice["forYouTabIsJobsLoading"];
+  useFetchJobs: () => ForYouTabSlice["forYouTabFetchJobs"];
+  useSelectedJobId: () => ForYouTabSlice["forYouTabSelectedJobId"];
+  useSetSelectedJobId: () => ForYouTabSlice["forYouTabSetSelectedJobId"];
 }
 
-const JobList = ({ onJobSelect }: JobListProps) => {
+const JobList = ({
+  useJobs,
+  useHasMore,
+  useIsLoading,
+  useFetchJobs,
+  useSelectedJobId,
+  useSetSelectedJobId,
+}: JobListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
-  const jobs = useJobStore.useJobs();
-  const hasMore = useJobStore.useHasMore();
-  const isLoading = useJobStore.useIsLoading();
-  const fetchJobs = useJobStore.useFetchJobs();
-  const selectedJobId = useJobStore.useSelectedJobId();
+  const jobs = useJobs();
+  const hasMore = useHasMore();
+  const isLoading = useIsLoading();
+  const fetchJobs = useFetchJobs();
 
   // Infinite scroll logic
   useEffect(() => {
@@ -50,8 +61,8 @@ const JobList = ({ onJobSelect }: JobListProps) => {
             <JobCard
               key={job.id}
               job={job}
-              onClick={() => onJobSelect(job.id)}
-              isSelected={job.id === selectedJobId}
+              useSelectedJobId={useSelectedJobId}
+              useSetSelectedJobId={useSetSelectedJobId}
             />
           ))}
           {isLoading && (

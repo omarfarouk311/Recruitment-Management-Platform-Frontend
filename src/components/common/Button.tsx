@@ -5,6 +5,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   variant?: "primary" | "outline" | "currentTab" | "report";
   disabled?: boolean;
+  className?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -26,11 +27,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         "bg-black text-white hover:bg-transparent hover:text-black hover:border-black",
       outline:
-        "text-black hover:bg-black hover:text-white disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400",
+        "text-black hover:bg-black hover:text-white disabled:bg-gray-100 disabled:border-gray-400 disabled:text-gray-400",
       currentTab: "bg-black text-white",
       report:
         "border-red-600 bg-red-600 text-white hover:bg-transparent hover:text-red-600 hover:border-red-600",
-      disabled: "",
     };
 
     return (
@@ -39,7 +39,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={`
           ${baseStyles}
           ${variants[variant]}
-          ${loading ? "opacity-70 cursor-not-allowed" : ""}
+          ${loading ? "opacity-70" : ""}
           ${className}
         `}
         disabled={loading || disabled}

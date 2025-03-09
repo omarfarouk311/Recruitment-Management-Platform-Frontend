@@ -66,11 +66,11 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
     forYouTabSetSelectedJobId: (id: number) => {
         // mock API call
-        set({ forYouTabIsDetailsLoading: true });
+        set({ forYouTabIsDetailsLoading: true, forYouTabSelectedJobId: id });
 
         setTimeout(() => {
             set({
-                forYouTabSelectedJobId: id,
+
                 forYouTabDetailedJob: mockDetailedJobs[id],
                 forYouTabIsDetailsLoading: false
             });

@@ -49,7 +49,7 @@ const FilterDropdown = ({
         type="button"
         disabled={disabled}
       >
-        <div className="flex items-center pe-4">
+        <div className="flex items-center pe-4 -ml-2">
           {label}
           {selectedValue !== "" && selectedLabel && ` (${selectedLabel})`}
           <ChevronDown className="w-4 h-4 absolute right-3" />

@@ -2,56 +2,55 @@ import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
 import ForYou from "../components/Job Seeker-For You/ForYou";
 import Companies from "../components/Job Seeker-Companies/Companies";
-import { useState, useEffect } from "react";
-
-const SkeletonLoader = () => (
-  <div className="space-y-4">
-    {[1, 2, 3].map((i) => (
-      <div key={i} className="bg-white p-6 rounded-3xl animate-pulse">
-        <div className="h-8 bg-gray-200 rounded mb-4 w-3/4"></div>
-        <div className="h-4 bg-gray-200 rounded mb-2 w-1/2"></div>
-        <div className="h-4 bg-gray-200 rounded mb-2 w-1/3"></div>
-        <div className="h-32 bg-gray-200 rounded mt-4"></div>
-      </div>
-    ))}
-  </div>
-);
+import SkeletonLoader from "../components/common/SkeletonLoader";
+import SearchBar from "../components/common/SearchBar";
+import useStore from "../stores/globalStore";
+import { useEffect } from "react";
 
 const JobSeekerHome = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [loadingTab, setLoadingTab] = useState<number | null>(null);
+  const activeTab = useStore.useHomePageActiveTab();
+  const loadingTab = useStore.useHomePageLoadingTab();
+  const setActiveTab = useStore.useSetHomePageActiveTab();
+  const useActiveTab = useStore.useHomePageActiveTab;
+  const useLoadingTab = useStore.useHomePageLoadingTab;
+  const useSetActiveTab = useStore.useSetHomePageActiveTab;
+  const useApplySearch = useStore.useForYouTabApplySearch;
+  const useIsLoading = useStore.useForYouTabIsJobsLoading;
+  const useSetSearchQuery = useStore.useForYouTabSetSearchQuery;
+  const useSearchQuery = useStore.useForYouTabSearchQuery;
 
   useEffect(() => {
-    if (loadingTab !== null) {
-      const timer = setTimeout(() => {
-        setActiveTab(loadingTab);
-        setLoadingTab(null);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [loadingTab]);
-
-  const handleTabChange = (index: number) => {
-    if (index !== activeTab) {
-      setLoadingTab(index);
-    }
-  };
+    setActiveTab(0);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <UserNav />
+      <UserNav>
+        <SearchBar
+          useApplySearch={useApplySearch}
+          useSetSearchQuery={useSetSearchQuery}
+          useIsLoading={useIsLoading}
+          useSearchQuery={useSearchQuery}
+          placeHolder={
+            !activeTab ? "Find your next job" : "Search for a company"
+          }
+          loadingTab={loadingTab}
+        />
+      </UserNav>
+
       <div className="max-w-md mx-auto px-4">
         <TabGroup
           tabs={["For You", "Companies"]}
-          activeTab={activeTab}
-          loadingTab={loadingTab}
-          onTabChange={handleTabChange}
+          useActiveTab={useActiveTab}
+          useLoadingTab={useLoadingTab}
+          useSetActiveTab={useSetActiveTab}
         />
       </div>
+
       <div className="container mx-auto px-6 py-8">
         {loadingTab !== null ? (
           <SkeletonLoader />
-        ) : activeTab === 0 ? (
+        ) : !activeTab ? (
           <ForYou />
         ) : (
           <Companies />
