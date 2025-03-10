@@ -6,6 +6,7 @@ import { createHomePageSlice } from './Seeker Home Slices/homePageSlice'
 import { createSeekerJobsAppliedForSlice } from './Seeker Dashboard Slices/jobAppliedFor'
 import { CombinedState } from './storeTypes';
 import { createSeekerDashboardPageSlice } from './Seeker Dashboard Slices/dashboardPageSlice';
+import {createSeekerProfileSlice} from './Profile Slices/profileSlices'
 
 const useGlobalStore = create<CombinedState>((...a) => ({
     ...createForYouTabSlice(...a),
@@ -13,6 +14,7 @@ const useGlobalStore = create<CombinedState>((...a) => ({
     ...createHomePageSlice(...a),
     ...createSeekerJobsAppliedForSlice(...a),
     ...createSeekerDashboardPageSlice(...a),
+    ...createSeekerProfileSlice(...a)
 }));
 
 export default createSelectorHooks(useGlobalStore) as typeof useGlobalStore & ZustandHookSelectors<CombinedState>;
