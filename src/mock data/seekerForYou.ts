@@ -27,8 +27,8 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
         matchingSkillsCount: 7,
         jobSkillsCount: 10,
         remote: true,
-        applied: true,
-        reported: true,
+        applied: false,
+        reported: false,
         companyData: {
             id: index,
             name: `Microsoft ${index + 1}`,

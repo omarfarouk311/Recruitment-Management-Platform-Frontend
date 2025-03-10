@@ -1,12 +1,11 @@
 import { Star, UserSquare2, Dot } from "lucide-react";
 import { Job } from "../../types/job";
 import { formatDistanceToNow } from "date-fns";
-import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
 interface JobCardProps {
   job: Job;
-  useSelectedJobId: () => ForYouTabSlice["forYouTabSelectedJobId"];
-  useSetSelectedJobId: () => ForYouTabSlice["forYouTabSetSelectedJobId"];
+  useSelectedJobId: () => number | null;
+  useSetSelectedJobId: () => (id: number) => void;
 }
 
 const JobCard = ({

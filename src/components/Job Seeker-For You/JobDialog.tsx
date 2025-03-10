@@ -132,13 +132,6 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
 
                 <div className="mt-8 flex justify-end gap-3">
                   <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="rounded-full"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
                     onClick={handleSubmit}
                     disabled={!isValid}
                     variant={
@@ -148,7 +141,13 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                           : "report"
                         : "currentTab"
                     }
-                    className={!isValid ? (type === "apply" ? "bg-black/70" : "bg-red-600/70") : ""}
+                    className={
+                      (!isValid
+                        ? type === "apply"
+                          ? "bg-black/70"
+                          : "bg-red-600/70"
+                        : "") + " !w-auto"
+                    }
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}
                   </Button>
