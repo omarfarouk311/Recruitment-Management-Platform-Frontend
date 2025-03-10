@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
-import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
+import { Job } from "../../types/job";
 
 interface JobListProps {
-  useJobs: () => ForYouTabSlice["forYouTabJobs"];
-  useHasMore: () => ForYouTabSlice["forYouTabHasMore"];
-  useIsLoading: () => ForYouTabSlice["forYouTabIsJobsLoading"];
-  useFetchJobs: () => ForYouTabSlice["forYouTabFetchJobs"];
-  useSelectedJobId: () => ForYouTabSlice["forYouTabSelectedJobId"];
-  useSetSelectedJobId: () => ForYouTabSlice["forYouTabSetSelectedJobId"];
+  useJobs: () => Job[];
+  useHasMore: () => boolean;
+  useIsLoading: () => boolean;
+  useFetchJobs: () => () => Promise<void>;
+  useSelectedJobId: () => number | null;
+  useSetSelectedJobId: () => (id: number) => void;
 }
 
 const JobList = ({
@@ -49,10 +49,7 @@ const JobList = ({
   }, [hasMore, isLoading]);
 
   return (
-    <div
-      className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px]
-      border-2 border-gray-200"
-    >
+    <>
       {jobs.length === 0 && !isLoading ? (
         <div className="text-center py-4 text-gray-500">No jobs found.</div>
       ) : (
@@ -78,7 +75,7 @@ const JobList = ({
           <div ref={observerTarget} className="h-2" />
         </>
       )}
-    </div>
+    </>
   );
 };
 

@@ -6,11 +6,10 @@ import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
 import cvs from "../../mock data/CVs";
 import { useState } from "react";
-import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
 interface JobDetailsProps {
-  useDetailedjob: () => ForYouTabSlice["forYouTabDetailedJob"];
-  useIsDetailsLoading: () => ForYouTabSlice["forYouTabIsDetailsLoading"];
+  useDetailedjob: () => JobDetails | null;
+  useIsDetailsLoading: () => boolean;
 }
 
 const JobDetails = ({
@@ -49,6 +48,8 @@ const JobDetails = ({
     matchingSkillsCount,
     datePosted,
     remote,
+    applied,
+    reported,
     companyData: {
       image,
       type,
@@ -96,16 +97,28 @@ const JobDetails = ({
           </div>
         </div>
         <div className="space-y-4 w-40">
-          <Button className="h-8" onClick={() => setDialogType("apply")}>
-            Apply
-          </Button>
-          <Button
-            variant="report"
-            className="h-8"
-            onClick={() => setDialogType("report")}
-          >
-            Report
-          </Button>
+          {applied ? (
+            <Button className="h-8" disabled={true} variant="outline">
+              Already Applied
+            </Button>
+          ) : (
+            <Button className="h-8" onClick={() => setDialogType("apply")}>
+              Apply
+            </Button>
+          )}
+          {reported ? (
+            <Button variant="outline" className="h-8" disabled={true}>
+              Already Reported
+            </Button>
+          ) : (
+            <Button
+              variant="report"
+              className="h-8"
+              onClick={() => setDialogType("report")}
+            >
+              Report
+            </Button>
+          )}
         </div>
       </div>
 
@@ -170,7 +183,7 @@ const JobDetails = ({
 
           <div className="space-y-4">
             {companyReviews.slice(0, 2).map((review, index) => (
-              <div key={index} className="bg-gray-100 p-4 rounded-2xl">
+              <div key={index} className="bg-gray-100 p-4 rounded-3xl">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-medium">{review.role}</h4>
                   <span className="text-black">

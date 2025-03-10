@@ -23,6 +23,8 @@ export interface JobDetails {
     matchingSkillsCount: number;
     jobSkillsCount: number;
     remote: boolean;
+    applied: boolean;
+    reported: boolean;
     companyData: {
         id: number;
         image?: string;

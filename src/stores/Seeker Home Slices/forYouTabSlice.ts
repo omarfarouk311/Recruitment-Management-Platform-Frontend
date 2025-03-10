@@ -1,7 +1,11 @@
 import { StateCreator } from 'zustand';
 import { Job, ForYouTabFilters, JobDetails } from '../../types/job';
-import { mockDetailedJobs, mockJobs } from "../../mock data/jobs";
+import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
 import { CombinedState } from '../storeTypes';
+import { mockIndustries } from '../../mock data/seekerForYou';
+import config from "../../../config/config";
+
+const { paginationLimit } = config;
 
 export interface ForYouTabSlice {
     forYouTabJobs: Job[];
@@ -13,11 +17,13 @@ export interface ForYouTabSlice {
     forYouTabIsDetailsLoading: boolean;
     forYouTabFilters: ForYouTabFilters;
     forYouTabSearchQuery: string;
+    forYouTabIndustryOptions: { value: string, label: string }[];
     forYouTabFetchJobs: () => Promise<void>;
     forYouTabSetSelectedJobId: (id: number) => void;
     forYouTabSetFilters: (filters: Partial<ForYouTabSlice['forYouTabFilters']>) => Promise<void>;
     forYouTabSetSearchQuery: (query: string) => void;
     forYouTabApplySearch: () => Promise<void>;
+    forYouTabSetIndustryOptions: () => Promise<void>;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -37,6 +43,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         remote: false
     },
     forYouTabSearchQuery: '',
+    forYouTabIndustryOptions: [],
 
     forYouTabFetchJobs: async () => {
         const { forYouTabPage, forYouTabHasMore, forYouTabIsJobsLoading } = get();
@@ -46,8 +53,8 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         // mock API call, don't forget to include the filters in the query string if they are populated
         try {
             await new Promise<void>((resolve) => setTimeout(() => {
-                const startIndex = (forYouTabPage - 1) * 5;
-                const endIndex = startIndex + 5;
+                const startIndex = (forYouTabPage - 1) * paginationLimit;
+                const endIndex = startIndex + paginationLimit;
                 const newJobs = mockJobs.slice(startIndex, endIndex);
 
                 set((state) => ({
@@ -113,4 +120,25 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
         await get().forYouTabFetchJobs();
     },
+
+    forYouTabSetIndustryOptions: async () => {
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                const newIndustries = mockIndustries;
+
+                set({
+                    forYouTabIndustryOptions: [
+                        { value: "", label: "Any" },
+                        ...newIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
+                    ]
+                });
+
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            set({ forYouTabIndustryOptions: [] });
+        }
+    }
 });

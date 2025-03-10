@@ -27,6 +27,8 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
         matchingSkillsCount: 7,
         jobSkillsCount: 10,
         remote: true,
+        applied: true,
+        reported: true,
         companyData: {
             id: index,
             name: `Microsoft ${index + 1}`,
@@ -53,4 +55,10 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
                 description: "Excellent growth opportunities and supportive management...",
             },
         ],
+    }));
+
+export const mockIndustries: { value: number, label: string }[] = Array(10)
+    .fill({})
+    .map((_, index) => ({
+        value: index, label: `Technology ${index}`
     }));

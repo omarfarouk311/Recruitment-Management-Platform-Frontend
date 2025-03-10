@@ -14,15 +14,6 @@ export const ratingOptions = [
     { value: "5", label: "5 stars" }
 ];
 
-export const industryOptions = [
-    { value: "", label: "Any" },
-    { value: "Technology", label: "Technology" },
-    { value: "Healthcare", label: "Healthcare" },
-    { value: "Finance", label: "Finance" },
-    { value: "Manufacturing", label: "Manufacturing" },
-    { value: "Retail", label: "Retail" },
-];
-
 export const typeOptions = [
     { value: "", label: "Any" },
     { value: "true", label: "Public" },

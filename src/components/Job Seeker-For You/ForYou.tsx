@@ -4,11 +4,8 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
-import {
-  dateOptions,
-  industryOptions,
-  ratingOptions,
-} from "../../data/filterOptions";
+import { dateOptions, ratingOptions } from "../../data/filterOptions";
+import { useEffect } from "react";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
@@ -21,6 +18,12 @@ const ForYou = () => {
   const useFetchJobs = useStore.useForYouTabFetchJobs;
   const useSelectedJobId = useStore.useForYouTabSelectedJobId;
   const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId;
+  const industryOptions = useStore.useForYouTabIndustryOptions();
+  const setIndustryOptions = useStore.useForYouTabSetIndustryOptions();
+
+  useEffect(() => {
+    setIndustryOptions();
+  },[]);
 
   return (
     <>
@@ -63,20 +66,20 @@ const ForYou = () => {
       </div>
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">
-        <JobList
-          useFetchJobs={useFetchJobs}
-          useHasMore={useHasMore}
-          useIsLoading={useIsLoading}
-          useJobs={useJobs}
-          useSelectedJobId={useSelectedJobId}
-          useSetSelectedJobId={useSetSelectedJobId}
-        />
-        <div className="sticky top-4">
-          <JobDetails
-            useDetailedjob={useDetailedjob}
-            useIsDetailsLoading={useIsDetailsLoading}
+        <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200">
+          <JobList
+            useFetchJobs={useFetchJobs}
+            useHasMore={useHasMore}
+            useIsLoading={useIsLoading}
+            useJobs={useJobs}
+            useSelectedJobId={useSelectedJobId}
+            useSetSelectedJobId={useSetSelectedJobId}
           />
         </div>
+        <JobDetails
+          useDetailedjob={useDetailedjob}
+          useIsDetailsLoading={useIsDetailsLoading}
+        />
       </div>
     </>
   );

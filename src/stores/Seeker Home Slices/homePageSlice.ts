@@ -12,18 +12,22 @@ export const createHomePageSlice: StateCreator<CombinedState, [], [], HomePageSl
     homePageLoadingTab: null,
 
     setHomePageActiveTab: async (tab) => {
-        const { homePageActiveTab, homePageLoadingTab: homePageIsTabLoading, forYouTabFetchJobs } = get();
-        if (tab === homePageActiveTab || homePageIsTabLoading) return;
+        const {
+            homePageActiveTab,
+            homePageLoadingTab,
+            forYouTabFetchJobs,
+            forYouTabJobs
+        } = get();
+
+        if (tab === homePageActiveTab || homePageLoadingTab) return;
 
         set({ homePageActiveTab: tab, homePageLoadingTab: tab });
-
-        // toggle for you tab after being in searching state
-        if (tab === 0 && homePageActiveTab === null) {
-            await forYouTabFetchJobs();
-        }
-
-        setTimeout(() => {
-            set({ homePageLoadingTab: null });
-        }, 1000)
+        if (tab === 0) {
+            // toggle for you tab after being in searching state or fetch jobs in the initial render
+            if (homePageActiveTab === null || !forYouTabJobs.length) {
+                await forYouTabFetchJobs();
+            }
+        } 
+        set({ homePageLoadingTab: null });
     }
 });
