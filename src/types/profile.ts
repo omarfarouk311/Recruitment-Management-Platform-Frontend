@@ -26,9 +26,8 @@ export interface CV {
 }
 
 export interface Skill {
-  id: string;
+  id?: string;
   name: string;
-  category: string;
 }
 
 export interface Review {
@@ -40,8 +39,15 @@ export interface Review {
 }
 
 export interface UserProfile {
-  id: string;
+  id: string
+  avatar: string;
   name: string;
-  location: string;
-  avatar?: string;
+  country: string;
+  city: string;
+}
+
+export interface UserCredentials {
+  id: string
+  email: string;
+  password: string;
 }
