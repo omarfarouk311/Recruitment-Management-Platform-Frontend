@@ -7,6 +7,12 @@ export interface HomePageSlice {
     setHomePageActiveTab: (tab: number) => void;
 }
 
+export enum HomePageTabs {
+    ForYou = 0,
+    Companies = 1,
+    JobSearch = 2,
+}
+
 export const createHomePageSlice: StateCreator<CombinedState, [], [], HomePageSlice> = (set, get) => ({
     homePageActiveTab: null,
     homePageLoadingTab: null,
@@ -16,18 +22,22 @@ export const createHomePageSlice: StateCreator<CombinedState, [], [], HomePageSl
             homePageActiveTab,
             homePageLoadingTab,
             forYouTabFetchJobs,
-            forYouTabJobs
+            forYouTabJobs,
+            companiesTabFetchCompanies,
+            companiesTabCompanies
         } = get();
 
         if (tab === homePageActiveTab || homePageLoadingTab) return;
 
         set({ homePageActiveTab: tab, homePageLoadingTab: tab });
-        if (tab === 0) {
-            // toggle for you tab after being in searching state or fetch jobs in the initial render
-            if (homePageActiveTab === null || !forYouTabJobs.length) {
-                await forYouTabFetchJobs();
-            }
-        } 
+        // fetch recommended jobs on on switch after being in searching state or if no jobs were fetched before
+        if (tab === HomePageTabs.ForYou && (homePageActiveTab === HomePageTabs.JobSearch || !forYouTabJobs.length)) {
+            await forYouTabFetchJobs();
+        }
+        // fetch companies on switch if no companies were fetched before
+        else if (tab === HomePageTabs.Companies && !companiesTabCompanies.length) {
+            await companiesTabFetchCompanies();
+        }
         set({ homePageLoadingTab: null });
     }
 });

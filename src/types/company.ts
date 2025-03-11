@@ -15,8 +15,7 @@ export interface CompaniesTabFilters {
     country: string;
     city: string;
     industry: string;
-    sizeFrom: string;
-    sizeTo: string
+    size: string;
     rating: string;
     type: string;
 }
