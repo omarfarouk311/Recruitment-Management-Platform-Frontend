@@ -5,18 +5,22 @@ import { useEffect, useState } from "react";
 import { mockDetailedJobs } from "../../mock data/jobs";
 
 interface JobDetailsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  jobId: number;
+  useIsOpen: () => boolean;
+  useSetIsOpen: (value: boolean) => void;
+  useSelectedJobId: () => number | null;
 }
 
 const JobDetailsDialog = ({
-  isOpen,
-  onClose,
-  jobId
+  useIsOpen,
+  useSetIsOpen,
+  useSelectedJobId
 }: JobDetailsDialogProps) => {
     const [ useDetailedjob, setUseDetailedjob ] = useState<JobDetailsType | null>(null);
     const [ useIsDetailsLoading, setUseIsDetailsLoading ] = useState(false);
+
+    const isOpen = useIsOpen();
+    const onClose = () => useSetIsOpen(false);
+    const jobId = useSelectedJobId();
 
     const useSetDetailedJob = () => {
         try {
@@ -24,7 +28,7 @@ const JobDetailsDialog = ({
             setTimeout(() => {
                 setUseIsDetailsLoading(false);
             }, 1000);
-            setUseDetailedjob(mockDetailedJobs[jobId]);
+            setUseDetailedjob(jobId? mockDetailedJobs[jobId]: {} as JobDetailsType);
         } catch(error) {
             setUseIsDetailsLoading(false);
         }

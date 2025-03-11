@@ -4,6 +4,7 @@ import useStore from "../stores/globalStore";
 import SeekerJobsAppliedFor from "../components/SeekerJobsAppliedFor/SeekerJobsAppliedFor";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
+import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
 
 const SeekerDashboard = () => {
     const activeTab = useStore.useSeekerDashboardActiveTab();
@@ -14,7 +15,7 @@ const SeekerDashboard = () => {
     const useSetActiveTab = useStore.useSetSeekerDashboardActiveTab;
 
     useEffect(() => {
-        setActiveTab(0);
+        if(activeTab === null) setActiveTab(seekerDashboardTabs.jobsAppliedFor);
     }, []);
 
     return (

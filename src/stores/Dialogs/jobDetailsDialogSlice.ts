@@ -2,13 +2,15 @@ import { StateCreator } from 'zustand';
 import { CombinedState } from '../storeTypes';
 
 export interface JobDetailsDialogSlice {
-    isOpen: boolean;
-    onClose: () => void;
-    onOpen: () => void;
+    JobDetailsDialogIsOpen: boolean;
+    JobDetailsDialogSelectedJobId: number | null;
+    JobDetailsDialogSetIsOpen: (value: boolean) => void;
+    JobDetailsDialogSetSelectedJobId: (id: number) => void;
 }
 
 export const createJobDetailsDialogSlice: StateCreator<CombinedState, [], [], JobDetailsDialogSlice> = (set) => ({
-    isOpen: false,
-    onClose: () => set({ isOpen: false }),
-    onOpen: () => set({ isOpen: true }),
+    JobDetailsDialogIsOpen: false,
+    JobDetailsDialogSelectedJobId: null,
+    JobDetailsDialogSetIsOpen: (value) => set({ JobDetailsDialogIsOpen: value }),
+    JobDetailsDialogSetSelectedJobId: (id) => set({ JobDetailsDialogSelectedJobId: id }),
 });
