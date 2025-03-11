@@ -6,6 +6,8 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
+import JobDetailsDialog from "../common/JobDetailsDialog";
+import { useState } from "react";
 
 const SeekerJobsAppliedFor = () => {
     const filters = useStore.useSeekerJobsAppliedForFilters();
@@ -17,13 +19,34 @@ const SeekerJobsAppliedFor = () => {
     const CompanyNames = useStore.useSeekerJobsAppliedForCompanyNames();
     const useSetCompanyNames = useStore.useSeekerJobsAppliedForSetCompanyNames();
     const fetchData = useFetchData();
+
     useEffect(() => {
         useSetCompanyNames();
         fetchData();
     }, []);
 
     const columns: ColumnDef<JobsAppliedFor>[] = [
-        { key: "jobTitle", header: "Job Title" },
+        { 
+            key: "jobTitle", 
+            header: "Job Title",
+            render: (row) => {
+                const [isDialogOpen, setIsDialogOpen] = useState(false);
+                return(
+                <div>
+                    <button onClick={() => {
+                        setIsDialogOpen(true);
+                    }}>
+                        {row.jobTitle}
+                    </button>
+
+                    <JobDetailsDialog
+                        isOpen={isDialogOpen}
+                        onClose={() => setIsDialogOpen(false)}
+                        jobId={row.jobId}
+                    />
+                </div>
+            )}
+        },
         { key: "companyName", header: "Company" },
         { key: "country", header: "Location" },
         { key: "dateApplied", header: "Date Applied" },
