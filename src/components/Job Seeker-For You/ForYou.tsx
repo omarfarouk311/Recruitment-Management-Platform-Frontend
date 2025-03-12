@@ -4,23 +4,36 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
-import {
-  dateOptions,
-  industryOptions,
-  ratingOptions,
-} from "../../data/filterOptions";
+import { dateOptions, ratingOptions } from "../../data/filterOptions";
+import { useEffect } from "react";
+import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
   const setFilters = useStore.useForYouTabSetFilters();
+  const industryOptions = useStore.useForYouTabIndustryOptions();
+  const setIndustryOptions = useStore.useForYouTabSetIndustryOptions();
   const useIsDetailsLoading = useStore.useForYouTabIsDetailsLoading;
-  const useDetailedjob = useStore.useForYouTabDetailedJob;
+  const useDetailedjobs = useStore.useForYouTabDetailedJobs;
   const useJobs = useStore.useForYouTabJobs;
   const useHasMore = useStore.useForYouTabHasMore;
   const useIsLoading = useStore.useForYouTabIsJobsLoading;
   const useFetchJobs = useStore.useForYouTabFetchJobs;
   const useSelectedJobId = useStore.useForYouTabSelectedJobId;
   const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId;
+  const usePushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs;
+  const usePopFromDetailedJobs = useStore.useForYouTabPopFromDetailedJobs;
+  const activeTab = useStore.useHomePageActiveTab();
+  const useRemoveRecommendation =
+    activeTab === HomePageTabs.ForYou
+      ? useStore.useForYouTabRemoveRecommendation
+      : undefined;
+  const useApplyToJob = useStore.useForYouTabApplyToJob;
+  const useReportJob = useStore.useForYouTabReportJob;
+
+  useEffect(() => {
+    setIndustryOptions();
+  }, []);
 
   return (
     <>
@@ -63,20 +76,25 @@ const ForYou = () => {
       </div>
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">
-        <JobList
-          useFetchJobs={useFetchJobs}
-          useHasMore={useHasMore}
-          useIsLoading={useIsLoading}
-          useJobs={useJobs}
-          useSelectedJobId={useSelectedJobId}
-          useSetSelectedJobId={useSetSelectedJobId}
-        />
-        <div className="sticky top-4">
-          <JobDetails
-            useDetailedjob={useDetailedjob}
-            useIsDetailsLoading={useIsDetailsLoading}
+        <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200">
+          <JobList
+            useFetchJobs={useFetchJobs}
+            useHasMore={useHasMore}
+            useIsLoading={useIsLoading}
+            useJobs={useJobs}
+            useSelectedJobId={useSelectedJobId}
+            useSetSelectedJobId={useSetSelectedJobId}
+            useRemoveRecommendation={useRemoveRecommendation}
           />
         </div>
+        <JobDetails
+          useDetailedjobs={useDetailedjobs}
+          useIsDetailsLoading={useIsDetailsLoading}
+          usePushToDetailedJobs={usePushToDetailedJobs}
+          usePopFromDetailedJobs={usePopFromDetailedJobs}
+          useApplyToJob={useApplyToJob}
+          useReportJob={useReportJob}
+        />
       </div>
     </>
   );

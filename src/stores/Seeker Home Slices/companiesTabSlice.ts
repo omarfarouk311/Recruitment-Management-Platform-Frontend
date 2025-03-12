@@ -1,7 +1,8 @@
 import { StateCreator } from 'zustand';
 import { CompanyCard, CompaniesTabFilters } from '../../types/company';
-import { mockCompanies } from "../../mock data/companies";
+import { mockCompanies } from "../../mock data/seekerCompanies";
 import { CombinedState } from '../storeTypes';
+import { mockIndustries } from '../../mock data/seekerForYou';
 
 export interface CompaniesTabSlice {
     companiesTabCompanies: CompanyCard[];
@@ -10,10 +11,12 @@ export interface CompaniesTabSlice {
     companiesTabIsCompaniesLoading: boolean;
     companiesTabFilters: CompaniesTabFilters;
     companiesTabSearchQuery: string;
+    companiesTabIndustryOptions: { value: string, label: string }[];
     companiesTabFetchCompanies: () => Promise<void>;
     companiesTabSetFilters: (filters: Partial<CompaniesTabSlice['companiesTabFilters']>) => Promise<void>;
     companiesTabSetSearchQuery: (query: string) => void;
     companiesTabApplySearch: () => Promise<void>;
+    companiesTabSetIndustryOptions: () => Promise<void>;
 }
 
 export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], CompaniesTabSlice> = (set, get, _api) => ({
@@ -26,18 +29,18 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         city: '',
         industry: '',
         type: '',
-        sizeFrom: '',
-        sizeTo: '',
+        size: '',
         rating: ''
     },
     companiesTabSearchQuery: '',
+    companiesTabIndustryOptions: [],
 
     companiesTabFetchCompanies: async () => {
         const { companiesTabPage, companiesTabHasMore, companiesTabIsCompaniesLoading } = get();
         if (!companiesTabHasMore || companiesTabIsCompaniesLoading) return;
         set({ companiesTabIsCompaniesLoading: true });
 
-        // 
+        // mock API call, don't forget to include the filters in the query string if they are populated
         try {
             await new Promise<void>((resolve) => setTimeout(() => {
                 const startIndex = (companiesTabPage - 1) * 5;
@@ -86,4 +89,25 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
 
         await get().companiesTabFetchCompanies();
     },
+
+    companiesTabSetIndustryOptions: async () => {
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                const newIndustries = mockIndustries;
+
+                set({
+                    companiesTabIndustryOptions: [
+                        { value: "", label: "Any" },
+                        ...newIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
+                    ]
+                });
+
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            set({ companiesTabIndustryOptions: [] });
+        }
+    }
 });
