@@ -8,8 +8,10 @@ export interface JobsAppliedFor {
     dateApplied: string;
     lastStatusUpdate: string;
     phase: string;
-    status: string
+    status: string;
+    assessmentId: number
 }
+
 
 export interface JobsAppliedForFilters extends DashboardFilters {
     remote?: boolean;
