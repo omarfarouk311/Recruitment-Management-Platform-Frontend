@@ -45,7 +45,7 @@ function Dashboard<T>({
           fetchData();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 0.9 }
     );
 
     const currentTarget = observerTarget.current;

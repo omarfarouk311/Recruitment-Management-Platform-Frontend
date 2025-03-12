@@ -8,7 +8,7 @@ import cvs from "../../mock data/CVs";
 import { useState } from "react";
 import { ForYouTabSlice } from "../../stores/Seeker Home Slices/forYouTabSlice";
 
-interface JobDetailsProps {
+export interface JobDetailsProps {
   useDetailedjob: () => ForYouTabSlice["forYouTabDetailedJob"];
   useIsDetailsLoading: () => ForYouTabSlice["forYouTabIsDetailsLoading"];
 }

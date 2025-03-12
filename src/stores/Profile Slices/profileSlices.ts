@@ -1,6 +1,7 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
 import type { Experience, Education, CV, Skill, Review, UserProfile } from '../../types/profile.ts';
+import { mockEducation, mockExperience, mockCVs,mockReviews } from '../../mock data/seekerProfile.ts';
 
 export interface SeekerProfileSlice {
   seekerProfile: UserProfile;
@@ -9,7 +10,6 @@ export interface SeekerProfileSlice {
   seekerProfileCvs: CV[];
   seekerProfileSkills: Skill[];
   seekerProfileReviews: Review[];
-  seekerProfileLoading: boolean;
   seekerProfileError: string | null;
   seekerProfileSetProfile: (profile: UserProfile) => void;
   seekerProfileAddExperience: (experience: Experience) => void;
@@ -18,6 +18,10 @@ export interface SeekerProfileSlice {
   seekerProfileAddEducation: (education: Education) => void;
   seekerProfileUpdateEducation: (education: Education) => void;
   seekerProfileRemoveEducation: (id: string) => void;
+  seekerProfileEducationFetchData: () => Promise<void>;
+  seekerProfileExperienceFetchData: () => Promise<void>;
+  seekerProfileCvFetchData: () => Promise<void>;
+  seekerProfileReviewsFetchData: () => Promise<void>;
   seekerProfileAddCV: (cv: CV) => void;
   seekerProfileUpdateCV: (cv: CV) => void;
   seekerProfileRemoveCV: (id: string) => void;
@@ -25,40 +29,54 @@ export interface SeekerProfileSlice {
   seekerProfileRemoveSkill: (id: string) => void;
   seekerProfileAddReview: (review: Review) => void;
   seekerProfileRemoveReview: (id: string) => void;
-  seekerProfileSetLoading: (loading: boolean) => void;
   seekerProfileSetError: (error: string | null) => void;
 }
 
 export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], SeekerProfileSlice> = (set, get) => ({
+
+
+    seekerProfileCvFetchData: async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          set({ seekerProfileCvs: mockCVs });
+          resolve();
+        }, 1000);
+      });
+    },
+
+    seekerProfileExperienceFetchData: async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          set({ seekerProfileExperience: mockExperience });
+          resolve();
+        }, 1000);
+      });
+    },
+    seekerProfileEducationFetchData: async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          set({ seekerProfileEducation: mockEducation });
+          resolve();
+        }, 1000);
+      });
+    },
+    seekerProfileReviewsFetchData: async () => {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          set({ seekerProfileReviews: mockReviews });
+          resolve();
+        }, 1000);
+      });
+    },
   
       seekerProfile: {
         id: '1',
         name: 'User 1',
         location: 'California, US',
       },
-      seekerProfileExperience: [{
-        id: '1',
-        company: 'Microsoft',
-        position: 'Software Engineer - Senior',
-        location: 'California, US',
-        startDate: 'Aug 2020',
-        endDate: 'Oct 2022',
-        description: 'I worked on Microsoft Azure development.',
-        logo: 'https://example.com/microsoft-logo.png'
-      }],
-      seekerProfileEducation: [{
-        id: '1',
-        institution: 'Ain Shams University',
-        degree: "Bachelor's Degree, Computer Science",
-        location: 'California, US',
-        startDate: 'Aug 2020',
-        endDate: 'Oct 2022',
-        gpa: '3.69'
-      }],
-      seekerProfileCvs: [
-        { id: '1', name: 'User 1.pdf', date: 'Dec 2, 2024' },
-        { id: '2', name: 'User 1.pdf', date: 'Dec 2, 2024' }
-      ],
+      seekerProfileExperience: [],
+      seekerProfileEducation: [],
+      seekerProfileCvs: [],
       seekerProfileSkills: [
         { id: '1', name: 'Databases', category: 'Technical' },
         { id: '2', name: 'Databases', category: 'Technical' },
@@ -66,13 +84,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         { id: '4', name: 'Databases', category: 'Technical' },
         { id: '5', name: 'Databases', category: 'Technical' }
       ],
-      seekerProfileReviews: [{
-        id: '1',
-        title: 'Current software engineer',
-        rating: 4,
-        date: 'Dec 2, 2024',
-        content: 'Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits such as childcare support, commuter allowances, and employee discounts.'
-      }],
+      seekerProfileReviews: [],
       seekerProfileLoading: false,
       seekerProfileError: null,
       seekerProfileSetProfile: (profile) => set({ seekerProfile: profile }),
@@ -121,7 +133,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
       seekerProfileRemoveReview: (id) => set((state) => ({
         seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id !== id)
       })),
-      seekerProfileSetLoading: (loading) => set({ seekerProfileLoading: loading }),
       seekerProfileSetError: (error) => set({ seekerProfileError: error })
     
 });

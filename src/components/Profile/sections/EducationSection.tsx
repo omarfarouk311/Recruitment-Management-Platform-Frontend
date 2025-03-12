@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import { Plus, Trash2, Edit, X } from 'lucide-react';
 import  useStore from '../../../stores/globalStore';
 import Button from '../ui/Button';
 import EducationForm from '../forms/EducationForm';
 import { Education } from '../../../types/profile';
+import  SkeletonLoader from '../../common/SkeletonLoader';
 
 export default function EducationSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -11,6 +12,8 @@ export default function EducationSection() {
 
   const education = useStore.useSeekerProfileEducation();
   const removeEducation = useStore.useSeekerProfileRemoveEducation();
+  const fetchEducation = useStore.useSeekerProfileEducationFetchData();
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleAddEducation = () => {
     setEditingEducation(undefined);
@@ -25,6 +28,14 @@ export default function EducationSection() {
   const handleFormSubmit = () => {
     setIsFormOpen(false);
   };
+
+  useEffect(() => {
+      setIsLoading(true);
+      fetchEducation().then(() => {
+        setIsLoading(false);
+      });
+    }, []);
+    
 
   // Helper to format dates as "Aug 2020"
   const formatDate = (dateString: string) => {
@@ -43,7 +54,12 @@ export default function EducationSection() {
           </Button>
         </div>
         <div className="space-y-4">
-          {education.map((edu) => (
+        {isLoading ? (
+            <div className="relative h-[200px] overflow-hidden"> {/* Set your desired max height */}
+              <SkeletonLoader />
+            </div>
+          ) : (
+          education.map((edu) => (
             <div key={edu.id} className="relative bg-gray-50 p-4 rounded-lg">
               <div className="flex items-start justify-between">
                 <div className="flex items-start">
@@ -74,7 +90,8 @@ export default function EducationSection() {
                 </div>
               </div>
             </div>
-          ))}
+          )))}
+          
         </div>
         <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
           Show All Education

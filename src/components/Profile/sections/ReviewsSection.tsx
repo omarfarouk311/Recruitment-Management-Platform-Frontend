@@ -1,15 +1,31 @@
 import { Star } from 'lucide-react';
 import  useStore from '../../../stores/globalStore';
+import { useEffect,useState } from 'react';
+import SkeletonLoader from '../../common/SkeletonLoader';
 
 export default function ReviewsSection() {
   const reviews = useStore.useSeekerProfileReviews();
+  const fetchReview = useStore.useSeekerProfileReviewsFetchData();
+  const [isLoading, setIsLoading] = useState(true);
 
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchReview().then(() => {
+      setIsLoading(false);
+    });
+  }, []);
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4">Your Reviews</h2>
         <div className="space-y-4">
-          {reviews.map((review) => (
+        {isLoading ? (
+            <div className="relative h-[200px] overflow-hidden"> {/* Set your desired max height */}
+              <SkeletonLoader />
+            </div>
+          ) : (
+          reviews.map((review) => (
             <div key={review.id} className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-medium">{review.title}</h3>
@@ -27,7 +43,7 @@ export default function ReviewsSection() {
               </div>
               <p className="text-gray-700">{review.content}</p>
             </div>
-          ))}
+          )))}
         </div>
         <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
           Show All reviews
@@ -36,3 +52,4 @@ export default function ReviewsSection() {
     </div>
   );
 }
+

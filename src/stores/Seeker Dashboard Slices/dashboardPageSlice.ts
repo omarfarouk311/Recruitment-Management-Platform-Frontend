@@ -1,6 +1,13 @@
 import { StateCreator } from 'zustand';
 import { CombinedState } from '../storeTypes';
 
+export enum seekerDashboardTabs {
+    jobsAppliedFor = 0,
+    assessments = 1,
+    interviews = 2,
+    offers = 3,
+}
+
 export interface DashboardPageSlice {
     seekerDashboardActiveTab: number | null;
     seekerDashboardLoadingTab: number | null;

@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useEffect,useState } from 'react';
 import { Plus, Trash2, Edit, X } from 'lucide-react';
 import  useStore from '../../../stores/globalStore';
 import Button from '../ui/Button';
 import CVForm from '../forms/CVForm';
 import { CV } from '../../../types/profile';
+import SkeletonLoader from '../../common/SkeletonLoader';
 
 export default function CVSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCV, setEditingCV] = useState<CV | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
 
   const cvs = useStore.useSeekerProfileCvs();
   const removeCV = useStore.useSeekerProfileRemoveCV();
+  const fetchCV = useStore.useSeekerProfileCvFetchData();
 
 
   const handleAddCV = () => {
@@ -27,6 +30,12 @@ export default function CVSection() {
     setIsFormOpen(false);
   };
 
+  useEffect(() => {
+    setIsLoading(true);
+    fetchCV().then(() => {
+      setIsLoading(false);
+    });
+  }, []);
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="p-6">
@@ -43,7 +52,13 @@ export default function CVSection() {
           </Button>
         </div>
         {/* Scrollable Container (Shows 2 CVs by default) */}
+        {isLoading ? (
+            <div className="relative h-[105px] overflow-hidden"> {/* Set your desired max height */}
+              <SkeletonLoader />
+            </div>
+          ) : (
         <div className="space-y-2 max-h-[105px] overflow-y-auto"> {/* Adjust height as needed */}
+          
           {cvs.map((cv) => (
             <div
               key={cv.id}
@@ -70,8 +85,8 @@ export default function CVSection() {
             </div>
           ))}
         </div>
+        )}
       </div>
-
       {/* Modal for CV Form */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

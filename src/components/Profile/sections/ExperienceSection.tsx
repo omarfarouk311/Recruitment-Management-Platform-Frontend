@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Trash2, Edit, X } from 'lucide-react'; // Import X icon
 import  useStore from '../../../stores/globalStore';
 import Button from '../ui/Button';
 import ExperienceForm from '../forms/ExperienceForm';
 import { Experience } from '../../../types/profile';
+import SkeletonLoader from '../../common/SkeletonLoader';
+import { set } from 'date-fns';
 
 export default function ExperienceSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -11,6 +13,9 @@ export default function ExperienceSection() {
 
   const experiences = useStore.useSeekerProfileExperience();
   const removeExperience = useStore.useSeekerProfileRemoveExperience();
+  const fetchExperience = useStore.useSeekerProfileExperienceFetchData();
+  const [isLoading, setIsLoading] = useState(true);
+
 
   const handleAddExperience = () => {
     setEditingExperience(undefined); // Reset editing experience
@@ -35,6 +40,15 @@ export default function ExperienceSection() {
     });
   };
 
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchExperience().then(() => {
+      setIsLoading(false);
+    });
+  }, []);
+  
+
   return (
     <div className="bg-white rounded-lg shadow mb-6">
       <div className="p-6">
@@ -46,7 +60,11 @@ export default function ExperienceSection() {
           </Button>
         </div>
         <div className="space-y-4">
-          {experiences.map((experience) => (
+          {isLoading ? (
+            <div className="relative h-[200px] overflow-hidden"> {/* Set your desired max height */}
+              <SkeletonLoader />
+            </div>
+          ) : (experiences.map((experience: Experience) => (
             <div key={experience.id} className="relative bg-gray-50 p-4 rounded-lg">
               <div className="flex items-start justify-between">
                 <div className="flex items-start">
@@ -87,7 +105,9 @@ export default function ExperienceSection() {
                 </div>
               </div>
             </div>
-          ))}
+          )))}
+            
+          
         </div>
         <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
           Show All Experiences

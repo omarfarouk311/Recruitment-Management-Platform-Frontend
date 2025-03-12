@@ -6,6 +6,8 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
+import JobDetailsDialog from "../common/JobDetailsDialog";
+import { Link } from "react-router-dom";
 
 const SeekerJobsAppliedFor = () => {
     const filters = useStore.useSeekerJobsAppliedForFilters();
@@ -17,14 +19,55 @@ const SeekerJobsAppliedFor = () => {
     const CompanyNames = useStore.useSeekerJobsAppliedForCompanyNames();
     const useSetCompanyNames = useStore.useSeekerJobsAppliedForSetCompanyNames();
     const fetchData = useFetchData();
+    const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
+    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+
     useEffect(() => {
         useSetCompanyNames();
         fetchData();
     }, []);
 
     const columns: ColumnDef<JobsAppliedFor>[] = [
-        { key: "jobTitle", header: "Job Title" },
-        { key: "companyName", header: "Company" },
+        { 
+            key: "jobTitle", 
+            header: "Job Title",
+            render: (row) => {
+                return(
+                <div>
+                    <button onClick={() => {
+                        useSetDialogIsOpen(true);
+                        useSetSelectedJobId(row.jobId);
+                    }}
+                    disabled={!row.jobId}
+                    className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
+                    title={row.jobId ? "Click to view job details" : "No job details available"}>
+                        {row.jobTitle}
+                    </button>
+
+                </div>
+            )}
+        },
+        { 
+            key: "companyName", 
+            header: "Company",
+            render: (row) => {
+                return(
+                <div>
+                    {row.companyId ? (
+                        <Link 
+                            to="/seeker/company-profile" 
+                            className="px-2 text-blue-600 hover:underline underline-offset-2"
+                            title="Click to view company profile">
+                            {row.companyName}
+                        </Link>
+                    ) : (
+                        <span className="px-2 cursor-default" title="Company profile not available">
+                            {row.companyName}
+                        </span>
+                    )}
+                </div>
+            )}
+        },
         { key: "country", header: "Location" },
         { key: "dateApplied", header: "Date Applied" },
         { key: "lastStatusUpdate", header: "Last Updated" },
@@ -94,6 +137,11 @@ const SeekerJobsAppliedFor = () => {
                     useHasMore={useHasMore}
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
+                />
+                <JobDetailsDialog 
+                    useIsOpen={useStore.useJobDetailsDialogIsOpen}
+                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
+                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
         </div>
