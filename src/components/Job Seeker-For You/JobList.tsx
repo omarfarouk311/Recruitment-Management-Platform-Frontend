@@ -8,7 +8,7 @@ interface JobListProps {
   useIsLoading: () => boolean;
   useFetchJobs: () => () => Promise<void>;
   useSelectedJobId: () => number | null;
-  useSetSelectedJobId: () => (id: number) => void;
+  useSetSelectedJobId: () => (id: number) => Promise<void>;
 }
 
 const JobList = ({
@@ -68,7 +68,7 @@ const JobList = ({
             </div>
           )}
           {!hasMore && (
-            <div className="text-center py-4 text-gray-500">
+            <div className="text-center pt-4 text-gray-500">
               No more jobs to show
             </div>
           )}

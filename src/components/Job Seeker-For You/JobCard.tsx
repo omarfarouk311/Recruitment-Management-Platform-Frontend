@@ -1,12 +1,23 @@
 import { Star, UserSquare2, Dot } from "lucide-react";
 import { Job } from "../../types/job";
-import { formatDistanceToNow } from "date-fns";
 
-interface JobCardProps {
+interface BaseJobCardProps {
   job: Job;
-  useSelectedJobId: () => number | null;
-  useSetSelectedJobId: () => (id: number) => void;
 }
+
+interface SelectionHandlers extends BaseJobCardProps {
+  useSelectedJobId: () => number | null;
+  useSetSelectedJobId: () => (id: number) => Promise<void>;
+  usePushToJobDetails?: never;
+}
+
+interface DetailsHandler extends BaseJobCardProps {
+  usePushToJobDetails: () => (id: number) => Promise<void>;
+  useSelectedJobId?: never;
+  useSetSelectedJobId?: never;
+}
+
+type JobCardProps = SelectionHandlers | DetailsHandler;
 
 const JobCard = ({
   job: {
@@ -19,17 +30,25 @@ const JobCard = ({
   },
   useSelectedJobId,
   useSetSelectedJobId,
+  usePushToJobDetails,
 }: JobCardProps) => {
-  const selectedJobId = useSelectedJobId();
-  const setSelectedJobId = useSetSelectedJobId();
+  const selectedJobId = useSelectedJobId?.();
+  const setSelectedJobId = useSetSelectedJobId?.();
   const isSelected = id === selectedJobId;
+  const pushToJobDetails = usePushToJobDetails?.();
 
   return (
     <div
       className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
         isSelected ? "border-black" : ""
       }`}
-      onClick={() => setSelectedJobId(id)}
+      onClick={() =>
+        setSelectedJobId
+          ? setSelectedJobId(id)
+          : pushToJobDetails
+          ? pushToJobDetails(id)
+          : null
+      }
       role="button"
       tabIndex={0}
     >
@@ -47,7 +66,7 @@ const JobCard = ({
           <div className="flex">
             {country}, {city ? " " + city : ""}
             <Dot />
-            {formatDistanceToNow(new Date(datePosted), { addSuffix: true })}
+            {datePosted}
           </div>
         </div>
       </div>

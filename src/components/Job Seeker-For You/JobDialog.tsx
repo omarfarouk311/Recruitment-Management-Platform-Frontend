@@ -139,15 +139,9 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                         ? type === "apply"
                           ? "primary"
                           : "report"
-                        : "currentTab"
+                        : "outline"
                     }
-                    className={
-                      (!isValid
-                        ? type === "apply"
-                          ? "bg-black/70"
-                          : "bg-red-600/70"
-                        : "") + " !w-auto"
-                    }
+                    className={"!w-auto"}
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}
                   </Button>

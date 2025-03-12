@@ -10,20 +10,22 @@ import { useEffect } from "react";
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
   const setFilters = useStore.useForYouTabSetFilters();
+  const industryOptions = useStore.useForYouTabIndustryOptions();
+  const setIndustryOptions = useStore.useForYouTabSetIndustryOptions();
   const useIsDetailsLoading = useStore.useForYouTabIsDetailsLoading;
-  const useDetailedjob = useStore.useForYouTabDetailedJob;
+  const useDetailedjobs = useStore.useForYouTabDetailedJobs;
   const useJobs = useStore.useForYouTabJobs;
   const useHasMore = useStore.useForYouTabHasMore;
   const useIsLoading = useStore.useForYouTabIsJobsLoading;
   const useFetchJobs = useStore.useForYouTabFetchJobs;
   const useSelectedJobId = useStore.useForYouTabSelectedJobId;
   const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId;
-  const industryOptions = useStore.useForYouTabIndustryOptions();
-  const setIndustryOptions = useStore.useForYouTabSetIndustryOptions();
+  const usePushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs;
+  const usePopFromDetailedJobs = useStore.useForYouTabPopFromDetailedJobs;
 
   useEffect(() => {
     setIndustryOptions();
-  },[]);
+  }, []);
 
   return (
     <>
@@ -77,8 +79,10 @@ const ForYou = () => {
           />
         </div>
         <JobDetails
-          useDetailedjob={useDetailedjob}
+          useDetailedjobs={useDetailedjobs}
           useIsDetailsLoading={useIsDetailsLoading}
+          usePushToDetailedJobs={usePushToDetailedJobs}
+          usePopFromDetailedJobs={usePopFromDetailedJobs}
         />
       </div>
     </>
