@@ -1,10 +1,11 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import type { Experience, Education, CV, Skill, Review, UserProfile } from '../../types/profile.ts';
+import type { Experience, Education, CV, Skill, Review, UserProfile,UserCredentials } from '../../types/profile.ts';
 import { mockEducation, mockExperience, mockCVs,mockReviews } from '../../mock data/seekerProfile.ts';
 
 export interface SeekerProfileSlice {
   seekerProfile: UserProfile;
+  seekerCredentials: UserCredentials;
   seekerProfileExperience: Experience[];
   seekerProfileEducation: Education[];
   seekerProfileCvs: CV[];
@@ -12,6 +13,7 @@ export interface SeekerProfileSlice {
   seekerProfileReviews: Review[];
   seekerProfileError: string | null;
   seekerProfileSetProfile: (profile: UserProfile) => void;
+  seekerSetCredentials: (credentials: UserCredentials) => void;
   seekerProfileAddExperience: (experience: Experience) => void;
   seekerProfileUpdateExperience: (experience: Experience) => void;
   seekerProfileRemoveExperience: (id: string) => void;
@@ -72,7 +74,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
       seekerProfile: {
         id: '1',
         name: 'User 1',
-        location: 'California, US',
+        country: 'US',
+        city: 'California',
+        avatar: ''
+      },
+    seekerCredentials: {
+        id: '1',
+        email: 'boody@gmail.com',
+        password: '12345678'
       },
       seekerProfileExperience: [],
       seekerProfileEducation: [],
@@ -88,6 +97,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
       seekerProfileLoading: false,
       seekerProfileError: null,
       seekerProfileSetProfile: (profile) => set({ seekerProfile: profile }),
+      seekerSetCredentials: (credentials: UserCredentials) => set((state) => ({
+        seekerCredentials: credentials, // Replace the entire credentials object
+      })),
       seekerProfileAddExperience: (experience) => set((state) => ({ 
         seekerProfileExperience: [...state.seekerProfileExperience, experience] 
       })),
