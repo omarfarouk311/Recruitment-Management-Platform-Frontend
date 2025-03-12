@@ -43,6 +43,7 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
         },
         companyReviews: [
             {
+                id: 1,
                 role: "Current software engineer",
                 createdAt: "Dec 2, 2024",
                 rating: 4,
@@ -50,6 +51,7 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
                     "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits  such as childcare support, commuter allowances, and employee discounts.",
             },
             {
+                id: 2,
                 role: "Former team lead",
                 createdAt: "Nov 15, 2024",
                 rating: 4.5,

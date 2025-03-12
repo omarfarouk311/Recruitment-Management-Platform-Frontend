@@ -1,8 +1,10 @@
 import { Star, UserSquare2, Dot } from "lucide-react";
 import { Job } from "../../types/job";
+import { ThumbsDown } from "lucide-react";
 
 interface BaseJobCardProps {
   job: Job;
+  useRemoveRecommendation?: () => (id: number) => Promise<void>;
 }
 
 interface SelectionHandlers extends BaseJobCardProps {
@@ -31,11 +33,13 @@ const JobCard = ({
   useSelectedJobId,
   useSetSelectedJobId,
   usePushToJobDetails,
+  useRemoveRecommendation,
 }: JobCardProps) => {
   const selectedJobId = useSelectedJobId?.();
   const setSelectedJobId = useSetSelectedJobId?.();
   const isSelected = id === selectedJobId;
   const pushToJobDetails = usePushToJobDetails?.();
+  const removeRecommendation = useRemoveRecommendation?.();
 
   return (
     <div
@@ -50,8 +54,22 @@ const JobCard = ({
           : null
       }
       role="button"
-      tabIndex={0}
     >
+      <div className="relative">
+        {removeRecommendation && (
+          <button
+            className="absolute right-1 hover:text-red-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeRecommendation(id);
+            }}
+            title="Remove recommendation"
+          >
+            <ThumbsDown />
+          </button>
+        )}
+      </div>
+
       <div className="flex items-center space-x-4">
         <div className="w-11 h-11 flex items-center justify-center">
           {image ? <img src={image} /> : <UserSquare2 />}

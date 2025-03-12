@@ -9,6 +9,7 @@ interface JobListProps {
   useFetchJobs: () => () => Promise<void>;
   useSelectedJobId: () => number | null;
   useSetSelectedJobId: () => (id: number) => Promise<void>;
+  useRemoveRecommendation?: () => (id: number) => Promise<void>;
 }
 
 const JobList = ({
@@ -18,6 +19,7 @@ const JobList = ({
   useFetchJobs,
   useSelectedJobId,
   useSetSelectedJobId,
+  useRemoveRecommendation,
 }: JobListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const jobs = useJobs();
@@ -60,6 +62,7 @@ const JobList = ({
               job={job}
               useSelectedJobId={useSelectedJobId}
               useSetSelectedJobId={useSetSelectedJobId}
+              useRemoveRecommendation={useRemoveRecommendation}
             />
           ))}
           {isLoading && (

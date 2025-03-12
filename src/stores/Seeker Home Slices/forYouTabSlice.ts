@@ -28,6 +28,9 @@ export interface ForYouTabSlice {
     forYouTabSetIndustryOptions: () => Promise<void>;
     forYouTabPushToDetailedJobs: (id: number) => Promise<void>;
     forYouTabPopFromDetailedJobs: () => void;
+    forYouTabRemoveRecommendation: (id: number) => Promise<void>;
+    forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
+    forYouTabReportJob: (id: number, message: string) => Promise<void>;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -199,6 +202,50 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 forYouTabIsDetailsLoading: false
             }
         });
-    }
+    },
 
+    forYouTabRemoveRecommendation: async (id: number) => {
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                set((state) => ({
+                    forYouTabJobs: state.forYouTabJobs.filter((job) => job.id !== id)
+                }));
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            console.error(err);
+        }
+    },
+
+    forYouTabApplyToJob: async (id, cvId) => {
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                set((state) => ({
+                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, applied: true } : job)
+                }))
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            console.error(err);
+        }
+    },
+
+    forYouTabReportJob: async (id, message) => {
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                set((state) => ({
+                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, reported: true } : job)
+                }));
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            console.error(err);
+        }
+    }
 });

@@ -6,6 +6,7 @@ import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { dateOptions, ratingOptions } from "../../data/filterOptions";
 import { useEffect } from "react";
+import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
@@ -22,6 +23,13 @@ const ForYou = () => {
   const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId;
   const usePushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs;
   const usePopFromDetailedJobs = useStore.useForYouTabPopFromDetailedJobs;
+  const activeTab = useStore.useHomePageActiveTab();
+  const useRemoveRecommendation =
+    activeTab === HomePageTabs.ForYou
+      ? useStore.useForYouTabRemoveRecommendation
+      : undefined;
+  const useApplyToJob = useStore.useForYouTabApplyToJob;
+  const useReportJob = useStore.useForYouTabReportJob;
 
   useEffect(() => {
     setIndustryOptions();
@@ -76,6 +84,7 @@ const ForYou = () => {
             useJobs={useJobs}
             useSelectedJobId={useSelectedJobId}
             useSetSelectedJobId={useSetSelectedJobId}
+            useRemoveRecommendation={useRemoveRecommendation}
           />
         </div>
         <JobDetails
@@ -83,6 +92,8 @@ const ForYou = () => {
           useIsDetailsLoading={useIsDetailsLoading}
           usePushToDetailedJobs={usePushToDetailedJobs}
           usePopFromDetailedJobs={usePopFromDetailedJobs}
+          useApplyToJob={useApplyToJob}
+          useReportJob={useReportJob}
         />
       </div>
     </>

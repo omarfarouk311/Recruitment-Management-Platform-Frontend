@@ -1,18 +1,20 @@
 import type { JobDetails } from "../../types/job";
-import { formatDistanceToNow } from "date-fns";
 import { Star, ExternalLink, UserSquare2, Dot, MoveLeft } from "lucide-react";
 import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
-import cvs from "../../mock data/CVs";
+import { mockCVs } from "../../mock data/CVs";
 import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
+import ReviewCard from "../common/Review";
 
 interface JobDetailsProps {
   useDetailedjobs: () => JobDetails[];
   useIsDetailsLoading: () => boolean;
   usePushToDetailedJobs: () => (id: number) => Promise<void>;
   usePopFromDetailedJobs: () => () => void;
+  useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
+  useReportJob: () => (id: number, message: string) => Promise<void>;
 }
 
 const JobDetails = ({
@@ -20,11 +22,15 @@ const JobDetails = ({
   useIsDetailsLoading,
   usePushToDetailedJobs,
   usePopFromDetailedJobs,
+  useApplyToJob,
+  useReportJob,
 }: JobDetailsProps) => {
   const jobs = useDetailedjobs();
   const job = jobs[0];
   const isDetailsLoading = useIsDetailsLoading();
   const popFromDetailedJobs = usePopFromDetailedJobs();
+  const applyToJob = useApplyToJob();
+  const reportJob = useReportJob();
   const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +60,7 @@ const JobDetails = ({
   }
 
   const {
+    id,
     title,
     city,
     country,
@@ -85,14 +92,13 @@ const JobDetails = ({
     >
       {jobs.length > 1 && (
         <div>
-          <Button
-            variant="outline"
+          <button
             title="Back"
-            className="mb-6 -ml-2 !w-16 !h-8"
+            className="mb-4 -mt-4 -ml-2 hover:bg-gray-200 rounded-full p-2 transition-colors"
             onClick={popFromDetailedJobs}
           >
-            <MoveLeft className="w-5 h-10" />
-          </Button>
+            <MoveLeft />
+          </button>
         </div>
       )}
 
@@ -201,17 +207,20 @@ const JobDetails = ({
             <p>{foundedIn}</p>
           </div>
 
-          <div className="grid grid-cols-[50px_1fr]">
+          <div className="grid grid-cols-[52px_1fr]">
             <h4 className="font-medium">Type</h4>
             <p>{type}</p>
           </div>
 
-          <div className="grid grid-cols-[90px_1fr]">
+          <div className="grid grid-cols-[10px_1fr]">
             <h4 className="font-medium">Industries</h4>
-            <p className="text-blue-600 hover:underline cursor-pointer underline-offset-2">
+            <button
+              className="text-blue-600 hover:underline cursor-pointer underline-offset-2"
+              title="View industries"
+            >
               {industriesCount}{" "}
               {industriesCount > 1 ? "Industries" : "Industry"}
-            </p>
+            </button>
           </div>
         </div>
       </div>
@@ -229,28 +238,8 @@ const JobDetails = ({
           </div>
 
           <div className="space-y-4">
-            {companyReviews.map((review, index) => (
-              <div key={index} className="bg-gray-100 p-4 rounded-3xl">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium">{review.role}</h4>
-                  <span className="text-black">
-                    {formatDistanceToNow(new Date(review.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1 mb-2">
-                  {[...Array(Math.floor(review.rating))].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-current text-yellow-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-800 whitespace-pre-line break-words">
-                  {review.description}
-                </p>
-              </div>
+            {companyReviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
             ))}
           </div>
         </div>
@@ -266,7 +255,7 @@ const JobDetails = ({
           </div>
 
           <div className="space-y-4 !w-[500px] mx-auto">
-            {similarJobs.map((job, index) => (
+            {similarJobs.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -279,15 +268,10 @@ const JobDetails = ({
 
       <JobDialog
         type={dialogType}
-        cvs={cvs}
+        cvs={mockCVs}
         onClose={() => setDialogType(null)}
-        onSubmit={(type, data) => {
-          if (type === "apply") {
-            // Handle application submission API call
-          } else {
-            // Handle report submission API call
-          }
-        }}
+        onApplySubmit={(cvId) => applyToJob(id, cvId)}
+        onReportSubmit={(message) => reportJob(id, message)}
       />
     </div>
   );
