@@ -52,7 +52,7 @@ const JobDetailsDialog = ({
       <div className="fixed inset-0 flex items-center justify-center p-4 ">
         <DialogPanel className="mx-auto max-w-3xl mx-h-[700px] w-full bg-transparent rounded-3xl flex flex-col"> 
           <JobDetails
-            useDetailedjob={() => useDetailedjob}
+            useDetailedjobs={() => useDetailedjob}
             useIsDetailsLoading={() => useIsDetailsLoading}
           />
         </DialogPanel>

@@ -143,7 +143,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         seekerProfileReviews: [...state.seekerProfileReviews, review]
       })),
       seekerProfileRemoveReview: (id) => set((state) => ({
-        seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id !== id)
+        seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id.toString() !== id)
       })),
       seekerProfileSetError: (error) => set({ seekerProfileError: error })
     

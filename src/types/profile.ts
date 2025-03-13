@@ -31,11 +31,11 @@ export interface Skill {
 }
 
 export interface Review {
-  id: string;
-  title: string;
+  id: number;
+  role: string;
+  createdAt: string;
   rating: number;
-  date: string;
-  content: string;
+  description: string;
 }
 
 export interface UserProfile {

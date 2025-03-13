@@ -56,63 +56,43 @@ export const mockCVs=[
 
 export const mockReviews = [
   {
-    id: "1",
+    id: 1,
     rating: 5,
-    title: "Excellent Product!",
-    content:
+    description:
       "This product exceeded all my expectations. The quality is outstanding and the customer service was top-notch.",
-    author: "Sarah Johnson",
-    date: "2024-02-15",
-    verifiedPurchase: true,
-    helpfulCount: 24,
-    authorRole: "Senior Developer",
-    company: "Tech Corp",
+    role: "Senior Developer",
+    createdAt: "2024-02-15",
   },
   {
-    id: "2",
+    id: 2,
     rating: 4,
-    title: "Good Value for Money",
-    content:
+    description:
       "Works as described, though the setup process could be better documented. Overall satisfied with the purchase.",
-    author: "Mike Chen",
-    date: "2024-01-30",
-    verifiedPurchase: true,
-    helpfulCount: 12,
+    role: "Customer",
+    createdAt: "2024-01-30",
   },
   {
-    id: "3",
+    id: 3,
     rating: 3,
-    title: "Average Experience",
-    content:
+    description:
       "Product works but the performance could be better. Customer support was helpful in resolving my issue.",
-    author: "Emma Wilson",
-    date: "2023-12-05",
-    verifiedPurchase: false,
-    helpfulCount: 5,
-    company: "Design Studio",
+    role: "Customer",
+    createdAt: "2023-12-05",
   },
   {
-    id: "4",
+    id: 4,
     rating: 2,
-    title: "Not What I Expected",
-    content:
+    description:
       "The product arrived damaged and the replacement process took too long. Disappointed with the experience.",
-    author: "David Kim",
-    date: "2023-11-20",
-    verifiedPurchase: true,
-    helpfulCount: 8,
+    role: "Customer",
+    createdAt: "2023-11-20",
   },
   {
-    id: "5",
+    id: 5,
     rating: 5,
-    title: "Life-changing Tool",
-    content:
+    description:
       "This has revolutionized how we work. The integration capabilities are phenomenal!",
-    author: "Lisa Rodriguez",
-    date: "2024-03-01",
-    verifiedPurchase: true,
-    helpfulCount: 42,
-    authorRole: "CTO",
-    company: "StartupX",
+    role: "CTO",
+    createdAt: "2024-03-01",
   },
 ];

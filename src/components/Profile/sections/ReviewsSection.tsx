@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import  useStore from '../../../stores/globalStore';
 import { useEffect,useState } from 'react';
 import SkeletonLoader from '../../common/SkeletonLoader';
+import ReviewCard from '../../common/Review';
 
 export default function ReviewsSection() {
   const reviews = useStore.useSeekerProfileReviews();
@@ -26,23 +27,7 @@ export default function ReviewsSection() {
             </div>
           ) : (
           reviews.map((review) => (
-            <div key={review.id} className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-medium">{review.title}</h3>
-                <span className="text-sm text-gray-500">{review.date}</span>
-              </div>
-              <div className="flex items-center mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700">{review.content}</p>
-            </div>
+            <ReviewCard key={review.id} review={review} />
           )))}
         </div>
         <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
