@@ -7,6 +7,7 @@ import { mockCVs } from "../../mock data/CVs";
 import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 import ReviewCard from "../common/Review";
+import InfoDialog from "../common/InfoDialog";
 
 interface JobDetailsProps {
   useDetailedjobs: () => JobDetails[];
@@ -15,6 +16,7 @@ interface JobDetailsProps {
   usePopFromDetailedJobs: () => () => void;
   useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
   useReportJob: () => (id: number, message: string) => Promise<void>;
+  useFetchJobIndustries: () => (id: number) => Promise<void>;
 }
 
 const JobDetails = ({
@@ -24,6 +26,7 @@ const JobDetails = ({
   usePopFromDetailedJobs,
   useApplyToJob,
   useReportJob,
+  useFetchJobIndustries,
 }: JobDetailsProps) => {
   const jobs = useDetailedjobs();
   const job = jobs[0];
@@ -31,7 +34,9 @@ const JobDetails = ({
   const popFromDetailedJobs = usePopFromDetailedJobs();
   const applyToJob = useApplyToJob();
   const reportJob = useReportJob();
+  const fetchJobIndustries = useFetchJobIndustries();
   const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,8 +75,9 @@ const JobDetails = ({
     datePosted,
     remote,
     applied,
-    reported,
+    reported, 
     companyData: {
+      id: companyId,
       image,
       type,
       foundedIn,
@@ -80,6 +86,7 @@ const JobDetails = ({
       overview,
       rating,
       size,
+      industries,
     },
     companyReviews,
     similarJobs,
@@ -217,6 +224,10 @@ const JobDetails = ({
             <button
               className="text-blue-600 hover:underline cursor-pointer underline-offset-2"
               title="View industries"
+              onClick={() => {
+                setIsOpen(true);
+                fetchJobIndustries(id);
+              }}
             >
               {industriesCount}{" "}
               {industriesCount > 1 ? "Industries" : "Industry"}
@@ -272,6 +283,13 @@ const JobDetails = ({
         onClose={() => setDialogType(null)}
         onApplySubmit={(cvId) => applyToJob(id, cvId)}
         onReportSubmit={(message) => reportJob(id, message)}
+      />
+
+      <InfoDialog
+        header={`${name} Industries`}
+        isOpen={isOpen}
+        data={industries}
+        onClose={() => setIsOpen(false)}
       />
     </div>
   );

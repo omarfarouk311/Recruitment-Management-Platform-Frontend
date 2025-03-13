@@ -39,7 +39,8 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             rating: 4.5,
             type: 'Public',
             industriesCount: 5,
-            image: "https://www.microsoft.com/favicon.ico"
+            image: "https://www.microsoft.com/favicon.ico",
+            industries: []
         },
         companyReviews: [
             {
@@ -79,4 +80,14 @@ export const mockIndustries: { value: number, label: string }[] = Array(10)
     .fill({})
     .map((_, index) => ({
         value: index, label: `Technology ${index}`
+    }));
+
+export const mockJobIndustries: string[] = Array(10)
+    .fill('')
+    .map((_, index) => `Technology ${index}`);
+
+export const mockJobLocations: { country: string, city: string }[] = Array(10)
+    .fill('')
+    .map((_, index) => ({
+        country: 'USA', city: `New York ${index}`
     }));

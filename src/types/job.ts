@@ -36,6 +36,7 @@ export interface JobDetails {
         foundedIn: number;
         type: string;
         industriesCount: number;
+        industries: string[];
     };
     companyReviews: Review[];
     similarJobs: Job[];

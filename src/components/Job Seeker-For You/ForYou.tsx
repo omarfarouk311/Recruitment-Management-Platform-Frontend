@@ -30,6 +30,7 @@ const ForYou = () => {
       : undefined;
   const useApplyToJob = useStore.useForYouTabApplyToJob;
   const useReportJob = useStore.useForYouTabReportJob;
+  const useFetchJobIndustries = useStore.useForYouTabFetchJobIndustries;
 
   useEffect(() => {
     setIndustryOptions();
@@ -94,6 +95,7 @@ const ForYou = () => {
           usePopFromDetailedJobs={usePopFromDetailedJobs}
           useApplyToJob={useApplyToJob}
           useReportJob={useReportJob}
+          useFetchJobIndustries={useFetchJobIndustries}
         />
       </div>
     </>
