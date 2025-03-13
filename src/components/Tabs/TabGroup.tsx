@@ -1,11 +1,10 @@
 import Button from "../common/Button";
-import { HomePageSlice } from "../../stores/Seeker Home Slices/homePageSlice";
 
 interface TabGroupProps {
   tabs: string[];
-  useActiveTab: () => HomePageSlice["homePageActiveTab"];
-  useLoadingTab: () => HomePageSlice["homePageLoadingTab"];
-  useSetActiveTab: () => HomePageSlice["setHomePageActiveTab"];
+  useActiveTab: () => number | null;
+  useLoadingTab: () => number | null;
+  useSetActiveTab: () => (tab: number) => void;
 }
 
 const TabGroup: React.FC<TabGroupProps> = ({

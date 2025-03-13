@@ -15,6 +15,7 @@ export interface Job {
 }
 
 export interface JobDetails {
+    id: number;
     title: string;
     country: string;
     city: string;
@@ -23,6 +24,8 @@ export interface JobDetails {
     matchingSkillsCount: number;
     jobSkillsCount: number;
     remote: boolean;
+    applied: boolean;
+    reported: boolean;
     companyData: {
         id: number;
         image?: string;
@@ -33,8 +36,10 @@ export interface JobDetails {
         foundedIn: number;
         type: string;
         industriesCount: number;
+        industries: string[];
     };
     companyReviews: Review[];
+    similarJobs: Job[];
 }
 
 export interface ForYouTabFilters {
