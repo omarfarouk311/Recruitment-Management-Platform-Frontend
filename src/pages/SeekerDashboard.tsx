@@ -6,6 +6,7 @@ import SeekerAssessments from "../components/SeekerAssessments/SeekerAssessments
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
+import SeekerInterviews from "../components/SeekerInterviews/SeekerInterviews";
 
 const SeekerDashboard = () => {
     const activeTab = useStore.useSeekerDashboardActiveTab();
@@ -17,7 +18,7 @@ const SeekerDashboard = () => {
 
     useEffect(() => {
         try {
-            if (activeTab === null) setActiveTab(seekerDashboardTabs.assessments);
+            if (activeTab === null) setActiveTab(seekerDashboardTabs.interviews);
         } catch (error) {
             console.error("Failed to set active tab:", error);
         }
@@ -41,7 +42,9 @@ const SeekerDashboard = () => {
                     <SeekerJobsAppliedFor />
                 ) : activeTab === seekerDashboardTabs.assessments ? (
                     <SeekerAssessments /> // Render the Assessments component
-                ) : null}
+                ) : activeTab === seekerDashboardTabs.interviews ? (
+                    <SeekerInterviews /> // Render the Assessments component
+                ): null}
             </div>
         </>
     );

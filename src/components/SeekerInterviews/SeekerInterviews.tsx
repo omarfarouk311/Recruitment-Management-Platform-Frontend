@@ -1,40 +1,33 @@
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { assessment, DashboardSortByFilterOptions, DashboardStatusFilterOptions } from "../../types/seekerDashboard";
+import { interview, DashboardSortByFilterOptions, DashboardStatusFilterOptions } from "../../types/seekerDashboard";
 import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
-import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
 
-const SeekerJobsAppliedFor = () => {
-    const filters = useStore.useSeekerAssessmentsFilters()
-    const setFilters = useStore.useSeekerAssessmentsSetFilters();
-    const useData = useStore.useSeekerAssessmentsData
-    const useHasMore = useStore.useSeekerAssessmentsHasMore
-    const useIsLoading = useStore.useSeekerAssessmentsIsLoading
-    const useFetchData = useStore.useSeekerAssessmentsFetchData
-    const CompanyNames = useStore.useSeekerAssessmentsCompanyNames();
-    const useSetCompanyNames = useStore.useSeekerAssessmentsSetCompanyNames();
+
+const SeekerInterviews = () => {
+    const filters = useStore.useSeekerInterviewsFilters(); // Update to use interviews filters
+    const setFilters = useStore.useSeekerInterviewsSetFilters(); // Update to use interviews filters
+    const useData = useStore.useSeekerInterviewsData; // Update to use interviews data
+    const useHasMore = useStore.useSeekerInterviewsHasMore; // Update to use interviews hasMore
+    const useIsLoading = useStore.useSeekerInterviewsIsLoading; // Update to use interviews isLoading
+    const useFetchData = useStore.useSeekerInterviewsFetchData; // Update to use interviews fetchData
+    const CompanyNames = useStore.useSeekerInterviewsCompanyNames(); // Update to use interviews company names
+    const useSetCompanyNames = useStore.useSeekerInterviewsSetCompanyNames(); // Update to use interviews setCompanyNames
     const fetchData = useFetchData();
-    const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
-    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const setDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
+    const setSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
 
     useEffect(() => {
         useSetCompanyNames();
         fetchData();
-    }, []);
+    }, [useSetCompanyNames, fetchData]);
 
-    const handleEnterAssessment = (assessmentId:number) => {
-        // Handle the action when the "Enter Assessment" button is clicked
-        console.log("Entering assessment:", assessmentId);
-        // You can navigate to the assessment page or trigger a modal here
-        // Example: navigate(`/assessment/${assessmentId}`);
-    };
-
-    const columns: ColumnDef<assessment>[] = [
+    const columns: ColumnDef<interview>[] = [
         { 
             key: "jobTitle", 
             header: "Job Title",
@@ -42,8 +35,8 @@ const SeekerJobsAppliedFor = () => {
                 return(
                 <div>
                     <button onClick={() => {
-                        useSetDialogIsOpen(true);
-                        useSetSelectedJobId(row.jobId);
+                        setDialogIsOpen(true);
+                        setSelectedJobId(row.jobId);
                     }}
                     disabled={!row.jobId}
                     className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
@@ -74,9 +67,10 @@ const SeekerJobsAppliedFor = () => {
                 </div>
             )}
         },
-        { key: "country", header: "Location" },
-        { key: "dateAdded", header: "Date Applied" },
-        { key: "deadline", header: "Deadline" },
+        { key: "country", header: "Locations" }, // Updated header to "Locations"
+        { key: "date", header: "Date" }, // Updated header to "Date"
+        { key: "recruiter", header: "recruiter" }, // Updated header to "Date"
+
         {
             key: 'status',
             header: 'Status',
@@ -91,26 +85,14 @@ const SeekerJobsAppliedFor = () => {
               </span>
             )
         },
-        {
-            key: 'actions',
-            header: 'Actions',
-            render: (row) => (
-                <Button
-                    variant="primary"
-                    className="h-7 text-sm !w-auto"
-                    onClick={() => handleEnterAssessment(row.assessmentId)} // Replace `row.assessmentId` with the correct field
-                >
-                    Enter Assessment
-                </Button>
-            )
-        }
     ];
-
     return (
         <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="px-6 py-2 text-3xl font-bold">Jobs Applied For</h1>
+                <h1 className="px-6 py-2 text-3xl font-bold">Interviews</h1> {/* Updated title */}
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
+                    {/* Removed the Remote filter button */}
+
                     <LocationSearch
                         selectedCountry={filters.country}
                         onCountryChange={(value) => setFilters({ country: value, city: "" })}
@@ -150,7 +132,7 @@ const SeekerJobsAppliedFor = () => {
                 />
                 <JobDetailsDialog 
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
-                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
+                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen}
                     useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
@@ -158,4 +140,4 @@ const SeekerJobsAppliedFor = () => {
     );
 }
 
-export default SeekerJobsAppliedFor;
+export default SeekerInterviews;

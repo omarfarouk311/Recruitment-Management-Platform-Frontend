@@ -9,9 +9,33 @@ export interface JobsAppliedFor {
     lastStatusUpdate: string;
     phase: string;
     status: string;
-    assessmentId: number
 }
 
+
+export interface assessment  {
+    assessmentId: number
+    jobTitle: string;
+    jobId: number;
+    companyName: string;
+    companyId?: number
+    country: string;
+    city: string;
+    dateAdded: string;
+    deadline: string;
+    status: string;
+}
+
+export interface interview  {
+    jobTitle: string;
+    jobId: number;
+    companyName: string;
+    companyId?: number
+    country: string;
+    city: string;
+    date: string;
+    recruiter: string;
+    status: string;
+}
 
 export interface JobsAppliedForFilters extends DashboardFilters {
     remote?: boolean;

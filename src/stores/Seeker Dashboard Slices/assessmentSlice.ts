@@ -1,30 +1,23 @@
 import { StateCreator } from "zustand";
 import {
-  JobsAppliedFor,
+  assessment,
+  DashboardFilters
 } from "../../types/seekerDashboard";
+import{
+  mockJobsAppliedForCompanies
+} from "../../mock data/seekerDashboard";
 import { CombinedState } from "../storeTypes";
 import {
-  mockJobsAppliedFor,
-  mockJobsAppliedForCompanies,
-} from "../../mock data/seekerDashboard";
+  mockAssessment,
+} from "../../mock data/assessmentDashboard";
 import { formatDistanceToNow } from "date-fns";
 
-export interface AssessmentsFilters {
-  remote: boolean;
-  country: string;
-  city: string;
-  status: string;
-  phase: string;
-  sortBy: string;
-  company: string;
-}
-
 export interface SeekerAssessmentsSlice {
-  seekerAssessmentsData: JobsAppliedFor[];
+  seekerAssessmentsData: assessment[];
   seekerAssessmentsPage: number;
   seekerAssessmentsHasMore: boolean;
   seekerAssessmentsIsLoading: boolean;
-  seekerAssessmentsFilters: AssessmentsFilters;
+  seekerAssessmentsFilters: DashboardFilters;
   seekerAssessmentsCompanyNames: { value: string; label: string }[];
   seekerAssessmentsFetchData: () => Promise<void>;
   seekerAssessmentsSetFilters: (
@@ -69,23 +62,23 @@ export const createSeekerAssessmentsSlice: StateCreator<
         setTimeout(() => {
           const startIndex = (seekerAssessmentsPage - 1) * 5;
           const endIndex = startIndex + 5;
-          const newRows = mockJobsAppliedFor.slice(startIndex, endIndex);
+          const newRows = mockAssessment.slice(startIndex, endIndex);
 
           set((state) => ({
             seekerAssessmentsData: [
               ...state.seekerAssessmentsData,
               ...newRows.map((job) => ({
                 ...job,
-                dateApplied: formatDistanceToNow(new Date(job.dateApplied), {
+                dateApplied: formatDistanceToNow(new Date(job.dateAdded), {
                   addSuffix: true,
                 }),
                 lastStatusUpdate: formatDistanceToNow(
-                  new Date(job.lastStatusUpdate),
+                  new Date(job.deadline),
                   { addSuffix: true }
                 ),
               })),
             ],
-            seekerAssessmentsHasMore: endIndex < mockJobsAppliedFor.length,
+            seekerAssessmentsHasMore: endIndex < mockAssessment.length,
             seekerAssessmentsIsLoading: false,
             seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
           }));
