@@ -26,9 +26,9 @@ const JobDetailsDialog = ({
         try {
             setUseIsDetailsLoading(true);
             setTimeout(() => {
-                setUseIsDetailsLoading(false);
+              setUseDetailedjob(jobId? mockDetailedJobs[jobId]: {} as JobDetailsType);
+              setUseIsDetailsLoading(false);
             }, 1000);
-            setUseDetailedjob(jobId? mockDetailedJobs[jobId]: {} as JobDetailsType);
         } catch(error) {
             setUseIsDetailsLoading(false);
         }
