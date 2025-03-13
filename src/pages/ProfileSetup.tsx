@@ -554,7 +554,6 @@ const ProfileSetup = () => {
                     <div className="flex justify-end space-x-2">
                       <Button
                         type="button"
-                        variant="secondary"
                         onClick={() => setShowExperienceForm(false)}
                       >
                         Cancel
