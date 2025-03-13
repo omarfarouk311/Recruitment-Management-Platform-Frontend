@@ -18,7 +18,6 @@ const LocationSearch = ({
   disabled,
 }: LocationSearchProps) => {
   const countryOptions = [
-    { value: "", label: "Any" },
     ...Country.getAllCountries().map((country) => ({
       value: country.isoCode,
       label: country.name,
@@ -26,7 +25,6 @@ const LocationSearch = ({
   ];
 
   const cityOptions = [
-    { value: "", label: "Any" },
     ...(selectedCountry
       ? City.getCitiesOfCountry(selectedCountry)?.map((city) => ({
           value: city.name,
