@@ -103,7 +103,6 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
             await new Promise<void>((resolve) => setTimeout(() => {
                 set({
                     companiesTabIndustryOptions: [
-                        { value: "", label: "Any" },
                         ...mockIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
                     ]
                 });

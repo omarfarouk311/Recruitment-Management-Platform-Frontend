@@ -155,7 +155,6 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
                 set({
                     forYouTabIndustryOptions: [
-                        { value: "", label: "Any" },
                         ...newIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
                     ]
                 });
