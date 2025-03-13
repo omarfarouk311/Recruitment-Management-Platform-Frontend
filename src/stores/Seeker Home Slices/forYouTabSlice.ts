@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { Job, ForYouTabFilters, JobDetails } from '../../types/job';
-import { mockDetailedJobs, mockJobIndustries, mockJobs } from "../../mock data/seekerForYou";
+import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
+import { mockCompanyIndustries } from '../../mock data/seekerCompanies';
 import { CombinedState } from '../storeTypes';
 import { mockIndustries } from '../../mock data/seekerForYou';
 import config from "../../../config/config";
@@ -31,7 +32,7 @@ export interface ForYouTabSlice {
     forYouTabRemoveRecommendation: (id: number) => Promise<void>;
     forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
     forYouTabReportJob: (id: number, message: string) => Promise<void>;
-    forYouTabFetchJobIndustries: (id: number) => Promise<void>;
+    forYouTabFetchCompanyIndustries: (id: number) => Promise<void>;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -250,7 +251,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         }
     },
 
-    forYouTabFetchJobIndustries: async (id) => {
+    forYouTabFetchCompanyIndustries: async (id) => {
         if (get().forYouTabDetailedJobs.find((job) => job.id === id)?.companyData.industries.length) return;
 
         // mock API call
@@ -260,7 +261,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                     forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ?
                         {
                             ...job,
-                            companyData: { ...job.companyData, industries: [...mockJobIndustries] },
+                            companyData: { ...job.companyData, industries: [...mockCompanyIndustries] },
                             companyReviews: [...job.companyReviews],
                             similarJobs: [...job.similarJobs.map((job) => ({ ...job, companyData: { ...job.companyData } }))]
                         }

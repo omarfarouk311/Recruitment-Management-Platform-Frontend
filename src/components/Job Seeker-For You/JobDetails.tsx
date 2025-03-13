@@ -16,7 +16,7 @@ interface JobDetailsProps {
   usePopFromDetailedJobs: () => () => void;
   useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
   useReportJob: () => (id: number, message: string) => Promise<void>;
-  useFetchJobIndustries: () => (id: number) => Promise<void>;
+  useFetchCompanyIndustries: () => (id: number) => Promise<void>;
 }
 
 const JobDetails = ({
@@ -26,7 +26,7 @@ const JobDetails = ({
   usePopFromDetailedJobs,
   useApplyToJob,
   useReportJob,
-  useFetchJobIndustries,
+  useFetchCompanyIndustries,
 }: JobDetailsProps) => {
   const jobs = useDetailedjobs();
   const job = jobs[0];
@@ -34,7 +34,7 @@ const JobDetails = ({
   const popFromDetailedJobs = usePopFromDetailedJobs();
   const applyToJob = useApplyToJob();
   const reportJob = useReportJob();
-  const fetchJobIndustries = useFetchJobIndustries();
+  const fetchCompanyIndustries = useFetchCompanyIndustries();
   const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +75,7 @@ const JobDetails = ({
     datePosted,
     remote,
     applied,
-    reported, 
+    reported,
     companyData: {
       id: companyId,
       image,
@@ -226,7 +226,7 @@ const JobDetails = ({
               title="View industries"
               onClick={() => {
                 setIsOpen(true);
-                fetchJobIndustries(id);
+                fetchCompanyIndustries(id);
               }}
             >
               {industriesCount}{" "}
