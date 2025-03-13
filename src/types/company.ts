@@ -9,6 +9,8 @@ export interface CompanyCard {
     jobsCount: number;
     locationsCount: number;
     industriesCount: number;
+    locations: { country: string, city: string }[];
+    industries: string[];
 }
 
 export interface CompaniesTabFilters {

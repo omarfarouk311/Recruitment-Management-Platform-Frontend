@@ -7,6 +7,8 @@ interface CompanyListProps {
   useHasMore: () => boolean;
   useIsLoading: () => boolean;
   useFetchCompanies: () => () => Promise<void>;
+  useFetchCompanyIndustries: () => (id: number) => Promise<void>;
+  useFetchCompanyLocations: () => (id: number) => Promise<void>;
 }
 
 const CompanyList = ({
@@ -14,6 +16,8 @@ const CompanyList = ({
   useHasMore,
   useIsLoading,
   useFetchCompanies,
+  useFetchCompanyIndustries,
+  useFetchCompanyLocations,
 }: CompanyListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const companies = useCompanies();
@@ -53,7 +57,12 @@ const CompanyList = ({
       ) : (
         <>
           {companies.map((company) => (
-            <CompanyCard key={company.id} company={company} />
+            <CompanyCard
+              key={company.id}
+              company={company}
+              useFetchCompanyIndustries={useFetchCompanyIndustries}
+              useFetchCompanyLocations={useFetchCompanyLocations}
+            />
           ))}
           {isLoading && (
             <div className="flex justify-center py-4">

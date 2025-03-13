@@ -24,7 +24,7 @@ const FilterSection = ({
   const setFilters = useSetFilters();
 
   return (
-    <div className="space-y-4 bg-white p-4 rounded-3xl max-w-[500px] border-2 border-gray-200 h-[700px] overflow-y-auto hide-scrollbar">
+    <div className="space-y-6 bg-white p-4 rounded-3xl max-w-[500px] border-2 border-gray-200 h-[700px] overflow-y-auto hide-scrollbar">
       <div className="flex items-center gap-14 mb-8">
         <SlidersHorizontal className="h-7 w-7" />
         <h2 className="text-2xl font-semibold">Filter Companies</h2>
