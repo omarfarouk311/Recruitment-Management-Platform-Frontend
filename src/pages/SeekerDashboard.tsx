@@ -6,6 +6,7 @@ import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
 import SeekerStats from "../components/Seeker Dashboard/SeekerStats";
+import SeekerJobOffers from "../components/Seeker Dashboard/SeekerJobOffers";
 
 const SeekerDashboard = () => {
     const activeTab = useStore.useSeekerDashboardActiveTab();
@@ -36,7 +37,9 @@ const SeekerDashboard = () => {
                 <SkeletonLoader />
             ) : activeTab == 0 ? (
                 <SeekerJobsAppliedFor />
-            ) : null}
+            ) : activeTab == 3? (
+                <SeekerJobOffers />
+            ) : null }
         </div>
         </>
     );
