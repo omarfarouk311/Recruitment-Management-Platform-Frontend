@@ -60,7 +60,7 @@ const UserNav = ({ children }: UserNavProps) => {
 
       {/* Right Section (Home Button) */}
       <div className="flex absolute right-12">
-        {currentPath === "/home" ? (
+        {currentPath === "/seeker/home" ? (
           <span
             className="p-3 hover:bg-gray-200 rounded-full transition-colors"
             role="button"
@@ -69,7 +69,7 @@ const UserNav = ({ children }: UserNavProps) => {
           </span>
         ) : (
           <Link
-            to="/home"
+            to="/seeker/home"
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
           >
             <Home className="w-12 h-6" />

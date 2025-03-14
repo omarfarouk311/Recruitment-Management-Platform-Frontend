@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { Job, ForYouTabFilters, JobDetails } from '../../types/job';
 import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
+import { mockCompanyIndustries } from '../../mock data/seekerCompanies';
 import { CombinedState } from '../storeTypes';
 import { mockIndustries } from '../../mock data/seekerForYou';
 import config from "../../../config/config";
@@ -31,6 +32,7 @@ export interface ForYouTabSlice {
     forYouTabRemoveRecommendation: (id: number) => Promise<void>;
     forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
     forYouTabReportJob: (id: number, message: string) => Promise<void>;
+    forYouTabFetchCompanyIndustries: (id: number) => Promise<void>;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -153,7 +155,6 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
                 set({
                     forYouTabIndustryOptions: [
-                        { value: "", label: "Any" },
                         ...newIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
                     ]
                 });
@@ -247,5 +248,37 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         catch (err) {
             console.error(err);
         }
+    },
+
+    forYouTabFetchCompanyIndustries: async (id) => {
+        if (get().forYouTabDetailedJobs.find((job) => job.id === id)?.companyData.industries.length) return;
+
+        // mock API call
+        try {
+            await new Promise<void>((resolve) => setTimeout(() => {
+                set((state) => ({
+                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ?
+                        {
+                            ...job,
+                            companyData: { ...job.companyData, industries: [...mockCompanyIndustries] },
+                            companyReviews: [...job.companyReviews],
+                            similarJobs: [...job.similarJobs.map((job) => ({ ...job, companyData: { ...job.companyData } }))]
+                        }
+                        :
+                        {
+                            ...job,
+                            companyData: { ...job.companyData, industries: [...job.companyData.industries] },
+                            companyReviews: [...job.companyReviews],
+                            similarJobs: [...job.similarJobs.map((job) => ({ ...job, companyData: { ...job.companyData } }))],
+                        }
+                    )
+                }));
+                resolve();
+            }, 500));
+        }
+        catch (err) {
+            console.error(err);
+        }
     }
+
 });

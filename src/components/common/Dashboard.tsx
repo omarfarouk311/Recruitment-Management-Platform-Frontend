@@ -63,7 +63,7 @@ function Dashboard<T>({
   return (
     
       <table className="w-full">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead className="sticky top-0 bg-white">
           <tr className="text-gray-500">
             {columns.map((column) => (
               <th

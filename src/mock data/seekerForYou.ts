@@ -39,7 +39,8 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             rating: 4.5,
             type: 'Public',
             industriesCount: 5,
-            image: "https://www.microsoft.com/favicon.ico"
+            image: "https://www.microsoft.com/favicon.ico",
+            industries: []
         },
         companyReviews: [
             {

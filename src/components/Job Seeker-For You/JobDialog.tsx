@@ -68,7 +68,7 @@ const JobDialog = ({
           aria-modal="true"
           aria-labelledby="dialog-heading"
         >
-          <div className="p-8 max-h-[80vh] overflow-y-auto">
+          <div className="p-8 max-h-[80vh]">
             {isSubmitted ? (
               <div className="text-center py-8 min-h-[200px] flex flex-col justify-center">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -89,7 +89,10 @@ const JobDialog = ({
                   <h2 className="text-2xl font-bold" id="dialog-heading">
                     {type === "apply" ? "Apply with CV" : "Report Job"}
                   </h2>
-                  <button onClick={onClose}>
+                  <button
+                    onClick={onClose}
+                    className="hover:bg-gray-200 rounded-full p-2 transition-colors"
+                  >
                     <XCircle className="w-4 h-4" />
                   </button>
                 </div>
@@ -114,11 +117,6 @@ const JobDialog = ({
                           <span className="font-medium">{cv.name}</span>
                         </label>
                       ))}
-                      {cvs.length > 5 && (
-                        <p className="text-sm text-red-500 mt-2">
-                          Maximum of 5 CVs allowed
-                        </p>
-                      )}
                     </div>
                   </div>
                 ) : (

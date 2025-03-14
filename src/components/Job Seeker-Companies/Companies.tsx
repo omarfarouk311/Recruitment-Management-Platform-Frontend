@@ -12,6 +12,10 @@ const Companies = () => {
   const useIndustryOptions = useStore.useCompaniesTabIndustryOptions;
   const useSetFilters = useStore.useCompaniesTabSetFilters;
   const useSetIndustryOptions = useStore.useCompaniesTabSetIndustryOptions();
+  const useFetchCompanyIndustries =
+    useStore.useCompaniesTabFetchCompanyIndustries;
+  const useFetchCompanyLocations =
+    useStore.useCompaniesTabFetchCompanyLocations;
 
   useEffect(() => {
     useSetIndustryOptions();
@@ -24,14 +28,16 @@ const Companies = () => {
         useIndustryOptions={useIndustryOptions}
         useSetFilters={useSetFilters}
       />
-        <div className="bg-white space-y-6 p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-4xl border-2 border-gray-200">
-          <CompanyList
-            useCompanies={useCompanies}
-            useFetchCompanies={useFetchCompanies}
-            useHasMore={useHasMore}
-            useIsLoading={useIsLoading}
-          />
-        </div>
+      <div className="bg-white space-y-6 p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-4xl border-2 border-gray-200">
+        <CompanyList
+          useCompanies={useCompanies}
+          useFetchCompanies={useFetchCompanies}
+          useHasMore={useHasMore}
+          useIsLoading={useIsLoading}
+          useFetchCompanyIndustries={useFetchCompanyIndustries}
+          useFetchCompanyLocations={useFetchCompanyLocations}
+        />
+      </div>
     </div>
   );
 };
