@@ -1,12 +1,12 @@
 export interface Experience {
-  id: string;
-  company: string;
+  id?: number;
+  companyName: string;
   position: string;
-  location: string;
+  country: string;
+  city: string;
   startDate: string;
   endDate: string;
   description: string;
-  logo?: string;
 }
 
 export interface Education {
@@ -30,20 +30,16 @@ export interface Skill {
   name: string;
 }
 
-export interface Review {
-  id: number;
-  role: string;
-  createdAt: string;
-  rating: number;
-  description: string;
-}
-
 export interface UserProfile {
-  id: string
+  id: string;
   avatar: string;
   name: string;
   country: string;
   city: string;
+  phone: string;
+  gender: string;
+  birthDate: string;
+  role: string;
 }
 
 export interface UserCredentials {

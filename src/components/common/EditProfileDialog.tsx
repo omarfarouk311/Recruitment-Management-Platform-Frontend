@@ -2,14 +2,7 @@ import { Dialog } from "@headlessui/react";
 import { useState, useEffect } from "react";
 import Button from "./Button";
 import { XCircle, Upload } from "lucide-react";
-
-interface UserProfile {
-    id: string;
-    avatar: string;
-    name: string;
-    country: string;
-    city: string;
-}
+import { UserProfile } from "../../types/profile";
 
 interface ProfileDialogProps {
     isOpen: boolean;
@@ -60,13 +53,13 @@ const ProfileDialog = ({ isOpen, onClose, onSubmit, profile }: ProfileDialogProp
                     aria-modal="true"
                     aria-labelledby="dialog-heading"
                 >
-                    <div className="p-8 max-h-[80vh] overflow-y-auto">
+                    <div className="p-8 max-h-[80vh] overflow-y-auto hide-scrollbar">
                         <div className="flex justify-between items-start mb-6">
                             <h2 className="text-2xl font-bold" id="dialog-heading">
                                 Edit Profile
                             </h2>
-                            <button onClick={onClose}>
-                                <XCircle className="w-4 h-4" />
+                            <button onClick={onClose}  className="hover:bg-gray-200 rounded-full p-2 transition-colors">
+                                <XCircle className="w-5 h-5" />
                             </button>
                         </div>
 
@@ -134,16 +127,9 @@ const ProfileDialog = ({ isOpen, onClose, onSubmit, profile }: ProfileDialogProp
 
                         <div className="mt-8 flex justify-end gap-3">
                             <Button
-                                variant="outline"
-                                onClick={onClose}
-                                className="rounded-full"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
                                 onClick={handleSubmit}
                                 variant="primary"
-                                className="rounded-full"
+                                className="!w-auto"
                             >
                                 Save Changes
                             </Button>

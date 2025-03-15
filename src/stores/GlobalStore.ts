@@ -1,31 +1,36 @@
-import { create } from "zustand";
-import {
-    createSelectorHooks,
-    ZustandHookSelectors,
-} from "auto-zustand-selectors-hook";
-import { createForYouTabSlice } from "./Seeker Home Slices/forYouTabSlice";
-import { createCompaniesTabSlice } from "./Seeker Home Slices/companiesTabSlice";
-import { createHomePageSlice } from "./Seeker Home Slices/homePageSlice";
-import { createSeekerJobsAppliedForSlice } from "./Seeker Dashboard Slices/jobAppliedForSlice";
-import { CombinedState } from "./storeTypes";
-import { createSeekerDashboardPageSlice } from "./Seeker Dashboard Slices/dashboardPageSlice";
-import { createJobDetailsDialogSlice } from "./Dialogs/jobDetailsDialogSlice";
+import { create } from 'zustand';
+import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook";
+import { createForYouTabSlice } from './Seeker Home Slices/forYouTabSlice'
+import { createCompaniesTabSlice } from './Seeker Home Slices/companiesTabSlice'
+import { createHomePageSlice } from './Seeker Home Slices/homePageSlice'
+import { createSeekerJobsAppliedForSlice } from './Seeker Dashboard Slices/jobAppliedForSlice'
+import { CombinedState } from './storeTypes';
+import { createSeekerDashboardPageSlice } from './Seeker Dashboard Slices/dashboardPageSlice';
+import { createSeekerProfileSlice } from './Profile Slices/profileSlices';
+import { createJobDetailsDialogSlice } from './Dialogs/jobDetailsDialogSlice';
+import { persist } from 'zustand/middleware';
+import { UserProfile } from '../types/profile';
 import { createJobOfferDialogSlice } from "./Dialogs/jobOfferDialogSlice";
 import { createSeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersSlice";
-import createSeekerProfileSlice from "./Profile Slices/profileSlices";
 
+const useGlobalStore = create<CombinedState, [["zustand/persist", { seekerProfile: UserProfile }]]>(
+    persist(
+        (...a) => ({
+            ...createForYouTabSlice(...a),
+            ...createCompaniesTabSlice(...a),
+            ...createHomePageSlice(...a),
+            ...createSeekerJobsAppliedForSlice(...a),
+            ...createSeekerDashboardPageSlice(...a),
+            ...createSeekerProfileSlice(...a),
+            ...createJobDetailsDialogSlice(...a),
+            ...createJobOfferDialogSlice(...a),
+            ...createSeekerJobOffersSlice(...a),
+        }),
+        {
+            name: "user-store",
+            partialize: (state) => ({ seekerProfile: state.seekerProfile })
+        },
+    )
+);
 
-const useGlobalStore = create<CombinedState>((...a) => ({
-    ...createForYouTabSlice(...a),
-    ...createCompaniesTabSlice(...a),
-    ...createHomePageSlice(...a),
-    ...createSeekerJobsAppliedForSlice(...a),
-    ...createSeekerDashboardPageSlice(...a),
-    ...createSeekerProfileSlice(...a),
-    ...createJobDetailsDialogSlice(...a),
-    ...createJobOfferDialogSlice(...a),
-    ...createSeekerJobOffersSlice(...a),
-}));
-
-export default createSelectorHooks(useGlobalStore) as typeof useGlobalStore &
-    ZustandHookSelectors<CombinedState>;
+export default createSelectorHooks(useGlobalStore) as typeof useGlobalStore & ZustandHookSelectors<CombinedState>;
