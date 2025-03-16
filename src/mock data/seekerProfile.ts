@@ -1,11 +1,13 @@
+import { Experience } from "../types/profile";
+
 export const mockEducation = [
   {
     id: "1",
     degree: "Bachelor of Science in Computer Science",
     institution: "Stanford University",
     location: "Palo Alto, CA",
-    startDate: "2020-09-01",
-    endDate: "2024-06-01",
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
     gpa: "3.8",
   },
   {
@@ -13,35 +15,26 @@ export const mockEducation = [
     degree: "High School Diploma",
     institution: "Brooklyn Technical High School",
     location: "New York, NY",
-    startDate: "2016-09-01",
-    endDate: "2020-06-01",
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
     gpa: "4.0",
   },
 ];
 
-export const mockExperience= [
-  {
-    id: "1",
+export const mockExperience: Experience[] = Array(5)
+  .fill({})
+  .map((_, i) => ({
+    id: i,
     position: "Software Engineering Intern",
-    company: "Google",
-    location: "Mountain View, CA",
-    startDate: "2023-06-01",
-    endDate: "2023-08-31",
+    companyName: "Google",
+    country: "USA",
+    city: "New York",
+    startDate: "2022-01",
+    endDate: "2023-01",
     description: "Worked on Google Search algorithms team",
-    logo: "/logos/google-logo.png",
-  },
-  {
-    id: "2",
-    position: "Frontend Developer",
-    company: "StartupX",
-    location: "Remote",
-    startDate: "2022-01-01",
-    endDate: "2022-12-31",
-    description: "Developed customer-facing web applications",
-  },
-];
+  }));
 
-export const mockCVs=[
+export const mockCVs = [
   {
     id: "1",
     name: "Software Engineer Resume",
@@ -61,7 +54,7 @@ export const mockReviews = [
     description:
       "This product exceeded all my expectations. The quality is outstanding and the customer service was top-notch.",
     role: "Senior Developer",
-    createdAt: "2024-02-15",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 2,
@@ -69,7 +62,7 @@ export const mockReviews = [
     description:
       "Works as described, though the setup process could be better documented. Overall satisfied with the purchase.",
     role: "Customer",
-    createdAt: "2024-01-30",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 3,
@@ -77,7 +70,7 @@ export const mockReviews = [
     description:
       "Product works but the performance could be better. Customer support was helpful in resolving my issue.",
     role: "Customer",
-    createdAt: "2023-12-05",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 4,
@@ -85,7 +78,7 @@ export const mockReviews = [
     description:
       "The product arrived damaged and the replacement process took too long. Disappointed with the experience.",
     role: "Customer",
-    createdAt: "2023-11-20",
+    createdAt: new Date().toISOString(),
   },
   {
     id: 5,
@@ -93,6 +86,6 @@ export const mockReviews = [
     description:
       "This has revolutionized how we work. The integration capabilities are phenomenal!",
     role: "CTO",
-    createdAt: "2024-03-01",
+    createdAt: new Date().toISOString(),
   },
 ];

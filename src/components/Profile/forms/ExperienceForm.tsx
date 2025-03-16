@@ -1,161 +1,223 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Input } from '../ui/Input';
-import { Label } from '../ui/Label';
-import Button from '../ui/Button';
-import  useStore from '../../../stores/globalStore';
-import type { Experience } from '../../../types/profile';
+import { Dialog } from "@headlessui/react";
+import { XCircle } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Button from "../../common/Button";
+import useStore from "../../../stores/globalStore";
+import type { Experience } from "../../../types/profile";
+import { useEffect } from "react";
+import LocationSearch from "../../common/LocationSearch";
 
 // Zod schema for validation
 const schema = z.object({
-  company: z.string().min(1, 'Company is required'),
-  position: z.string().min(1, 'Position is required'),
-  location: z.string().min(1, 'Location is required'),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
-  description: z.string().min(1, 'Description is required'),
-  logo: z.string().optional(),
+  companyName: z.string().min(1, "Company is required"),
+  position: z.string().min(1, "Position is required"),
+  country: z.string().min(1, "Country is required"),
+  city: z.string().min(1, "City is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  description: z.string().min(1, "Description is required"),
 });
 
 type FormData = z.infer<typeof schema>;
 
-interface ExperienceFormProps {
+interface ExperienceDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
   experience?: Experience;
-  onSubmit: () => void;
 }
 
-export default function ExperienceForm({ experience, onSubmit }: ExperienceFormProps) {
-  
+export default function ExperienceDialog({
+  isOpen,
+  onClose,
+  experience,
+}: ExperienceDialogProps) {
   const addExperience = useStore.useSeekerProfileAddExperience();
   const updateExperience = useStore.useSeekerProfileUpdateExperience();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
+    reset,
+    setValue,
+    watch,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: experience || {
-      company: '',
-      position: '',
-      location: '',
-      startDate: '',
-      endDate: '',
-      description: '',
-      logo: '',
+    defaultValues: experience ?? {
+      companyName: "",
+      position: "",
+      country: "",
+      city: "",
+      startDate: "",
+      endDate: "",
+      description: "",
     },
-    mode: 'onChange', // Validate on every change
+    mode: "onChange",
   });
 
-  const onSubmitForm = (data: FormData) => {
-    if (experience) {
-      // Update existing experience
-      updateExperience({ ...data, id: experience.id });
-    } else {
-      // Add new experience
-      addExperience({ ...data, id: crypto.randomUUID() });
-    }
-    onSubmit(); // Close the form
+  const selectedCountry = watch("country");
+  const selectedCity = watch("city");
+
+  useEffect(() => {
+    reset(
+      experience || {
+        companyName: "",
+        position: "",
+        country: "",
+        city: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+      }
+    );
+  }, [isOpen]);
+
+  const onSubmit = (data: FormData) => {
+    if (experience)
+      updateExperience({
+        ...data,
+        id: experience.id,
+      });
+    else addExperience(data);
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
-      <div>
-        <Label htmlFor="company">Company</Label>
-        <Input
-          id="company"
-          {...register('company')}
-          className={errors.company ? 'border-red-500' : ''}
-        />
-        {errors.company && (
-          <p className="text-red-500 text-sm mt-1">{errors.company.message}</p>
-        )}
-      </div>
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
 
-      <div>
-        <Label htmlFor="position">Position</Label>
-        <Input
-          id="position"
-          {...register('position')}
-          className={errors.position ? 'border-red-500' : ''}
-        />
-        {errors.position && (
-          <p className="text-red-500 text-sm mt-1">{errors.position.message}</p>
-        )}
-      </div>
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl">
+          <div className="p-8 max-h-[80vh] overflow-y-auto hide-scrollbar">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold">
+                {experience ? "Edit Experience" : "Add Experience"}
+              </h2>
+              <button
+                onClick={onClose}
+                className="hover:bg-gray-200 rounded-full p-2 transition-colors"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
 
-      <div>
-        <Label htmlFor="location">Location</Label>
-        <Input
-          id="location"
-          {...register('location')}
-          className={errors.location ? 'border-red-500' : ''}
-        />
-        {errors.location && (
-          <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>
-        )}
-      </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Company
+                </label>
+                <input
+                  type="text"
+                  {...register("companyName")}
+                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                    errors.companyName ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.companyName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.companyName.message}
+                  </p>
+                )}
+              </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="startDate">Start Date</Label>
-          <input
-            type="month"
-            id="startDate"
-            {...register('startDate')}
-            className={`w-full p-2 border rounded ${
-              errors.startDate ? 'border-red-500' : 'border-gray-200'
-            }`}
-          />
-          {errors.startDate && (
-            <p className="text-red-500 text-sm mt-1">{errors.startDate.message}</p>
-          )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Position
+                </label>
+                <input
+                  type="text"
+                  {...register("position")}
+                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                    errors.position ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.position && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.position.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex space-x-6">
+                <LocationSearch
+                  selectedCountry={selectedCountry}
+                  onCountryChange={(value) => setValue("country", value)}
+                  selectedCity={selectedCity}
+                  onCityChange={(value) => setValue("city", value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Start Date
+                  </label>
+                  <input
+                    type="month"
+                    {...register("startDate")}
+                    className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                      errors.startDate ? "border-red-500" : ""
+                    }`}
+                  />
+                  {errors.startDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.startDate.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    End Date
+                  </label>
+                  <input
+                    type="month"
+                    {...register("endDate")}
+                    className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                      errors.endDate ? "border-red-500" : ""
+                    }`}
+                  />
+                  {errors.endDate && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.endDate.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <textarea
+                  {...register("description")}
+                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all min-h-[100px] ${
+                    errors.description ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.description && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-8 flex justify-end gap-3">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="!w-auto"
+                  disabled={!isValid}
+                >
+                  {experience ? "Update" : "Add"} Experience
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <div>
-          <Label htmlFor="endDate">End Date</Label>
-          <input
-            type="month"
-            id="endDate"
-            {...register('endDate')}
-            className={`w-full p-2 border rounded ${
-              errors.endDate ? 'border-red-500' : 'border-gray-200'
-            }`}
-          />
-          {errors.endDate && (
-            <p className="text-red-500 text-sm mt-1">{errors.endDate.message}</p>
-          )}
-        </div>
       </div>
-
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          {...register('description')}
-          className={`flex min-h-[80px] w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-            errors.description ? 'border-red-500' : ''
-          }`}
-        />
-        {errors.description && (
-          <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-        )}
-      </div>
-
-      <div>
-        <Label htmlFor="logo">Logo URL (optional)</Label>
-        <Input id="logo" {...register('logo')} />
-      </div>
-
-      <div className="flex justify-end space-x-2">
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={!isValid} // Disable the button if the form is invalid
-        >
-          {experience ? 'Update' : 'Add'} Experience
-        </Button>
-      </div>
-    </form>
+    </Dialog>
   );
 }

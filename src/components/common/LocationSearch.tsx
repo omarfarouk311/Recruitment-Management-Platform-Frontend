@@ -19,14 +19,18 @@ const LocationSearch = ({
 }: LocationSearchProps) => {
   const countryOptions = [
     ...Country.getAllCountries().map((country) => ({
-      value: country.isoCode,
+      value: country.name,
       label: country.name,
     })),
   ];
 
   const cityOptions = [
     ...(selectedCountry
-      ? City.getCitiesOfCountry(selectedCountry)?.map((city) => ({
+      ? City.getCitiesOfCountry(
+          Country.getAllCountries().find(
+            (country) => country.name === selectedCountry
+          )?.isoCode!
+        )?.map((city) => ({
           value: city.name,
           label: city.name,
         })) || []
