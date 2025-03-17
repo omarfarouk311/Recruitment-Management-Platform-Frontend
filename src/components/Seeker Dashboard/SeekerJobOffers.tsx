@@ -6,7 +6,7 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
-import { ExternalLink, Check, X } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { DashboardStatusFilterOptions } from "../../types/seekerDashboard";
 import { JobOfferSortByFilterOptions } from "../../types/jobOffer";
 import Button from "../common/Button";
@@ -28,6 +28,7 @@ const SeekerJobOffers = () => {
     const [ useIsMakingDecision, useSetIsMakingDecision ] = useState<null | number>(null);
 
     useEffect(() => {
+        setFilters({city: "", country: "", status: "", phase: "", sortBy: "", company: ""});
         useSetCompanyNames();
         fetchData();
     }, []);

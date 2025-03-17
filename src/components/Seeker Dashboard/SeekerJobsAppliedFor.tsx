@@ -23,6 +23,7 @@ const SeekerJobsAppliedFor = () => {
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
 
     useEffect(() => {
+        setFilters({city: "", country: "", status: "", phase: "", sortBy: "", company: "", remote: false});
         useSetCompanyNames();
         fetchData();
     }, []);
