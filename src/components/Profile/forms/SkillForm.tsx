@@ -1,7 +1,7 @@
 import { Dialog } from "@headlessui/react";
 import { XCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button";
@@ -20,6 +20,7 @@ interface SkillDialogProps {
 
 export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
   const addSkill = useStore.useSeekerProfileAddSkill();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -43,8 +44,12 @@ export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
     const isValid = await trigger();
     if (!isValid) return;
 
-    addSkill(data);
+    setIsSubmitting(true);
+
+    await addSkill(data);
+
     onClose();
+    setIsSubmitting(false);
   };
 
   return (
@@ -85,7 +90,12 @@ export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button type="submit" variant="primary" className="!w-auto">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-[130px]"
+                  loading={isSubmitting}
+                >
                   Add Skill
                 </Button>
               </div>

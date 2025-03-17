@@ -6,7 +6,7 @@ import { z } from "zod";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import type { Experience } from "../../../types/profile";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import LocationSearch from "../../common/LocationSearch";
 
 // Zod schema for validation
@@ -35,6 +35,7 @@ export default function ExperienceDialog({
 }: ExperienceDialogProps) {
   const addExperience = useStore.useSeekerProfileAddExperience();
   const updateExperience = useStore.useSeekerProfileUpdateExperience();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -94,13 +95,17 @@ export default function ExperienceDialog({
       return;
     }
 
+    setIsSubmitting(true);
+
     if (experience)
-      updateExperience({
+      await updateExperience({
         ...data,
         id: experience.id,
       });
-    else addExperience(data);
+    else await addExperience(data);
+
     onClose();
+    setIsSubmitting(false);
   };
 
   return (
@@ -244,7 +249,12 @@ export default function ExperienceDialog({
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button type="submit" variant="primary" className="!w-auto">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-[150px]"
+                  loading={isSubmitting}
+                >
                   {experience ? "Update" : "Add"} Experience
                 </Button>
               </div>
