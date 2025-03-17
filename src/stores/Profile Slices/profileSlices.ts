@@ -1,6 +1,7 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import { Experience, Education, CV, Skill, UserProfile, UserCredentials } from '../../types/profile.ts';
+import { Experience, Education, Skill, UserProfile, UserCredentials } from '../../types/profile.ts';
+import { CV } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
 import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills } from '../../mock data/seekerProfile.ts';
 let cnt = 100;
@@ -31,11 +32,10 @@ export interface SeekerProfileSlice {
     seekerProfileAddSkill: (skill: Skill) => Promise<void>;
     seekerProfileRemoveSkill: (id: number) => Promise<void>;
 
-    seekerProfileCvs: CV[];
-    seekerProfileCvFetchData: () => Promise<void>;
-    seekerProfileAddCV: (cv: CV) => void;
-    seekerProfileUpdateCV: (cv: CV) => void;
-    seekerProfileRemoveCV: (id: string) => void;
+    seekerProfileCVs: CV[];
+    seekerProfileFetchCVs: () => Promise<void>;
+    seekerProfileAddCV: (cv: CV) => Promise<void>;
+    seekerProfileRemoveCV: (id: number) => Promise<void>;
 
     seekerProfileReviewsFetchData: () => Promise<void>;
     seekerProfileAddReview: (review: Review) => void;
@@ -62,19 +62,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileExperience: [],
     seekerProfileEducation: [],
     seekerProfileSkills: [],
-    seekerProfileCvs: [],
+    seekerProfileCVs: [],
     seekerProfileReviews: [],
-    seekerProfileLoading: false,
-    seekerProfileError: null,
-
-    seekerProfileCvFetchData: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({ seekerProfileCvs: mockCVs });
-                resolve();
-            }, 1000);
-        });
-    },
 
     seekerProfileReviewsFetchData: async () => {
         await new Promise<void>((resolve) => {
@@ -211,20 +200,43 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
-    seekerProfileAddCV: (cv) => set((state) => ({
-        seekerProfileCvs: [...state.seekerProfileCvs, cv]
-    })),
+    seekerProfileFetchCVs: async () => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set({ seekerProfileCVs: [...mockCVs] });
+                resolve();
+            }, 1000);
+        });
+    },
 
-    seekerProfileUpdateCV: (cv) => set((state) => ({
-        seekerProfileCvs: state.seekerProfileCvs.map((c) =>
-            c.id === cv.id ? cv : c
-        )
-    })),
+    seekerProfileAddCV: async (cv) => {
+        const { seekerProfileCVs } = get();
+        if (seekerProfileCVs.length === 5) {
+            const err: Error & { status?: number } = new Error('You can only have 5 CVs');
+            err.status = 409;
+            throw err;
+        }
 
-    seekerProfileRemoveCV: (id) => set((state) => ({
-        seekerProfileCvs: state.seekerProfileCvs.filter((cv) => cv.id !== id)
-    })),
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileCVs: [cv, ...state.seekerProfileCVs]
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
 
+    seekerProfileRemoveCV: async (id) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileCVs: state.seekerProfileCVs.filter((cv) => cv.id !== id)
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
 
     seekerProfileAddReview: (review) => set((state) => ({
         seekerProfileReviews: [...state.seekerProfileReviews, review]

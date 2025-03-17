@@ -26,11 +26,10 @@ export interface Skill {
 }
 
 export interface CV {
-  id: string;
+  id?: number;
   name: string;
-  date: string;
+  createdAt: string;
 }
-
 
 export interface UserProfile {
   id: string;

@@ -1,3 +1,4 @@
+import { CV } from '../types/profile';
 import { Education, Experience, Skill } from '../types/profile';
 
 export const mockExperience: Experience[] = Array(5)
@@ -33,18 +34,13 @@ export const mockSkills: Skill[] = Array(10)
     name: `Node.js ${i + 1}`
   }));
 
-export const mockCVs = [
-  {
-    id: "1",
-    name: "Software Engineer Resume",
-    date: "2023-08-15",
-  },
-  {
-    id: "2",
-    name: "Academic CV",
-    date: "2023-05-01",
-  },
-];
+export const mockCVs: CV[] = Array(5)
+  .fill({})
+  .map((_, i) => ({
+    id: i,
+    name: `Omar.pdf ${i + 1}`,
+    createdAt: "2025-03-05T15:27:06.997Z"
+  }));
 
 export const mockReviews = [
   {
