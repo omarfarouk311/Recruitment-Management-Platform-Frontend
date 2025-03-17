@@ -39,10 +39,12 @@ export default function ExperienceDialog({
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     reset,
     setValue,
     watch,
+    trigger,
+    setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: experience ?? {
@@ -54,7 +56,7 @@ export default function ExperienceDialog({
       endDate: "",
       description: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const selectedCountry = watch("country");
@@ -74,7 +76,24 @@ export default function ExperienceDialog({
     );
   }, [isOpen]);
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
+    const isValid = await trigger();
+
+    const [startYear, startMonth] = data.startDate.split("-").map(Number);
+    const [endYear, endMonth] = data.endDate.split("-").map(Number);
+    const isDateValid =
+      startYear < endYear || (startYear === endYear && startMonth <= endMonth);
+
+    if (!isValid || !isDateValid) {
+      if (!isDateValid) {
+        setError("endDate", {
+          type: "manual",
+          message: "End date must be after the start date",
+        });
+      }
+      return;
+    }
+
     if (experience)
       updateExperience({
         ...data,
@@ -140,13 +159,33 @@ export default function ExperienceDialog({
                 )}
               </div>
 
-              <div className="flex space-x-6">
-                <LocationSearch
-                  selectedCountry={selectedCountry}
-                  onCountryChange={(value) => setValue("country", value)}
-                  selectedCity={selectedCity}
-                  onCityChange={(value) => setValue("city", value)}
-                />
+              <div className="space-y-4">
+                <div className="flex space-x-6">
+                  <LocationSearch
+                    selectedCountry={selectedCountry}
+                    onCountryChange={(value) => {
+                      setValue("country", value, { shouldValidate: true });
+                      setValue("city", "", { shouldValidate: true });
+                    }}
+                    selectedCity={selectedCity}
+                    onCityChange={(value) =>
+                      setValue("city", value, { shouldValidate: true })
+                    }
+                  />
+                </div>
+
+                <div className="flex space-x-6">
+                  {errors.country && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.country.message}
+                    </p>
+                  )}
+                  {errors.city && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.city.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -205,12 +244,7 @@ export default function ExperienceDialog({
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="!w-auto"
-                  disabled={!isValid}
-                >
+                <Button type="submit" variant="primary" className="!w-auto">
                   {experience ? "Update" : "Add"} Experience
                 </Button>
               </div>

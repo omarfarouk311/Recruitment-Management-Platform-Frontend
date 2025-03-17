@@ -61,7 +61,7 @@ export default function ExperienceSection() {
             experiences.map((experience: Experience, index) => (
               <div
                 key={experience.id}
-                className={`relative bg-gray-50 p-4 rounded-2xl ${
+                className={`relative bg-gray-100 p-4 rounded-2xl ${
                   !showAll && index > 0 ? "hidden" : ""
                 }`}
               >
