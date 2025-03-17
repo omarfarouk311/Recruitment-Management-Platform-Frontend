@@ -2,42 +2,44 @@ import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
 import { Experience, Education, CV, Skill, UserProfile, UserCredentials } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
-import { mockEducation, mockExperience, mockCVs, mockReviews } from '../../mock data/seekerProfile.ts';
+import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills } from '../../mock data/seekerProfile.ts';
 let cnt = 100;
 
 export interface SeekerProfileSlice {
-    seekerProfile: UserProfile;
-    seekerCredentials: UserCredentials;
-    seekerProfileExperience: Experience[];
-    seekerProfileEducation: Education[];
-    seekerProfileCvs: CV[];
-    seekerProfileSkills: Skill[];
     seekerProfileReviews: Review[];
-    seekerProfileError: string | null;
 
+    seekerProfile: UserProfile;
     seekerProfileSetProfile: (profile: UserProfile) => void;
+
+    seekerCredentials: UserCredentials;
     seekerSetCredentials: (credentials: UserCredentials) => void;
 
+    seekerProfileExperience: Experience[];
     seekerProfileFetchExperience: () => Promise<void>;
     seekerProfileAddExperience: (experience: Experience) => Promise<void>;
     seekerProfileUpdateExperience: (experience: Experience) => Promise<void>;
     seekerProfileRemoveExperience: (id: number) => Promise<void>;
 
+    seekerProfileEducation: Education[];
     seekerProfileFetchEducation: () => Promise<void>;
     seekerProfileAddEducation: (education: Education) => Promise<void>;
     seekerProfileUpdateEducation: (education: Education) => Promise<void>;
     seekerProfileRemoveEducation: (id: number) => Promise<void>;
 
+    seekerProfileSkills: Skill[];
+    seekerProfileFetchSkills: () => Promise<void>;
+    seekerProfileAddSkill: (skill: Skill) => Promise<void>;
+    seekerProfileRemoveSkill: (id: number) => Promise<void>;
+
+    seekerProfileCvs: CV[];
     seekerProfileCvFetchData: () => Promise<void>;
-    seekerProfileReviewsFetchData: () => Promise<void>;
     seekerProfileAddCV: (cv: CV) => void;
     seekerProfileUpdateCV: (cv: CV) => void;
     seekerProfileRemoveCV: (id: string) => void;
-    seekerProfileAddSkill: (skill: Skill) => void;
-    seekerProfileRemoveSkill: (id: string) => void;
+
+    seekerProfileReviewsFetchData: () => Promise<void>;
     seekerProfileAddReview: (review: Review) => void;
     seekerProfileRemoveReview: (id: string) => void;
-    seekerProfileSetError: (error: string | null) => void;
 }
 
 export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], SeekerProfileSlice> = (set, get) => ({
@@ -59,14 +61,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
     seekerProfileExperience: [],
     seekerProfileEducation: [],
+    seekerProfileSkills: [],
     seekerProfileCvs: [],
-    seekerProfileSkills: [
-        { id: '1', name: 'Databases', category: 'Technical' },
-        { id: '2', name: 'Databases', category: 'Technical' },
-        { id: '3', name: 'Databases', category: 'Technical' },
-        { id: '4', name: 'Databases', category: 'Technical' },
-        { id: '5', name: 'Databases', category: 'Technical' }
-    ],
     seekerProfileReviews: [],
     seekerProfileLoading: false,
     seekerProfileError: null,
@@ -150,8 +146,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileAddEducation: async (education) => {
-        console.log(education);
-
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
@@ -186,6 +180,37 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
+    seekerProfileFetchSkills: async () => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set({ seekerProfileSkills: [...mockSkills] });
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileAddSkill: async (skill) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileSkills: [{ ...skill, id: cnt++ }, ...state.seekerProfileSkills,]
+                }))
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileRemoveSkill: async (id) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
+                }))
+                resolve();
+            }, 1000);
+        });
+    },
+
     seekerProfileAddCV: (cv) => set((state) => ({
         seekerProfileCvs: [...state.seekerProfileCvs, cv]
     })),
@@ -200,13 +225,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         seekerProfileCvs: state.seekerProfileCvs.filter((cv) => cv.id !== id)
     })),
 
-    seekerProfileAddSkill: (skill) => set((state) => ({
-        seekerProfileSkills: [...state.seekerProfileSkills, skill]
-    })),
-
-    seekerProfileRemoveSkill: (id) => set((state) => ({
-        seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
-    })),
 
     seekerProfileAddReview: (review) => set((state) => ({
         seekerProfileReviews: [...state.seekerProfileReviews, review]
@@ -216,7 +234,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id.toString() !== id)
     })),
 
-    seekerProfileSetError: (error) => set({ seekerProfileError: error })
 });
 
 export default createSeekerProfileSlice;

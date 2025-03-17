@@ -20,16 +20,17 @@ export interface Education {
   grade: string;
 }
 
+export interface Skill {
+  id?: number;
+  name: string;
+}
+
 export interface CV {
   id: string;
   name: string;
   date: string;
 }
 
-export interface Skill {
-  id?: string;
-  name: string;
-}
 
 export interface UserProfile {
   id: string;

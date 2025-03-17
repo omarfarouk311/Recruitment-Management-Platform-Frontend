@@ -1,4 +1,4 @@
-import { Education, Experience } from "../types/profile";
+import { Education, Experience, Skill } from '../types/profile';
 
 export const mockExperience: Experience[] = Array(5)
   .fill({})
@@ -24,6 +24,13 @@ export const mockEducation: Education[] = Array(5)
     startDate: "2022-01",
     endDate: "2023-01",
     grade: "3.8",
+  }));
+
+export const mockSkills: Skill[] = Array(10)
+  .fill({})
+  .map((_, i) => ({
+    id: i,
+    name: `Node.js ${i + 1}`
   }));
 
 export const mockCVs = [
