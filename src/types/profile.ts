@@ -10,13 +10,14 @@ export interface Experience {
 }
 
 export interface Education {
-  id: string;
+  id?: number;
   institution: string;
   degree: string;
-  location: string;
+  country: string;
+  city: string;
   startDate: string;
   endDate: string;
-  gpa: string;
+  grade: string;
 }
 
 export interface CV {

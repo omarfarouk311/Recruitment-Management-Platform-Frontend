@@ -3,7 +3,7 @@ import { StateCreator } from 'zustand';
 import { Experience, Education, CV, Skill, UserProfile, UserCredentials } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
 import { mockEducation, mockExperience, mockCVs, mockReviews } from '../../mock data/seekerProfile.ts';
-let cnt = 0;
+let cnt = 100;
 
 export interface SeekerProfileSlice {
     seekerProfile: UserProfile;
@@ -14,16 +14,20 @@ export interface SeekerProfileSlice {
     seekerProfileSkills: Skill[];
     seekerProfileReviews: Review[];
     seekerProfileError: string | null;
+
     seekerProfileSetProfile: (profile: UserProfile) => void;
     seekerSetCredentials: (credentials: UserCredentials) => void;
+
     seekerProfileFetchExperience: () => Promise<void>;
     seekerProfileAddExperience: (experience: Experience) => Promise<void>;
     seekerProfileUpdateExperience: (experience: Experience) => Promise<void>;
     seekerProfileRemoveExperience: (id: number) => Promise<void>;
-    seekerProfileAddEducation: (education: Education) => void;
-    seekerProfileUpdateEducation: (education: Education) => void;
-    seekerProfileRemoveEducation: (id: string) => void;
-    seekerProfileEducationFetchData: () => Promise<void>;
+
+    seekerProfileFetchEducation: () => Promise<void>;
+    seekerProfileAddEducation: (education: Education) => Promise<void>;
+    seekerProfileUpdateEducation: (education: Education) => Promise<void>;
+    seekerProfileRemoveEducation: (id: number) => Promise<void>;
+
     seekerProfileCvFetchData: () => Promise<void>;
     seekerProfileReviewsFetchData: () => Promise<void>;
     seekerProfileAddCV: (cv: CV) => void;
@@ -76,15 +80,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
-    seekerProfileEducationFetchData: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({ seekerProfileEducation: mockEducation });
-                resolve();
-            }, 1000);
-        });
-    },
-
     seekerProfileReviewsFetchData: async () => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
@@ -112,7 +107,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileExperience: [...state.seekerProfileExperience, { ...experience, id: cnt++ }]
+                    seekerProfileExperience: [{ ...experience, id: cnt++ }, ...state.seekerProfileExperience]
                 }));
                 resolve();
             }, 1000);
@@ -120,11 +115,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileUpdateExperience: async (experience) => {
+        console.log(experience);
+
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
                     seekerProfileExperience: state.seekerProfileExperience.map((exp) =>
-                        exp.id === experience.id ? { ...exp, ...experience } : exp
+                        exp.id === experience.id ? { ...exp, ...experience } : { ...exp }
                     )
                 }));
                 resolve();
@@ -141,22 +138,53 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 resolve();
             }, 1000);
         });
-
     },
 
-    seekerProfileAddEducation: (education) => set((state) => ({
-        seekerProfileEducation: [...state.seekerProfileEducation, education]
-    })),
+    seekerProfileFetchEducation: async () => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set({ seekerProfileEducation: [...mockEducation] });
+                resolve();
+            }, 1000);
+        });
+    },
 
-    seekerProfileUpdateEducation: (education) => set((state) => ({
-        seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
-            edu.id === education.id ? education : edu
-        )
-    })),
+    seekerProfileAddEducation: async (education) => {
+        console.log(education);
 
-    seekerProfileRemoveEducation: (id) => set((state) => ({
-        seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
-    })),
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileEducation: [{ ...education, id: cnt++ }, ...state.seekerProfileEducation]
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileUpdateEducation: async (education) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
+                        edu.id === education.id ? { ...edu, ...education } : { ...edu }
+                    )
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileRemoveEducation: async (id) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
 
     seekerProfileAddCV: (cv) => set((state) => ({
         seekerProfileCvs: [...state.seekerProfileCvs, cv]

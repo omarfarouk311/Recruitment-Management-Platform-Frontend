@@ -1,37 +1,29 @@
-import { Experience } from "../types/profile";
-
-export const mockEducation = [
-  {
-    id: "1",
-    degree: "Bachelor of Science in Computer Science",
-    institution: "Stanford University",
-    location: "Palo Alto, CA",
-    startDate: new Date().toISOString(),
-    endDate: new Date().toISOString(),
-    gpa: "3.8",
-  },
-  {
-    id: "2",
-    degree: "High School Diploma",
-    institution: "Brooklyn Technical High School",
-    location: "New York, NY",
-    startDate: new Date().toISOString(),
-    endDate: new Date().toISOString(),
-    gpa: "4.0",
-  },
-];
+import { Education, Experience } from "../types/profile";
 
 export const mockExperience: Experience[] = Array(5)
   .fill({})
   .map((_, i) => ({
     id: i,
-    position: "Software Engineering Intern",
+    position: `Software Engineering Intern ${i + 1}`,
     companyName: "Google",
     country: "USA",
     city: "New York",
     startDate: "2022-01",
     endDate: "2023-01",
     description: "Worked on Google Search algorithms team",
+  }));
+
+export const mockEducation: Education[] = Array(5)
+  .fill({})
+  .map((_, i) => ({
+    id: i,
+    degree: `Bachelor of Science in Computer Science ${i + 1}`,
+    institution: "Stanford University",
+    country: "USA",
+    city: "New York",
+    startDate: "2022-01",
+    endDate: "2023-01",
+    grade: "3.8",
   }));
 
 export const mockCVs = [

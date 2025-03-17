@@ -1,19 +1,29 @@
-import { useEffect,useState } from 'react';
-import { Plus, Trash2, Edit, X } from 'lucide-react';
-import  useStore from '../../../stores/globalStore';
-import Button from '../ui/Button';
-import EducationForm from '../forms/EducationForm';
-import { Education } from '../../../types/profile';
-import  SkeletonLoader from '../../common/SkeletonLoader';
+import { useEffect, useState } from "react";
+import { Plus, Trash2, Edit } from "lucide-react";
+import useStore from "../../../stores/globalStore";
+import EducationForm from "../forms/EducationForm";
+import { Education } from "../../../types/profile";
+import SkeletonLoader from "../../common/SkeletonLoader";
+import Button from "../../common/Button";
+import { formatDate } from "date-fns";
 
 export default function EducationSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingEducation, setEditingEducation] = useState<Education | undefined>(undefined);
-
+  const [editingEducation, setEditingEducation] = useState<
+    Education | undefined
+  >(undefined);
   const education = useStore.useSeekerProfileEducation();
-  const removeEducation = useStore.useSeekerProfileRemoveEducation();
-  const fetchEducation = useStore.useSeekerProfileEducationFetchData();
   const [isLoading, setIsLoading] = useState(true);
+  const removeEducation = useStore.useSeekerProfileRemoveEducation();
+  const fetchEducation = useStore.useSeekerProfileFetchEducation();
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchEducation().then(() => {
+      setIsLoading(false);
+    });
+  }, []);
 
   const handleAddEducation = () => {
     setEditingEducation(undefined);
@@ -25,96 +35,102 @@ export default function EducationSection() {
     setIsFormOpen(true);
   };
 
-  const handleFormSubmit = () => {
-    setIsFormOpen(false);
-  };
-
-  useEffect(() => {
-      setIsLoading(true);
-      fetchEducation().then(() => {
-        setIsLoading(false);
-      });
-    }, []);
-    
-
-  // Helper to format dates as "Aug 2020"
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow mb-6">
-      <div className="p-6">
+    <div className="bg-white rounded-3xl shadow mb-6">
+      <div className="p-6 text-center">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Education</h2>
-          <Button variant="outline" size="sm" className="flex items-center" onClick={handleAddEducation}>
+          <Button
+            variant="outline"
+            className="!w-auto !h-8 !p-3"
+            onClick={handleAddEducation}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add
           </Button>
         </div>
-        <div className="space-y-4">
-        {isLoading ? (
-            <div className="relative h-[200px] overflow-hidden"> {/* Set your desired max height */}
-              <SkeletonLoader />
-            </div>
-          ) : (
-          education.map((edu) => (
-            <div key={edu.id} className="relative bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-start justify-between">
+
+        <div
+          className={`space-y-4 overflow-hidden ${
+            showAll ? "max-h-none" : "max-h-[200px]"
+          }`}
+        >
+          {isLoading ? (
+            <SkeletonLoader />
+          ) : education.length ? (
+            education.map((edu: Education, index) => (
+              <div
+                key={edu.id}
+                className={`relative bg-gray-100 p-4 rounded-2xl ${
+                  !showAll && index > 0 ? "hidden" : ""
+                }`}
+              >
                 <div className="flex items-start">
+                  <div className="absolute right-4 flex space-x-5 mt-0.5">
+                    <button
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={() => handleEditEducation({ ...edu })}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+
+                    <button
+                      onClick={() => removeEducation(edu.id!)}
+                      className="text-red-400 hover:text-red-600"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="absolute right-24 flex">
+                    <div className="mr-4">
+                      <p className="text-md text-gray-600">
+                        {formatDate(new Date(edu.startDate), "MMM yyyy") + " "}-
+                        {" " + formatDate(new Date(edu.endDate), "MMM yyyy")}
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
                     <span className="text-xl text-gray-400">
                       {edu.institution.charAt(0)}
                     </span>
                   </div>
-                  <div className="ml-4">
+
+                  <div className="ml-4 text-left max-w-[85%]">
                     <h3 className="text-lg font-medium">{edu.degree}</h3>
-                    <p className="text-gray-600">{edu.institution} - {edu.location}</p>
-                    <p className="text-sm text-gray-500">
-                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                    <p className="text-gray-600 break-words">
+                      {edu.institution} - {edu.country}, {edu.city}
                     </p>
-                    <p className="mt-2 text-gray-700">GPA: {edu.gpa}</p>
+                    <p className="mt-4 text-gray-700 break-words whitespace-normal">
+                      Grade: {edu.grade}
+                    </p>
                   </div>
                 </div>
-                <div className="flex space-x-2">
-                  <button className="text-gray-400 hover:text-gray-600" onClick={() => handleEditEducation(edu)}>
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => removeEducation(edu.id)}
-                    className="text-red-400 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          )))}
-          
+            ))
+          ) : (
+            <p className="text-gray-600">No education to show.</p>
+          )}
         </div>
-        <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
-          Show All Education
-        </button>
+
+        {education.length > 1 && (
+          <button
+            className="mt-4 text-md font-semibold text-gray-500 hover:text-black"
+            onClick={() => setShowAll((current) => !current)}
+          >
+            {showAll ? "Show Less" : "Show All"}
+          </button>
+        )}
       </div>
 
-      {/* Modal for Education Form */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md relative">
-            <button
-              onClick={() => setIsFormOpen(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <EducationForm
-              education={editingEducation}
-              onSubmit={handleFormSubmit}
-            />
-          </div>
-        </div>
-      )}
+      <EducationForm
+        education={editingEducation}
+        onClose={() => {
+          setIsFormOpen(false);
+        }}
+        isOpen={isFormOpen}
+      />
     </div>
   );
 }
