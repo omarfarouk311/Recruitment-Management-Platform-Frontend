@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 import SeekerRoutes from "./routes/SeekerRoutes";
+import RecruiterRoutes from "./routes/RecruiterRoutes";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/seeker/*" element={<SeekerRoutes />} />
+        <Route path="/recruiter/*" element={<RecruiterRoutes />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
