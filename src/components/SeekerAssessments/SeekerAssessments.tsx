@@ -4,12 +4,14 @@ import { assessment, DashboardSortByFilterOptions, DashboardStatusFilterOptions 
 import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
+import AssessmentDialog  from "../common/assessmentDialog";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
 
-const SeekerJobsAppliedFor = () => {
+
+const SeekerAssessment = () => {
     const filters = useStore.useSeekerAssessmentsFilters()
     const setFilters = useStore.useSeekerAssessmentsSetFilters();
     const useData = useStore.useSeekerAssessmentsData
@@ -21,6 +23,8 @@ const SeekerJobsAppliedFor = () => {
     const fetchData = useFetchData();
     const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const useSetSelectAssessmentId= useStore.useSetSelectedAssessmentId();
+    const useSetAssessmentDialogIsOpen=useStore.useSetAssessmentDialogIsOpen();
 
     useEffect(() => {
         useSetCompanyNames();
@@ -28,10 +32,9 @@ const SeekerJobsAppliedFor = () => {
     }, []);
 
     const handleEnterAssessment = (assessmentId:number) => {
-        // Handle the action when the "Enter Assessment" button is clicked
-        console.log("Entering assessment:", assessmentId);
-        // You can navigate to the assessment page or trigger a modal here
-        // Example: navigate(`/assessment/${assessmentId}`);
+        console.log(assessmentId)
+         useSetSelectAssessmentId(assessmentId);
+         useSetAssessmentDialogIsOpen(true);
     };
 
     const columns: ColumnDef<assessment>[] = [
@@ -98,7 +101,7 @@ const SeekerJobsAppliedFor = () => {
                 <Button
                     variant="primary"
                     className="h-7 text-sm !w-auto"
-                    onClick={() => handleEnterAssessment(row.assessmentId)} // Replace `row.assessmentId` with the correct field
+                    onClick={() => handleEnterAssessment(row.assessmentId)} 
                 >
                     Enter Assessment
                 </Button>
@@ -153,9 +156,11 @@ const SeekerJobsAppliedFor = () => {
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
                     useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
+                 <AssessmentDialog /> {
+                 /* Add the AssessmentDialog here */}
             </div>
         </div>
     );
 }
 
-export default SeekerJobsAppliedFor;
+export default SeekerAssessment;

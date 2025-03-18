@@ -6,5 +6,6 @@ import { DashboardPageSlice } from "./Seeker Dashboard Slices/dashboardPageSlice
 import { JobDetailsDialogSlice } from "./Dialogs/jobDetailsDialogSlice";
 import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlice";
 import { SeekerInterviewsSlice } from "./Seeker Dashboard Slices/interviewSlice";
+import { AssessmentDialogSlice } from "./Dialogs/assessmentDialogSlice";
 
-export type CombinedState = ForYouTabSlice & CompaniesTabSlice & HomePageSlice & SeekerJobsAppliedForSlice & DashboardPageSlice & JobDetailsDialogSlice&SeekerAssessmentsSlice&SeekerInterviewsSlice;
+export type CombinedState = ForYouTabSlice & CompaniesTabSlice & HomePageSlice & SeekerJobsAppliedForSlice & DashboardPageSlice & JobDetailsDialogSlice&SeekerAssessmentsSlice&SeekerInterviewsSlice&AssessmentDialogSlice;
