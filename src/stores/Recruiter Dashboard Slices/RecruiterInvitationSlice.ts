@@ -2,7 +2,7 @@ import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import { Invitations, DashboardFilters } from "../../types/recruiterDashboard";
-import { mockInvitations } from "../../mock data/recruiterInterviews";
+import { mockInvitations } from "../../mock data/recruiterInvitaions";
 
 
 export enum JobOfferDecision {
@@ -36,7 +36,7 @@ export const createInvitationsSlice: StateCreator<
     recruiterInvitationsFilters: {
         status: "",
         sortByDateReceived: "",
-        sortByDeadline: "",
+        sortByDeadline: ""
     },
     recruiterInvitationsCompanyNames: [],
 

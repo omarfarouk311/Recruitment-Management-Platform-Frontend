@@ -133,7 +133,7 @@ const RecruiterInvitations = () => {
                         label="Status"
                         options={DashboardStatusFilterOptions}
                         selectedValue={filters.status}
-                        onSelect={(value) => setFilters({ ...filters, status: value })}
+                        onSelect={(value) => setFilters({ status: value })}
                     />
 
                     <FilterDropdown

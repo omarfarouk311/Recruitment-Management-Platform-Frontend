@@ -8,6 +8,8 @@ function RecruiterRoutes() {
         <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/invitations" element={<InvitationsDashboard />} />
+            <Route path="/interviews" element={<InvitationsDashboard />} />
+
         </Routes>
     );
 }

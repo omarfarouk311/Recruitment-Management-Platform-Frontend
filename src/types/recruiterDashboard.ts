@@ -8,12 +8,27 @@ export interface Invitations {
 }
 
 
+export interface Interviews {
+    userName: string;
+    userId: number;
+    jobTitle: string;
+    jobId: number;
+    date: string;
+    location: string;
+    candidateLocation: string;
+}
 
-// export interface DashboardFilters {
-//     status: string;
-//     sortBy: string;
-// }
+export interface DashboardInterviewsFilters {
+    jobTitle: string;
+    sortByDate: string; // Sort by Date Received (Ascending/Descending)
+}
 
+export interface updateInterviewDate {
+    jobId: number;
+    date: string;
+}
+
+// for the invitations
 export interface DashboardFilters {
     status: string;
     sortByDateReceived: string; // Sort by Date Received (Ascending/Descending)
@@ -33,3 +48,9 @@ export const DashboardSortByFilterOptions = [
     { value: "2", label: "Deadline (Ascending)" },
     { value: "-2", label: "Deadline (Descending)" },
 ]
+
+export const DashboardJobTitleFilterOptions = [
+    { value: "", label: "All" },
+    { value: "software-engineer", label: "Software Engineer" },
+    { value: "product-manager", label: "Product Manager" },
+];

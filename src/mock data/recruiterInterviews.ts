@@ -1,16 +1,11 @@
-// import { Invitations } from "../types/recruiterDashboard";
-
-export const mockInvitations =  Array(50)
+export const mockInterviews = Array(50)
     .fill({})
     .map((_, index) => ({
-        department: "Technical",
-        companyName: `Microsoft ${index + 1}`,
-        companyId: index + 1,
-        dateReceived: "2025-3-01",
-        deadline: new Date().toISOString(),
-        status: index % 2 === 0 ? "Pending" : "Rejected",
+        userName: `User ${index + 1}`,
+        userId: index + 1,
+        jobTitle: "Software Engineer II",
+        jobId: index + 1,
+        date: "2025-03-18 21:00:00",
+        location: "United States",
+        candidateLocation: "United States",
     }));
-
-// export const mockInvitationsCompanies: string[] = Array(20)
-//     .fill('')
-//     .map((_, index) => `Microsoft ${index + 1}`);

@@ -5,6 +5,7 @@ import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { recruiterDashboardTabs } from "../stores/Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import RecruiterInvitations from "../components/Recruiter Dashboard/RecruiterInvitations";
+import RecruiterInterviews from "../components/Recruiter Dashboard/RecruiterInterviews";
 
 const SeekerDashboard = () => {
     const activeTab = useStore.useRecruiterDashboardActiveTab();
@@ -15,7 +16,7 @@ const SeekerDashboard = () => {
     const useSetActiveTab = useStore.useSetRecruiterDashboardActiveTab;
 
     useEffect(() => {
-        if(activeTab === null) setActiveTab(recruiterDashboardTabs.invitations);
+        if(activeTab === null) setActiveTab(recruiterDashboardTabs.interviews);
     }, []);
 
     return (
@@ -32,9 +33,16 @@ const SeekerDashboard = () => {
                 </div>
                 
                 {
-                    loadingTab !== null ? (
-                        <SkeletonLoader />
-                    ) : <RecruiterInvitations />
+                    <div className="mt-8">
+                       {loadingTab !== null ? (
+                            <SkeletonLoader />
+                        ) : activeTab == 1 ? (
+                            <RecruiterInterviews />
+                        ) : activeTab == 3 ? (
+                            <RecruiterInvitations />
+                        ) : null}
+                            
+                    </div>
                     
                 } 
         </div>
