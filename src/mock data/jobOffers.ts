@@ -39,3 +39,14 @@ export const mockJobOffersOverview = Array(20)
         city: `city ${index}`,
         country: `country ${index}`,
    }))
+
+export const mockJobOffersInfo = Array(20)
+    .fill({})
+    .map((_, index) => ({
+        jobTitle: `Job ${index}`,
+        seekerName: `Seeker ${index}`,
+        dateApplied: new Date(),
+        seekerId: index + 1,
+        jobId: index + 1,
+        status: index == 1? "Rejected" : "Pending",
+    }))

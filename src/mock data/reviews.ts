@@ -8,5 +8,5 @@ export const mockReviews: Review[] = Array(10)
         createdAt: "2025-03-05T15:27:06.997Z",
         rating: 4,
         description:
-            "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits  such as childcare support, commuter allowances, and employee discounts.",
+        "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits  such as childcare support, commuter allowances, and employee discounts.",
     }));

@@ -20,6 +20,20 @@ export interface JobOfferOverviewType {
     city: string;
     country: string;
 }
+export interface RecruiterJobOfferInfo {
+
+    jobTitle:string;
+    seekerName:string;
+    dateApplied:string;
+    seekerId:number;
+    jobId:number;
+    status:string;
+}
+
+export interface RecruiterJobOfferFilters{
+    jobTitle: string;
+    sortBy: string;
+}
 
 export const JobOfferSortByFilterOptions = [
     { value: "", label: "Any" },
