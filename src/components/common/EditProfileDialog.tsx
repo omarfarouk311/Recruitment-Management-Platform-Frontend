@@ -62,8 +62,8 @@ const ProfileDialog = ({
     const phoneValue = watch("phone");
 
     useEffect(() => {
-        reset(profileInfo);
-    }, [profileInfo, reset]);
+      reset(profileInfo);
+    }, [isOpen]);
 
     const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -115,9 +115,9 @@ const ProfileDialog = ({
                             {/* Profile Picture */}
                             <div className="flex flex-col items-center">
                                 <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                                    {image || profileInfo.image ? (
+                                    {image ?? profileInfo.image ? (
                                         <img
-                                            src={image || profileInfo.image}
+                                            src={image ?? profileInfo.image}
                                             alt={profileInfo.name}
                                             className="w-36 h-36 rounded-full object-cover"
                                         />
@@ -282,7 +282,7 @@ const ProfileDialog = ({
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    className="w-[30%]"
+                                    className="!w-[30%]"
                                     loading={isSubmitting}
                                 >
                                     Save Changes

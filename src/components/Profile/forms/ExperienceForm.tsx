@@ -252,7 +252,7 @@ export default function ExperienceDialog({
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-[30%]"
+                  className="!w-[30%]"
                   loading={isSubmitting}
                 >
                   {experience ? "Update" : "Add"} Experience
