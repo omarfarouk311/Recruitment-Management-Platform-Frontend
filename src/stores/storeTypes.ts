@@ -7,10 +7,27 @@ import { SeekerProfileSlice } from "./Profile Slices/seekerProfileSlice";
 import { JobDetailsDialogSlice } from "./Dialogs/jobDetailsDialogSlice";
 import { JobOfferDialogSlice } from "./Dialogs/jobOfferDialogSlice";
 import { SeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersSlice";
+
+import { RecruiterCandidatesSlice } from "./Recruiter Slices/recruiterCandidatesSlice";
 import { RecruiterInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { recruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
-import { userSlice } from "./User Slices/userSlice";
+import { RecruiterJobOfferSlice } from "./Recruiter Slices/recruiterJobOfferSlice";
 import { RecruiterInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
-export type CombinedState = ForYouTabSlice & CompaniesTabSlice & HomePageSlice & SeekerJobsAppliedForSlice &
-  DashboardPageSlice & SeekerProfileSlice & JobDetailsDialogSlice & SeekerJobOffersSlice & JobOfferDialogSlice &
-  RecruiterInvitationsSlice & recruiterDashboardPageSlice & RecruiterInterviewsSlice & userSlice;
+import { userSlice } from "./User Slices/userSlice";
+
+export type CombinedState = 
+  ForYouTabSlice & 
+  CompaniesTabSlice & 
+  HomePageSlice & 
+  SeekerJobsAppliedForSlice & 
+  DashboardPageSlice & 
+  SeekerProfileSlice & 
+  JobDetailsDialogSlice &
+  SeekerJobOffersSlice &
+  JobOfferDialogSlice &
+  RecruiterCandidatesSlice&
+  RecruiterInvitationsSlice &
+  recruiterDashboardPageSlice&
+  RecruiterJobOfferSlice& 
+  RecruiterInterviewsSlice&
+  userSlice;
