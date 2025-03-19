@@ -252,7 +252,7 @@ export default function EducationDialog({
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-[150px]"
+                  className="!w-[30%]"
                   loading={isSubmitting}
                 >
                   {education ? "Update" : "Add"} Education

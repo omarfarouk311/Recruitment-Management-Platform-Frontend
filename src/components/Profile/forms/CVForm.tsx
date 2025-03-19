@@ -40,7 +40,7 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
   useEffect(() => {
     reset({ name: "" });
     setShowLimitMessage(false);
-  }, [isOpen, reset]);
+  }, [isOpen]);
 
   const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
@@ -115,7 +115,7 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
                     <Button
                       type="submit"
                       variant="primary"
-                      className="w-[130px]"
+                      className="!w-[30%]"
                       loading={isSubmitting}
                     >
                       Add CV

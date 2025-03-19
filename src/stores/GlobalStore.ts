@@ -6,16 +6,17 @@ import { createHomePageSlice } from './Seeker Home Slices/homePageSlice'
 import { createSeekerJobsAppliedForSlice } from './Seeker Dashboard Slices/jobAppliedForSlice'
 import { CombinedState } from './storeTypes';
 import { createSeekerDashboardPageSlice } from './Seeker Dashboard Slices/dashboardPageSlice';
-import { createSeekerProfileSlice } from './Profile Slices/profileSlices';
+import { createSeekerProfileSlice } from './Profile Slices/seekerProfileSlice';
 import { createJobDetailsDialogSlice } from './Dialogs/jobDetailsDialogSlice';
 import { persist } from 'zustand/middleware';
-import { UserProfile } from '../types/profile';
 import { createJobOfferDialogSlice } from "./Dialogs/jobOfferDialogSlice";
 import { createSeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersSlice";
 import { createInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { createRecruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import { createInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
-const useGlobalStore = create<CombinedState, [["zustand/persist", { seekerProfile: UserProfile }]]>(
+import { createUserSlice, userSlice } from './User Slices/userSlice';
+
+const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
         (...a) => ({
             ...createForYouTabSlice(...a),
@@ -30,10 +31,16 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", { seekerProfil
             ...createInvitationsSlice(...a),
             ...createRecruiterDashboardPageSlice(...a),
             ...createInterviewsSlice(...a),
+            ...createUserSlice(...a)
         }),
         {
             name: "user-store",
-            partialize: (state) => ({ seekerProfile: state.seekerProfile })
+            partialize: (state) => ({
+                userId: state.userId,
+                userName: state.userName,
+                userRole: state.userRole,
+                userImage: state.userImage
+            })
         },
     )
 );

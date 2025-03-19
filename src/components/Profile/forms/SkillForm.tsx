@@ -93,7 +93,7 @@ export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-[130px]"
+                  className="!w-[30%]"
                   loading={isSubmitting}
                 >
                   Add Skill

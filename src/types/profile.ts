@@ -31,16 +31,14 @@ export interface CV {
   createdAt: string;
 }
 
-export interface UserProfile {
-  id: string;
-  avatar: string;
+export interface SeekerProfileInfo {
+  image?: string;
   name: string;
   country: string;
   city: string;
   phone: string;
-  gender: string;
-  birthDate: string;
-  role: string;
+  gender: "male" | "female" | "";
+  birthdate: string;
 }
 
 export interface UserCredentials {

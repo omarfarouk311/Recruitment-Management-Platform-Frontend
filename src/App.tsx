@@ -5,16 +5,38 @@ import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 import SeekerRoutes from "./routes/SeekerRoutes";
 import RecruiterRoutes from "./routes/RecruiterRoutes";
+import useStore from "./stores/globalStore";
 
 function App() {
+  // for testing different user types. Will be removed after completing
+  const setName = useStore.useUserSetName();
+  const setRole = useStore.useUserSetRole();
+  // change according to the type you need to test
+  setRole("seeker");
+  ///////////////////////
+
+  const userRole = useStore.useUserRole();
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/seeker/*" element={<SeekerRoutes />} />
-        <Route path="/recruiter/*" element={<RecruiterRoutes />} />
+
+        {userRole === "seeker" && (
+          <Route path="/seeker/*" element={<SeekerRoutes />} />
+        )}
+
+        {userRole === "recruiter" && (
+          <Route path="/recruiter/*" element={<RecruiterRoutes />} />
+        )}
+
+        {/* To be added after creating company routes */}
+        {/* {userRole === "company" && (
+          <Route path="/company/*" element={<CompanyRoutes />} />
+        )} */}
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

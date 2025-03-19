@@ -1,7 +1,7 @@
 import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
 import ForYou from "../components/Job Seeker-For You/ForYou";
-//import Companies from "../components/Job Seeker-Companies/Companies";
+import Companies from "../components/Job Seeker-Companies/Companies";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import SearchBar from "../components/common/SearchBar";
 import useStore from "../stores/globalStore";
@@ -70,7 +70,7 @@ const JobSeekerHome = () => {
           activeTab === HomePageTabs.ForYou ? (
           <ForYou />
         ) : (
-          null
+          <Companies />
         )}
       </div>
     </div>
