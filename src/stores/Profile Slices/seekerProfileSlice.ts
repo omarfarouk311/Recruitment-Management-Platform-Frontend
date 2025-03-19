@@ -85,11 +85,11 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileUpdateInfo: async (profile) => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
-                set((state) => ({
+                set({
                     seekerProfileInfo: { ...profile },
                     userName: profile.name,
                     userImage: profile.image
-                }));
+                });
                 resolve();
             }, 1000);
         });
