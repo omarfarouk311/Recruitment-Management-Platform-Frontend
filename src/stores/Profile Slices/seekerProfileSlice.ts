@@ -1,16 +1,19 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import { Experience, Education, Skill, UserProfile, UserCredentials } from '../../types/profile.ts';
+import { Experience, Education, Skill, SeekerProfileInfo, UserCredentials } from '../../types/profile.ts';
 import { CV } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
 import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills } from '../../mock data/seekerProfile.ts';
+import { mockSeekerProfileInfo } from '../../mock data/seekerProfile.ts';
+import config from "../../../config/config.ts";
+import { formatDistanceToNow } from 'date-fns';
+const { paginationLimit } = config;
 let cnt = 100;
 
 export interface SeekerProfileSlice {
-    seekerProfileReviews: Review[];
-
-    seekerProfile: UserProfile;
-    seekerProfileSetProfile: (profile: UserProfile) => void;
+    seekerProfileInfo: SeekerProfileInfo;
+    seekerProfileUpdateInfo: (profile: SeekerProfileInfo) => Promise<void>;
+    seekerProfileFetchInfo: () => Promise<void>;
 
     seekerCredentials: UserCredentials;
     seekerSetCredentials: (credentials: UserCredentials) => void;
@@ -36,23 +39,25 @@ export interface SeekerProfileSlice {
     seekerProfileFetchCVs: () => Promise<void>;
     seekerProfileAddCV: (cv: CV) => Promise<void>;
     seekerProfileRemoveCV: (id: number) => Promise<void>;
+    seekerProfileGetCV: (id: number) => Promise<void>;
 
-    seekerProfileReviewsFetchData: () => Promise<void>;
-    seekerProfileAddReview: (review: Review) => void;
-    seekerProfileRemoveReview: (id: string) => void;
+    seekerProfileReviews: Review[];
+    seekerProfileReviewsHasMore: boolean;
+    seekerProfileReviewsPage: number;
+    seekerProfileReviewsIsLoading: boolean;
+    seekerProfileFetchReviews: () => Promise<void>;
+    seekerProfileUpdateReview: (review: Review) => Promise<void>;
+    seekerProfileRemoveReview: (id: number) => Promise<void>;
 }
 
 export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], SeekerProfileSlice> = (set, get) => ({
-    seekerProfile: {
-        id: '1',
-        name: 'User 1',
-        country: 'US',
-        city: 'California',
-        phone: '1234567890',
-        gender: 'Male',
-        birthDate: new Date().toISOString(),
-        avatar: '',
-        role: ''
+    seekerProfileInfo: {
+        name: '',
+        country: '',
+        city: '',
+        phone: '',
+        gender: '',
+        birthdate: '',
     },
     seekerCredentials: {
         id: '1',
@@ -64,17 +69,32 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileSkills: [],
     seekerProfileCVs: [],
     seekerProfileReviews: [],
+    seekerProfileReviewsHasMore: true,
+    seekerProfileReviewsPage: 1,
+    seekerProfileReviewsIsLoading: false,
 
-    seekerProfileReviewsFetchData: async () => {
+    seekerProfileFetchInfo: async () => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
-                set({ seekerProfileReviews: mockReviews });
+                set({ seekerProfileInfo: { ...mockSeekerProfileInfo } });
                 resolve();
             }, 1000);
         });
     },
 
-    seekerProfileSetProfile: (profile) => set({ seekerProfile: profile }),
+    seekerProfileUpdateInfo: async (profile) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileInfo: { ...profile },
+                    userName: profile.name,
+                    userImage: profile.image
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
+
     seekerSetCredentials: (credentials: UserCredentials) => set((state) => ({
         seekerCredentials: credentials, // Replace the entire credentials object
     })),
@@ -220,7 +240,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileCVs: [cv, ...state.seekerProfileCVs]
+                    seekerProfileCVs: [{ ...cv, id: cnt++ }, ...state.seekerProfileCVs]
                 }));
                 resolve();
             }, 1000);
@@ -238,14 +258,59 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
-    seekerProfileAddReview: (review) => set((state) => ({
-        seekerProfileReviews: [...state.seekerProfileReviews, review]
-    })),
+    // will be implemented to request the CV file from the API
+    seekerProfileGetCV: async (id) => {
+    },
 
-    seekerProfileRemoveReview: (id) => set((state) => ({
-        seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id.toString() !== id)
-    })),
+    seekerProfileFetchReviews: async () => {
+        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading } = get();
+        if (!seekerProfileReviewsHasMore || seekerProfileReviewsIsLoading) return;
+
+        set({ seekerProfileReviewsIsLoading: true });
+
+        // mock API call
+        await new Promise<void>((resolve) => setTimeout(() => {
+            set((state) => {
+                const startIndex = (state.seekerProfileReviewsPage - 1) * paginationLimit;
+                const endIndex = startIndex + paginationLimit;
+                const newReviews = mockReviews.slice(startIndex, endIndex).map((review) => ({
+                    ...review,
+                    createdAt: formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })
+                }));
+
+                return {
+                    seekerProfileReviews: [...state.seekerProfileReviews, ...newReviews],
+                    seekerProfileReviewsHasMore: endIndex < mockReviews.length,
+                    seekerProfileReviewsPage: state.seekerProfileReviewsPage + 1,
+                    seekerProfileReviewsIsLoading: false
+                }
+            });
+            resolve();
+        }, 1000));
+    },
+
+    seekerProfileUpdateReview: async (review) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileEducation: state.seekerProfileEducation.map((rev) =>
+                        rev.id === review.id ? { ...rev, ...review } : { ...rev }
+                    )
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileRemoveReview: async (id) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set((state) => ({
+                    seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id !== id)
+                }));
+                resolve();
+            }, 1000);
+        });
+    },
 
 });
-
-export default createSeekerProfileSlice;
