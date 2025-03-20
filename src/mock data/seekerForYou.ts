@@ -76,8 +76,8 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             }))
     }));
 
-export const mockIndustries: { value: number, label: string }[] = Array(10)
+export const mockIndustries: { id: number, label: string }[] = Array(10)
     .fill({})
     .map((_, index) => ({
-        value: index, label: `Technology ${index}`
+        id: index, label: `Technology ${index}`
     }));
