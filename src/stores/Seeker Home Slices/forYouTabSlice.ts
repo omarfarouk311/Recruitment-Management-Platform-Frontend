@@ -57,29 +57,24 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         set({ forYouTabIsJobsLoading: true });
 
         // mock API call, don't forget to include the filters in the query string if they are populated
-        try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => {
-                    const startIndex = (state.forYouTabPage - 1) * paginationLimit;
-                    const endIndex = startIndex + paginationLimit;
-                    const newJobs = mockJobs.slice(startIndex, endIndex).map((job) => ({
-                        ...job,
-                        datePosted: formatDistanceToNow(new Date(job.datePosted), { addSuffix: true })
-                    }));
+        await new Promise<void>((resolve) => setTimeout(() => {
+            set((state) => {
+                const startIndex = (state.forYouTabPage - 1) * paginationLimit;
+                const endIndex = startIndex + paginationLimit;
+                const newJobs = mockJobs.slice(startIndex, endIndex).map((job) => ({
+                    ...job,
+                    datePosted: formatDistanceToNow(new Date(job.datePosted), { addSuffix: true })
+                }));
 
-                    return {
-                        forYouTabJobs: [...state.forYouTabJobs, ...newJobs],
-                        forYouTabHasMore: endIndex < mockJobs.length,
-                        forYouTabIsJobsLoading: false,
-                        forYouTabPage: state.forYouTabPage + 1,
-                    }
-                });
-                resolve();
-            }, 500));
-        }
-        catch (err) {
-            set({ forYouTabIsJobsLoading: false });
-        }
+                return {
+                    forYouTabJobs: [...state.forYouTabJobs, ...newJobs],
+                    forYouTabHasMore: endIndex < mockJobs.length,
+                    forYouTabIsJobsLoading: false,
+                    forYouTabPage: state.forYouTabPage + 1,
+                }
+            });
+            resolve();
+        }, 500));
     },
 
     forYouTabSetSelectedJobId: async (id: number) => {
