@@ -15,6 +15,7 @@ import { createSeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobO
 import { createInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { createRecruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import { createInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
+import { createRecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
 const useGlobalStore = create<CombinedState, [["zustand/persist", { seekerProfile: UserProfile }]]>(
     persist(
         (...a) => ({
@@ -30,6 +31,8 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", { seekerProfil
             ...createInvitationsSlice(...a),
             ...createRecruiterDashboardPageSlice(...a),
             ...createInterviewsSlice(...a),
+            ...createRecruiterProfileSlice(...a),
+
         }),
         {
             name: "user-store",

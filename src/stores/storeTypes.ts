@@ -10,6 +10,7 @@ import { SeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersS
 import { RecruiterInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { recruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import { RecruiterInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
-export type CombinedState = ForYouTabSlice & CompaniesTabSlice & HomePageSlice & SeekerJobsAppliedForSlice & DashboardPageSlice & SeekerProfileSlice & JobDetailsDialogSlice & SeekerJobOffersSlice & JobOfferDialogSlice & RecruiterInvitationsSlice & recruiterDashboardPageSlice & RecruiterInterviewsSlice;
+import { RecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
+export type CombinedState = ForYouTabSlice & CompaniesTabSlice & HomePageSlice & SeekerJobsAppliedForSlice & DashboardPageSlice & SeekerProfileSlice & JobDetailsDialogSlice & SeekerJobOffersSlice & JobOfferDialogSlice & RecruiterInvitationsSlice & recruiterDashboardPageSlice & RecruiterInterviewsSlice & RecruiterProfileSlice;
 
 

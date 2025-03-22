@@ -11,6 +11,10 @@ interface UserProfile {
   name: string;
   country: string;
   city: string;
+  phone: string;
+  gender: string;
+  birthDate: string;
+  role: string;
 }
 
 export interface UserCredentials {
