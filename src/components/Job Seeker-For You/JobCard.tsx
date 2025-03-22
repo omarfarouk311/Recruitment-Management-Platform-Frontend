@@ -1,4 +1,4 @@
-import { Star, UserSquare2, Dot } from "lucide-react";
+import { Star, Dot } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
 import { useState } from "react";
@@ -74,11 +74,19 @@ const JobCard = ({
       </div>
 
       {removing ? (
-        <p className="text-red-500 text-md font-semibold">Job Recommendation removed</p>
+        <p className="text-red-500 text-md font-semibold">
+          Job Recommendation removed
+        </p>
       ) : (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
-            {image ? <img src={image} /> : <UserSquare2 />}
+            {image ? (
+              <img src={image} />
+            ) : (
+              <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
+                <span className="text-xl text-gray-500">{name.charAt(0)}</span>
+              </div>
+            )}
           </div>
           <div>
             <div className="flex items-center space-x-2">
