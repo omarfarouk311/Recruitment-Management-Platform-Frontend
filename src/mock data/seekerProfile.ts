@@ -1,4 +1,4 @@
-import { CV, SeekerProfileInfo } from '../types/profile';
+import { CV, SeekerProfileInfo, UserCredentials } from '../types/profile';
 import { Education, Experience, Skill } from '../types/profile';
 import { Review } from '../types/review';
 
@@ -11,6 +11,11 @@ export const mockSeekerProfileInfo: SeekerProfileInfo = {
   birthdate: '2000-01-01',
   image: '',
 };
+
+export const mockSeekerCredentials: UserCredentials = {
+  email: 'test@gmail.com',
+  password: ''
+}
 
 export const mockExperience: Experience[] = Array(5)
   .fill({})

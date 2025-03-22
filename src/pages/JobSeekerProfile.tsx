@@ -5,8 +5,18 @@ import SkillsSection from "../components/Profile/sections/SkillsSection";
 import CVSection from "../components/Profile/sections/CVSection";
 import ReviewsSection from "../components/Profile/sections/ReviewsSection";
 import UserNav from "../components/Header/UserNav";
+import { useEffect } from "react";
+import useStore from "../stores/globalStore";
 
 function JobSeekerProfile() {
+  const clearProfile = useStore.useSeekerProfileClear();
+
+  useEffect(() => {
+    return () => {
+      clearProfile();
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <UserNav />
@@ -19,7 +29,6 @@ function JobSeekerProfile() {
             <CVSection />
           </div>
         </div>
-        
         <div className="grid grid-cols-4 lg:grid-cols-2 gap-6 mt-6">
           <div className="lg:col-span-2 space-y-10">
             <ExperienceSection />
