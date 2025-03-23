@@ -1,5 +1,21 @@
-import { CV } from '../types/profile';
+import { CV, SeekerProfileInfo, UserCredentials } from '../types/profile';
 import { Education, Experience, Skill } from '../types/profile';
+import { Review } from '../types/review';
+
+export const mockSeekerProfileInfo: SeekerProfileInfo = {
+  name: 'User 1',
+  country: 'US',
+  city: 'California',
+  phone: '+201125831866',
+  gender: 'male',
+  birthdate: '2000-01-01',
+  image: '',
+};
+
+export const mockSeekerCredentials: UserCredentials = {
+  email: 'test@gmail.com',
+  password: ''
+}
 
 export const mockExperience: Experience[] = Array(5)
   .fill({})
@@ -42,45 +58,13 @@ export const mockCVs: CV[] = Array(5)
     createdAt: "2025-03-05T15:27:06.997Z"
   }));
 
-export const mockReviews = [
-  {
-    id: 1,
-    rating: 5,
+export const mockReviews: Review[] = Array(20)
+  .fill({})
+  .map((_, i) => ({
+    id: i,
+    rating: (i % 5) + 1,
     description:
-      "This product exceeded all my expectations. The quality is outstanding and the customer service was top-notch.",
-    role: "Senior Developer",
+      "Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company.",
+    role: `Senior Developer ${i + 1}`,
     createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    rating: 4,
-    description:
-      "Works as described, though the setup process could be better documented. Overall satisfied with the purchase.",
-    role: "Customer",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    rating: 3,
-    description:
-      "Product works but the performance could be better. Customer support was helpful in resolving my issue.",
-    role: "Customer",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    rating: 2,
-    description:
-      "The product arrived damaged and the replacement process took too long. Disappointed with the experience.",
-    role: "Customer",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 5,
-    rating: 5,
-    description:
-      "This has revolutionized how we work. The integration capabilities are phenomenal!",
-    role: "CTO",
-    createdAt: new Date().toISOString(),
-  },
-];
+  }));

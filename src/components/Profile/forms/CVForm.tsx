@@ -20,13 +20,12 @@ interface CVDialogProps {
 
 export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
   const addCV = useStore.useSeekerProfileAddCV();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLimitMessage, setShowLimitMessage] = useState(false);
 
   const {
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
     trigger,
   } = useForm<FormData>({
@@ -40,14 +39,13 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
   useEffect(() => {
     reset({ name: "" });
     setShowLimitMessage(false);
-  }, [isOpen, reset]);
+  }, [isOpen]);
 
   const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
     if (!isValid) return;
 
     const createdAt = new Date().toISOString();
-    setIsSubmitting(true);
 
     try {
       await addCV({ ...data, createdAt });
@@ -60,8 +58,6 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
           setShowLimitMessage(false);
         }, 2000);
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -115,7 +111,7 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
                     <Button
                       type="submit"
                       variant="primary"
-                      className="w-[130px]"
+                      className="!w-[30%] !h-10"
                       loading={isSubmitting}
                     >
                       Add CV

@@ -1,40 +1,72 @@
-import { Star } from 'lucide-react';
-import  useStore from '../../../stores/globalStore';
-import { useEffect,useState } from 'react';
-import SkeletonLoader from '../../common/SkeletonLoader';
-import ReviewCard from '../../common/Review';
+import useStore from "../../../stores/globalStore";
+import { useEffect, useRef } from "react";
+import ReviewCard from "../../common/Review";
 
 export default function ReviewsSection() {
+  const observerTarget = useRef<HTMLDivElement>(null);
   const reviews = useStore.useSeekerProfileReviews();
-  const fetchReview = useStore.useSeekerProfileReviewsFetchData();
-  const [isLoading, setIsLoading] = useState(true);
-
+  const hasMore = useStore.useSeekerProfileReviewsHasMore();
+  const isLoading = useStore.useSeekerProfileReviewsIsLoading();
+  const fetchReviews = useStore.useSeekerProfileFetchReviews();
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchReview().then(() => {
-      setIsLoading(false);
-    });
+    fetchReviews();
   }, []);
+
+  // Infinite scroll logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          fetchReviews();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, isLoading]);
+
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-3xl shadow">
       <div className="p-6">
         <h2 className="text-xl font-semibold mb-4">Your Reviews</h2>
-        <div className="space-y-4">
-        {isLoading ? (
-            <div className="relative h-[200px] overflow-hidden"> {/* Set your desired max height */}
-              <SkeletonLoader />
+        <div className="space-y-4 max-h-[500px] overflow-y-auto">
+          {reviews.length === 0 && !isLoading ? (
+            <div className="text-center py-4 text-gray-500">
+              No reviews found.
             </div>
           ) : (
-          reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          )))}
+            <>
+              {reviews.map((review) => (
+                <div className="px-2" key={review.id}>
+                  <ReviewCard key={review.id} review={review} />
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+              )}
+              {!hasMore && (
+                <div className="text-center pt-4 text-gray-500">
+                  No more reviews to show
+                </div>
+              )}
+              <div ref={observerTarget} className="h-2" />
+            </>
+          )}
         </div>
-        <button className="mt-4 w-full text-center text-sm text-gray-600 hover:text-gray-900">
-          Show All reviews
-        </button>
       </div>
     </div>
   );
 }
-

@@ -5,6 +5,8 @@ import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { recruiterDashboardTabs } from "../stores/Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import RecruiterInvitations from "../components/Recruiter Dashboard/RecruiterInvitations";
+import RecruiterCandidates from "../components/RecruiterDashboard/RecruiterCandidates";
+import RecruiterJobOffer from "../components/RecruiterDashboard/RecruiterJobOffer";
 import RecruiterInterviews from "../components/Recruiter Dashboard/RecruiterInterviews";
 
 const SeekerDashboard = () => {
@@ -16,36 +18,43 @@ const SeekerDashboard = () => {
     const useSetActiveTab = useStore.useSetRecruiterDashboardActiveTab;
 
     useEffect(() => {
-        if(activeTab === null) setActiveTab(recruiterDashboardTabs.interviews);
+        if (activeTab === null) setActiveTab(recruiterDashboardTabs.candidates);
     }, []);
 
     return (
         <>
-        <UserNav />
-        <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-20 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <TabGroup
-                    tabs={["Candidates", "Interviews", "Job Offer Sent", "Invitations"]}
-                    useActiveTab={useActiveTab}
-                    useLoadingTab={useLoadingTab}
-                    useSetActiveTab={useSetActiveTab}
-                />
+            <UserNav />
+            <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-20 sm:px-6 lg:px-8">
+                <div className="max-w-4xl mx-auto">
+                    <TabGroup
+                        tabs={[
+                            "Candidates",
+                            "Interviews",
+                            "Job Offer Sent",
+                            "Invitations",
+                        ]}
+                        useActiveTab={useActiveTab}
+                        useLoadingTab={useLoadingTab}
+                        useSetActiveTab={useSetActiveTab}
+                    />
                 </div>
-                
+
                 {
                     <div className="mt-8">
-                       {loadingTab !== null ? (
+                        {loadingTab !== null ? (
                             <SkeletonLoader />
-                        ) : activeTab == 1 ? (
+                        ) : activeTab == recruiterDashboardTabs.interviews ? (
                             <RecruiterInterviews />
-                        ) : activeTab == 3 ? (
+                        ) : activeTab == recruiterDashboardTabs.invitations ? (
                             <RecruiterInvitations />
+                        ) : activeTab == recruiterDashboardTabs.jobOfferSent ? (
+                            <RecruiterJobOffer />
+                        ) : activeTab == recruiterDashboardTabs.candidates ? (
+                            <RecruiterCandidates />
                         ) : null}
-                            
                     </div>
-                    
-                } 
-        </div>
+                }
+            </div>
         </>
     );
 };

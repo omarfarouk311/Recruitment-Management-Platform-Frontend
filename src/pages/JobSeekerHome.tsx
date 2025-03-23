@@ -1,7 +1,7 @@
 import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
 import ForYou from "../components/Job Seeker-For You/ForYou";
-//import Companies from "../components/Job Seeker-Companies/Companies";
+import Companies from "../components/Job Seeker-Companies/Companies";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import SearchBar from "../components/common/SearchBar";
 import useStore from "../stores/globalStore";
@@ -31,9 +31,18 @@ const JobSeekerHome = () => {
     activeTab === HomePageTabs.Companies
       ? useStore.useCompaniesTabSearchQuery
       : useStore.useForYouTabSearchQuery;
+  const clearForYouTab = useStore.useForYouTabClear();
+  const clearCompaniesTab = useStore.useCompaniesTabClear();
+  const setIndustryOptions = useStore.useSharedEntitiesSetIndustryOptions();
 
   useEffect(() => {
-    if (activeTab === null) setActiveTab(HomePageTabs.ForYou);
+    setActiveTab(HomePageTabs.ForYou);
+    setIndustryOptions();
+
+    return () => {
+      clearForYouTab();
+      clearCompaniesTab();
+    };
   }, []);
 
   return (
@@ -70,7 +79,7 @@ const JobSeekerHome = () => {
           activeTab === HomePageTabs.ForYou ? (
           <ForYou />
         ) : (
-          null
+          <Companies />
         )}
       </div>
     </div>

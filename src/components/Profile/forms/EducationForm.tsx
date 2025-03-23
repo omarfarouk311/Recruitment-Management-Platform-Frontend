@@ -1,7 +1,7 @@
 import { Dialog } from "@headlessui/react";
 import { XCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button";
@@ -34,12 +34,11 @@ export default function EducationDialog({
 }: EducationDialogProps) {
   const addEducation = useStore.useSeekerProfileAddEducation();
   const updateEducation = useStore.useSeekerProfileUpdateEducation();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
     setValue,
     watch,
@@ -94,8 +93,6 @@ export default function EducationDialog({
       return;
     }
 
-    setIsSubmitting(true);
-
     if (education) {
       await updateEducation({
         ...data,
@@ -104,7 +101,6 @@ export default function EducationDialog({
     } else await addEducation(data);
 
     onClose();
-    setIsSubmitting(false);
   };
 
   return (
@@ -252,7 +248,7 @@ export default function EducationDialog({
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-[150px]"
+                  className="!w-[30%] !h-10"
                   loading={isSubmitting}
                 >
                   {education ? "Update" : "Add"} Education
