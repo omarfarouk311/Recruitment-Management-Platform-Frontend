@@ -45,3 +45,10 @@ export interface UserCredentials {
   email: string;
   password: string;
 }
+
+
+export interface RecruiterProfileInfo {
+  avatar?: string;
+  name: string;
+}
+

@@ -1,27 +1,12 @@
 import { useState } from "react";
 import { Settings, Edit } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import ProfileDialog from "../../common/RecruiterEditProfileDialog"; // Import the ProfileDialog component
 import CredentialsDialog from "../../common/AccountSettingDialog"; // Import the CredentialsDialog component
+import { RecruiterProfileInfo as UserProfile } from "../../../types/profile";
+import { UserCredentials } from "../../../types/profile"
 
-interface UserProfile {
-    id: string;
-    avatar: string;
-    name: string;
-    country: string;
-    city: string;
-    phone: string;
-    gender: string;
-    birthDate: string;
-    role: string;
-}
-
-export interface UserCredentials {
-    id: string;
-    email: string;
-    password: string;
-}
 
 export default function ProfileHeader() {
     const profile = useStore.useRecruiterProfile();
@@ -109,7 +94,6 @@ export default function ProfileHeader() {
             <CredentialsDialog
                 isOpen={isAccountSettingsDialogOpen}
                 onClose={() => setIsAccountSettingsDialogOpen(false)}
-                onSubmit={handleSaveCredentials}
                 credentials={credentials}
             />
         </div>

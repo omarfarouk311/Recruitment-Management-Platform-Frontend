@@ -2,7 +2,7 @@ import { Dialog } from "@headlessui/react";
 import { useState, useEffect } from "react";
 import Button from "./Button";
 import { XCircle, Upload } from "lucide-react";
-import { UserProfile } from "../../types/profile";
+import { RecruiterProfileInfo as UserProfile } from "../../types/profile";
 
 interface ProfileDialogProps {
     isOpen: boolean;

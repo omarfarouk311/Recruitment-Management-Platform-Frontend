@@ -1,6 +1,6 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import { UserProfile, UserCredentials } from '../../types/profile.ts';
+import { RecruiterProfileInfo as UserProfile, UserCredentials } from '../../types/profile.ts';
 
 export interface RecruiterProfileSlice {
 
