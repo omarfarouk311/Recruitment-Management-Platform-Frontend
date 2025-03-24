@@ -16,8 +16,8 @@ import { createJobOfferDialogSlice } from "./Dialogs/jobOfferDialogSlice";
 import { createSeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersSlice";
 import { createInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { createRecruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
-import { createRecruiterCandidatesSlice } from "./Recruiter Slices/recruiterCandidatesSlice";
-import { createRecruiterJobOfferSlice } from "./Recruiter Slices/recruiterJobOfferSlice";
+import { createRecruiterCandidatesSlice } from "./Recruiter Dashboard Slices/recruiterCandidatesSlice";
+import { createRecruiterJobOfferSlice } from "./Recruiter Dashboard Slices/recruiterJobOfferSlice";
 
 import { createInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
 import { createUserSlice, userSlice } from "./User Slices/userSlice";

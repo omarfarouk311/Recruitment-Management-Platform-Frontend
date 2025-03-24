@@ -17,7 +17,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@supabase/supabase-js": "^2.39.7",
     "auto-zustand-selectors-hook": "^3.0.1",
-    "axios": "^1.8.1",
+    "axios": "^1.8.4",
     "class-variance-authority": "^0.7.0",
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",

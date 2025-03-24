@@ -5,8 +5,8 @@ import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { recruiterDashboardTabs } from "../stores/Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import RecruiterInvitations from "../components/Recruiter Dashboard/RecruiterInvitations";
-import RecruiterCandidates from "../components/RecruiterDashboard/RecruiterCandidates";
-import RecruiterJobOffer from "../components/RecruiterDashboard/RecruiterJobOffer";
+import RecruiterCandidates from "../components/Recruiter Dashboard/RecruiterCandidates";
+import RecruiterJobOffer from "../components/Recruiter Dashboard/RecruiterJobOffer";
 import RecruiterInterviews from "../components/Recruiter Dashboard/RecruiterInterviews";
 
 const SeekerDashboard = () => {

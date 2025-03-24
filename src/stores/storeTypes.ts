@@ -8,10 +8,10 @@ import { JobDetailsDialogSlice } from "./Dialogs/jobDetailsDialogSlice";
 import { JobOfferDialogSlice } from "./Dialogs/jobOfferDialogSlice";
 import { SeekerJobOffersSlice } from "./Seeker Dashboard Slices/SeekerJobOffersSlice";
 
-import { RecruiterCandidatesSlice } from "./Recruiter Slices/recruiterCandidatesSlice";
+import { RecruiterCandidatesSlice } from "./Recruiter Dashboard Slices/recruiterCandidatesSlice";
 import { RecruiterInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterInvitationSlice";
 import { recruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
-import { RecruiterJobOfferSlice } from "./Recruiter Slices/recruiterJobOfferSlice";
+import { RecruiterJobOfferSlice } from "./Recruiter Dashboard Slices/recruiterJobOfferSlice";
 import { RecruiterInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
 import { userSlice } from "./User Slices/userSlice";
 
