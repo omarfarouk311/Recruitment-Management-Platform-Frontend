@@ -55,7 +55,7 @@ export const createCompanyInvitationsSlice: StateCreator<
             ...newInvitations.map((invitation) => ({
               ...invitation,
               dateSent: format(new Date(invitation.dateSent), "MM/dd/yyyy"),
-              deadline: format(new Date(invitation.deadline), "MM/dd/yyyy"),
+              deadline: format(new Date(invitation.deadline), "MM/dd/yyyy h:mm a"),
             })),
           ],
           companyInvitationsPage: state.companyInvitationsPage + 1,
