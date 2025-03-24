@@ -1,5 +1,5 @@
 import type { JobDetails } from "../../types/job";
-import { Star, ExternalLink, UserSquare2, Dot, MoveLeft } from "lucide-react";
+import { Star, ExternalLink, Dot, MoveLeft } from "lucide-react";
 import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
@@ -115,7 +115,9 @@ const JobDetails = ({
             {image ? (
               <img src={image} />
             ) : (
-              <UserSquare2 className="w-16 h-16" />
+              <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
+                <span className="text-xl text-gray-500">{name.charAt(0)}</span>
+              </div>
             )}
           </div>
           <div>

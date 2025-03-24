@@ -5,14 +5,12 @@ import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { dateOptions, ratingOptions } from "../../data/filterOptions";
-import { useEffect } from "react";
 import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
   const setFilters = useStore.useForYouTabSetFilters();
-  const industryOptions = useStore.useForYouTabIndustryOptions();
-  const setIndustryOptions = useStore.useForYouTabSetIndustryOptions();
+  const industryOptions = useStore.useSharedEntitiesIndustryOptions();
   const useIsDetailsLoading = useStore.useForYouTabIsDetailsLoading;
   const useDetailedjobs = useStore.useForYouTabDetailedJobs;
   const useJobs = useStore.useForYouTabJobs;
@@ -31,10 +29,6 @@ const ForYou = () => {
   const useApplyToJob = useStore.useForYouTabApplyToJob;
   const useReportJob = useStore.useForYouTabReportJob;
   const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
-
-  useEffect(() => {
-    setIndustryOptions();
-  }, []);
 
   return (
     <>

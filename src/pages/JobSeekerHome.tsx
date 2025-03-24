@@ -31,9 +31,18 @@ const JobSeekerHome = () => {
     activeTab === HomePageTabs.Companies
       ? useStore.useCompaniesTabSearchQuery
       : useStore.useForYouTabSearchQuery;
+  const clearForYouTab = useStore.useForYouTabClear();
+  const clearCompaniesTab = useStore.useCompaniesTabClear();
+  const setIndustryOptions = useStore.useSharedEntitiesSetIndustryOptions();
 
   useEffect(() => {
-    if (activeTab === null) setActiveTab(HomePageTabs.ForYou);
+    setActiveTab(HomePageTabs.ForYou);
+    setIndustryOptions();
+
+    return () => {
+      clearForYouTab();
+      clearCompaniesTab();
+    };
   }, []);
 
   return (

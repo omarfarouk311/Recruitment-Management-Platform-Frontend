@@ -3,7 +3,6 @@ import { Job, ForYouTabFilters, JobDetails } from '../../types/job';
 import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
 import { mockCompanyIndustries } from '../../mock data/seekerCompanies';
 import { CombinedState } from '../storeTypes';
-import { mockIndustries } from '../../mock data/seekerForYou';
 import config from "../../../config/config";
 import { HomePageTabs } from './homePageSlice';
 import { formatDistanceToNow } from 'date-fns';
@@ -20,19 +19,18 @@ export interface ForYouTabSlice {
     forYouTabIsDetailsLoading: boolean;
     forYouTabFilters: ForYouTabFilters;
     forYouTabSearchQuery: string;
-    forYouTabIndustryOptions: { value: string, label: string }[];
     forYouTabFetchJobs: () => Promise<void>;
     forYouTabSetSelectedJobId: (id: number) => Promise<void>;
     forYouTabSetFilters: (filters: Partial<ForYouTabSlice['forYouTabFilters']>) => Promise<void>;
     forYouTabSetSearchQuery: (query: string) => void;
     forYouTabApplySearch: () => Promise<void>;
-    forYouTabSetIndustryOptions: () => Promise<void>;
     forYouTabPushToDetailedJobs: (id: number) => Promise<void>;
     forYouTabPopFromDetailedJobs: () => void;
     forYouTabRemoveRecommendation: (id: number) => Promise<void>;
     forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
     forYouTabReportJob: (id: number, message: string) => Promise<void>;
     forYouTabFetchCompanyIndustries: (id: number) => Promise<void>;
+    forYouTabClear: () => void;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -52,7 +50,6 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         remote: false
     },
     forYouTabSearchQuery: '',
-    forYouTabIndustryOptions: [],
 
     forYouTabFetchJobs: async () => {
         const { forYouTabHasMore, forYouTabIsJobsLoading } = get();
@@ -60,29 +57,24 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         set({ forYouTabIsJobsLoading: true });
 
         // mock API call, don't forget to include the filters in the query string if they are populated
-        try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => {
-                    const startIndex = (state.forYouTabPage - 1) * paginationLimit;
-                    const endIndex = startIndex + paginationLimit;
-                    const newJobs = mockJobs.slice(startIndex, endIndex).map((job) => ({
-                        ...job,
-                        datePosted: formatDistanceToNow(new Date(job.datePosted), { addSuffix: true })
-                    }));
+        await new Promise<void>((resolve) => setTimeout(() => {
+            set((state) => {
+                const startIndex = (state.forYouTabPage - 1) * paginationLimit;
+                const endIndex = startIndex + paginationLimit;
+                const newJobs = mockJobs.slice(startIndex, endIndex).map((job) => ({
+                    ...job,
+                    datePosted: formatDistanceToNow(new Date(job.datePosted), { addSuffix: true })
+                }));
 
-                    return {
-                        forYouTabJobs: [...state.forYouTabJobs, ...newJobs],
-                        forYouTabHasMore: endIndex < mockJobs.length,
-                        forYouTabIsJobsLoading: false,
-                        forYouTabPage: state.forYouTabPage + 1,
-                    }
-                });
-                resolve();
-            }, 500));
-        }
-        catch (err) {
-            set({ forYouTabIsJobsLoading: false });
-        }
+                return {
+                    forYouTabJobs: [...state.forYouTabJobs, ...newJobs],
+                    forYouTabHasMore: endIndex < mockJobs.length,
+                    forYouTabIsJobsLoading: false,
+                    forYouTabPage: state.forYouTabPage + 1,
+                }
+            });
+            resolve();
+        }, 500));
     },
 
     forYouTabSetSelectedJobId: async (id: number) => {
@@ -145,26 +137,6 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         });
 
         await get().forYouTabFetchJobs();
-    },
-
-    forYouTabSetIndustryOptions: async () => {
-        // mock API call
-        try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                const newIndustries = mockIndustries;
-
-                set({
-                    forYouTabIndustryOptions: [
-                        ...newIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
-                    ]
-                });
-
-                resolve();
-            }, 500));
-        }
-        catch (err) {
-            set({ companiesTabIndustryOptions: [] });
-        }
     },
 
     forYouTabPushToDetailedJobs: async (id: number) => {
@@ -279,6 +251,27 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         catch (err) {
             console.error(err);
         }
+    },
+
+    forYouTabClear: () => {
+        set({
+            forYouTabJobs: [],
+            forYouTabDetailedJobs: [],
+            forYouTabPage: 1,
+            forYouTabHasMore: true,
+            forYouTabIsJobsLoading: false,
+            forYouTabSelectedJobId: null,
+            forYouTabIsDetailsLoading: false,
+            forYouTabFilters: {
+                datePosted: '',
+                companyRating: '',
+                industry: '',
+                country: '',
+                city: '',
+                remote: false
+            },
+            forYouTabSearchQuery: '',
+        });
     }
 
 });

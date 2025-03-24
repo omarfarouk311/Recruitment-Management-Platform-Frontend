@@ -1,8 +1,5 @@
 import { create } from "zustand";
-import {
-    createSelectorHooks,
-    ZustandHookSelectors,
-} from "auto-zustand-selectors-hook";
+import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selectors-hook";
 import { createForYouTabSlice } from "./Seeker Home Slices/forYouTabSlice";
 import { createCompaniesTabSlice } from "./Seeker Home Slices/companiesTabSlice";
 import { createHomePageSlice } from "./Seeker Home Slices/homePageSlice";
@@ -21,11 +18,9 @@ import { createRecruiterJobOfferSlice } from "./Recruiter Dashboard Slices/recru
 
 import { createInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
 import { createUserSlice, userSlice } from "./User Slices/userSlice";
+import { createSharedEntitiesSlice } from "./Shared Entities Slices/sharedEntities";
 
-const useGlobalStore = create<
-    CombinedState,
-    [["zustand/persist", Partial<userSlice>]]
->(
+const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
         (...a) => ({
             ...createForYouTabSlice(...a),
@@ -43,6 +38,7 @@ const useGlobalStore = create<
             ...createRecruiterJobOfferSlice(...a),
             ...createInterviewsSlice(...a),
             ...createUserSlice(...a),
+            ...createSharedEntitiesSlice(...a)
         }),
         {
             name: "user-store",
@@ -56,5 +52,4 @@ const useGlobalStore = create<
     )
 );
 
-export default createSelectorHooks(useGlobalStore) as typeof useGlobalStore &
-    ZustandHookSelectors<CombinedState>;
+export default createSelectorHooks(useGlobalStore) as typeof useGlobalStore & ZustandHookSelectors<CombinedState>;

@@ -42,7 +42,6 @@ export interface SeekerProfileInfo {
 }
 
 export interface UserCredentials {
-  id: string
   email: string;
   password: string;
 }

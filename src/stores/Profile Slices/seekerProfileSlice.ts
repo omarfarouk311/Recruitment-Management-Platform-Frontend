@@ -3,7 +3,7 @@ import { StateCreator } from 'zustand';
 import { Experience, Education, Skill, SeekerProfileInfo, UserCredentials } from '../../types/profile.ts';
 import { CV } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
-import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills } from '../../mock data/seekerProfile.ts';
+import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills, mockSeekerCredentials } from '../../mock data/seekerProfile.ts';
 import { mockSeekerProfileInfo } from '../../mock data/seekerProfile.ts';
 import config from "../../../config/config.ts";
 import { formatDistanceToNow } from 'date-fns';
@@ -16,7 +16,8 @@ export interface SeekerProfileSlice {
     seekerProfileFetchInfo: () => Promise<void>;
 
     seekerCredentials: UserCredentials;
-    seekerSetCredentials: (credentials: UserCredentials) => void;
+    seekerProfileFetchEmail: () => Promise<void>;
+    seekerProfileUpdateCredentials: (credentials: UserCredentials) => Promise<void>;
 
     seekerProfileExperience: Experience[];
     seekerProfileFetchExperience: () => Promise<void>;
@@ -48,6 +49,8 @@ export interface SeekerProfileSlice {
     seekerProfileFetchReviews: () => Promise<void>;
     seekerProfileUpdateReview: (review: Review) => Promise<void>;
     seekerProfileRemoveReview: (id: number) => Promise<void>;
+
+    seekerProfileClear: () => void;
 }
 
 export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], SeekerProfileSlice> = (set, get) => ({
@@ -60,9 +63,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         birthdate: '',
     },
     seekerCredentials: {
-        id: '1',
-        email: 'boody@gmail.com',
-        password: '12345678'
+        email: '',
+        password: ''
     },
     seekerProfileExperience: [],
     seekerProfileEducation: [],
@@ -95,9 +97,23 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
-    seekerSetCredentials: (credentials: UserCredentials) => set((state) => ({
-        seekerCredentials: credentials, // Replace the entire credentials object
-    })),
+    seekerProfileFetchEmail: async () => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set({ seekerCredentials: { ...mockSeekerCredentials } });
+                resolve();
+            }, 1000);
+        });
+    },
+
+    seekerProfileUpdateCredentials: async (credentials: UserCredentials) => {
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                set(({ seekerCredentials: { email: credentials.email, password: '' } }));
+                resolve();
+            }, 1000);
+        });
+    },
 
     seekerProfileFetchExperience: async () => {
         await new Promise<void>((resolve) => {
@@ -120,8 +136,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileUpdateExperience: async (experience) => {
-        console.log(experience);
-
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
@@ -313,4 +327,28 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
+    seekerProfileClear: () => {
+        set({
+            seekerProfileInfo: {
+                name: '',
+                country: '',
+                city: '',
+                phone: '',
+                gender: '',
+                birthdate: '',
+            },
+            seekerCredentials: {
+                email: '',
+                password: ''
+            },
+            seekerProfileExperience: [],
+            seekerProfileEducation: [],
+            seekerProfileSkills: [],
+            seekerProfileCVs: [],
+            seekerProfileReviews: [],
+            seekerProfileReviewsHasMore: true,
+            seekerProfileReviewsPage: 1,
+            seekerProfileReviewsIsLoading: false,
+        });
+    }
 });

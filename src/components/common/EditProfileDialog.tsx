@@ -1,5 +1,5 @@
 import { Dialog } from "@headlessui/react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,12 +43,11 @@ const ProfileDialog = ({
     profileInfo,
 }: ProfileDialogProps) => {
     const updateProfile = useStore.useSeekerProfileUpdateInfo();
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         register,
         handleSubmit,
-        formState: { errors },
+        formState: { errors, isSubmitting },
         reset,
         setValue,
         watch,
@@ -62,7 +61,7 @@ const ProfileDialog = ({
     const phoneValue = watch("phone");
 
     useEffect(() => {
-      reset(profileInfo);
+        reset(profileInfo);
     }, [isOpen]);
 
     const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,13 +78,8 @@ const ProfileDialog = ({
     };
 
     const onSubmit = async (data: FormData) => {
-        setIsSubmitting(true);
-        try {
-            await updateProfile(data);
-            onClose();
-        } finally {
-            setIsSubmitting(false);
-        }
+        await updateProfile(data);
+        onClose();
     };
 
     return (
@@ -282,7 +276,7 @@ const ProfileDialog = ({
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    className="!w-[30%]"
+                                    className="!w-[30%] !h-10"
                                     loading={isSubmitting}
                                 >
                                     Save Changes
