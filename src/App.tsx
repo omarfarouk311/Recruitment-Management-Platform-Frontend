@@ -6,13 +6,14 @@ import NotFound from "./pages/NotFound";
 import SeekerRoutes from "./routes/SeekerRoutes";
 import RecruiterRoutes from "./routes/RecruiterRoutes";
 import useStore from "./stores/globalStore";
+import CompanyRoutes from "./routes/CompanyRoutes";
 
 function App() {
   // for testing different user types. Will be removed after completing
   const setName = useStore.useUserSetName();
   const setRole = useStore.useUserSetRole();
   // change according to the type you need to test
-  setRole("seeker");
+  setRole("company");
   setName("John Doe");
   ///////////////////////
 
@@ -34,9 +35,9 @@ function App() {
         )}
 
         {/* To be added after creating company routes */}
-        {/* {userRole === "company" && (
+        {userRole === "company" && (
           <Route path="/company/*" element={<CompanyRoutes />} />
-        )} */}
+        )}
 
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -14,6 +14,8 @@ import { RecruiterJobOfferSlice } from "./Recruiter Slices/recruiterJobOfferSlic
 import { RecruiterInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
 import { userSlice } from "./User Slices/userSlice";
 import { SharedEntitiesSlice } from "./Shared Entities Slices/sharedEntities";
+import { CompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
+import { CompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 
 export type CombinedState =
   ForYouTabSlice &
@@ -31,4 +33,6 @@ export type CombinedState =
   RecruiterJobOfferSlice &
   RecruiterInterviewsSlice &
   userSlice &
-  SharedEntitiesSlice;
+  SharedEntitiesSlice&
+  CompanyDashboardPageSlice&
+  CompanyInvitationsSlice;
