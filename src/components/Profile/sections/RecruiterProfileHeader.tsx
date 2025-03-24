@@ -26,11 +26,6 @@ export default function ProfileHeader() {
         setIsProfileDialogOpen(false); // Close the profile dialog
     };
 
-    // Handle saving credentials updates
-    const handleSaveCredentials = (updatedCredentials: UserCredentials) => {
-        updateCredentials(updatedCredentials); // Update the credentials in the store
-        setIsAccountSettingsDialogOpen(false); // Close the account settings dialog
-    };
 
     return (
         <div className="pt-40 bg-gray-100 min-h-screen">
@@ -95,6 +90,9 @@ export default function ProfileHeader() {
                 isOpen={isAccountSettingsDialogOpen}
                 onClose={() => setIsAccountSettingsDialogOpen(false)}
                 credentials={credentials}
+                updateCredentials={async (data) => {
+                    useStore.getState().recruiterSetCredentials(data);
+                }}
             />
         </div>
     );

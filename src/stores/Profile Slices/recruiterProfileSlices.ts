@@ -30,10 +30,7 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
     },
     recruiterProfileSetProfile: (profile) => set({ recruiterProfile: profile }),
 
-    recruiterSetCredentials: (credentials: UserCredentials) => set((state) => ({
-        recruiterCredentials: credentials, // Replace the entire credentials object
-    })),
- 
+    recruiterSetCredentials: (credentials: UserCredentials) => set({ recruiterCredentials: credentials, })
 
 });
 
