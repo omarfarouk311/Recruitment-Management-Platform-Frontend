@@ -2,7 +2,7 @@ import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
 import useStore from "../stores/globalStore";
 import SeekerJobsAppliedFor from "../components/SeekerJobsAppliedFor/SeekerJobsAppliedFor";
-import SeekerAssessments from "../components/SeekerAssessments/SeekerAssessments"; // Correct import
+import SeekerAssessments from "../components/SeekerAssessments/SeekerAssessments";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
@@ -43,7 +43,7 @@ const SeekerDashboard = () => {
                 ) : activeTab === seekerDashboardTabs.assessments ? (
                     <SeekerAssessments /> // Render the Assessments component
                 ) : activeTab === seekerDashboardTabs.interviews ? (
-                    <SeekerInterviews /> // Render the Assessments component
+                    <SeekerInterviews /> // Render the interviews component
                 ): null}
             </div>
         </>
