@@ -16,12 +16,13 @@ export interface SeekerJobsAppliedForSlice {
   seekerJobsAppliedForHasMore: boolean;
   seekerJobsAppliedForIsLoading: boolean;
   seekerJobsAppliedForFilters: JobsAppliedForFilters;
-  seekerJobsAppliedForCompanyNames: {value: string, label: string}[];
+  seekerJobsAppliedForCompanyNames: { value: string; label: string }[];
   seekerJobsAppliedForFetchData: () => Promise<void>;
   seekerJobsAppliedForSetFilters: (
     filters: Partial<SeekerJobsAppliedForSlice["seekerJobsAppliedForFilters"]>
   ) => Promise<void>;
   seekerJobsAppliedForSetCompanyNames: () => Promise<void>;
+  clearSeekerJobsAppliedFor: () => void;
 }
 
 export const createSeekerJobsAppliedForSlice: StateCreator<
@@ -67,7 +68,9 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
               ...state.seekerJobsAppliedForData,
               ...newRows.map((job) => ({
                 ...job,
-                dateApplied: formatDistanceToNow(new Date(job.dateApplied), { addSuffix: true }),
+                dateApplied: formatDistanceToNow(new Date(job.dateApplied), {
+                  addSuffix: true,
+                }),
                 lastStatusUpdate: formatDistanceToNow(
                   new Date(job.lastStatusUpdate),
                   { addSuffix: true }
@@ -87,7 +90,15 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
   },
 
   seekerJobsAppliedForSetCompanyNames: async () => {
-    set({ seekerJobsAppliedForCompanyNames: [{value: "", label: "Any"}, ...mockJobsAppliedForCompanies.map((company) => ({ value: company, label: company }))] });
+    set({
+      seekerJobsAppliedForCompanyNames: [
+        { value: "", label: "Any" },
+        ...mockJobsAppliedForCompanies.map((company) => ({
+          value: company,
+          label: company,
+        })),
+      ],
+    });
   },
 
   seekerJobsAppliedForSetFilters: async (filters) => {
@@ -102,5 +113,24 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
     }));
 
     await get().seekerJobsAppliedForFetchData();
+  },
+
+  clearSeekerJobsAppliedFor: () => {
+    set({
+      seekerJobsAppliedForData: [],
+      seekerJobsAppliedForPage: 1,
+      seekerJobsAppliedForHasMore: true,
+      seekerJobsAppliedForIsLoading: false,
+      seekerJobsAppliedForFilters: {
+        remote: false,
+        country: "",
+        city: "",
+        status: "",
+        phase: "",
+        sortBy: "",
+        company: "",
+      },
+      seekerJobsAppliedForCompanyNames: [],
+    });
   },
 });

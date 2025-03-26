@@ -1,0 +1,74 @@
+import Button from "../common/Button";
+import Input from "../common/Input";
+import useStore from "../../stores/globalStore";
+
+type InstructionsModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  userRole: "seeker" | "company" | "recruiter" | null;
+};
+
+export const InstructionsDialog = ({
+  isOpen,
+  onClose,
+  userRole,
+}: InstructionsModalProps) => {
+  if (!isOpen) return null;
+  const assessmentData = useStore.useSelectedAssessment();
+  const saveAssessment = useStore.useAssessmentSaveData();
+  const updateAssessmentData = useStore.useAssessmentUpdateData();
+
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+      <div className="bg-white p-8 rounded-2xl w-[600px]">
+        <h2 className="text-3xl font-bold mb-4">
+          {userRole === "seeker" ? "Test Instructions" : "Assessment Details"}
+        </h2>
+        {userRole === "seeker" ? (
+          <ul className="list-disc pl-6 space-y-2">
+            <li>{`You have ${assessmentData?.time || 0} ${assessmentData?.time || 0 > 1? "minutes": "minute"} to complete the assessment`}</li>
+            <li>No external resources allowed</li>
+            <li>Answer all questions before submitting</li>
+          </ul>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <Input
+              label="Assessment Name:"
+              className="border rounded p-2 w-full"
+              value={assessmentData?.name}
+              onChange={(e) => updateAssessmentData("name", e.target.value)}
+              />
+            </div>
+            <div>
+              <Input
+              label="Job Title:"
+              className="border rounded p-2 w-full"
+              value={assessmentData?.jobTitle}
+              onChange={(e) => updateAssessmentData("jobTitle", e.target.value)}
+              />
+            </div>
+            <div>
+              <Input
+              label="Duration (in minutes):"
+              type="number"
+              placeholder="Enter duration"
+              value={assessmentData?.time}
+              onChange={(e) => updateAssessmentData("time", e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+        <div className="max-w-[60%] mt-6 flex justify-end space-x-4 ml-auto">
+          <Button variant="report" onClick={onClose}>
+            Close
+          </Button>
+          {userRole === "company" && (
+            <Button onClick={saveAssessment}>Submit</Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

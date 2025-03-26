@@ -30,6 +30,7 @@ export interface SeekerJobOffersSlice {
         candidateId?: number
     ) => void;
     seekerJobOfferMakeDecision: (jobId: number, decision: number) => Promise<void>;
+    clearSeekerJobOffers: () => void;
 }
 
 export const createSeekerJobOffersSlice: StateCreator<
@@ -43,7 +44,6 @@ export const createSeekerJobOffersSlice: StateCreator<
     seekerJobOffersHasMore: true,
     seekerJobOffersIsLoading: false,
     seekerJobOffersFilters: {
-        remote: false,
         country: "",
         city: "",
         status: "",
@@ -53,10 +53,12 @@ export const createSeekerJobOffersSlice: StateCreator<
     },
     seekerJobOfferDialogIsOpen: false,
     seekerJobOfferDialogJobIdAndCandidateId: { jobId: 0, candidateId: 1 },
+    seekerJobOffersCompanyNames: [],
+
+
     seekerJobOfferDialogSetIsOpen: (value) => set({ seekerJobOfferDialogIsOpen: value }),
     seekerJobOfferDialogSetJobIdAndCandidateId: (jobId, candidateId) =>
         set({ seekerJobOfferDialogJobIdAndCandidateId: { jobId, candidateId } }),
-    seekerJobOffersCompanyNames: [],
 
     seekerJobOffersFetchData: async () => {
         const {
@@ -150,4 +152,23 @@ export const createSeekerJobOffersSlice: StateCreator<
         });
     },
 
+    clearSeekerJobOffers: () => {
+        set({
+            seekerJobOffersData: [],
+            seekerJobOffersPage: 1,
+            seekerJobOffersHasMore: true,
+            seekerJobOffersIsLoading: false,
+            seekerJobOffersFilters: {
+                country: "",
+                city: "",
+                status: "",
+                phase: "",
+                sortBy: "",
+                company: "",
+            },
+            seekerJobOfferDialogIsOpen: false,
+            seekerJobOfferDialogJobIdAndCandidateId: { jobId: 0, candidateId: 1 },
+            seekerJobOffersCompanyNames: [],
+        })
+    }
 });

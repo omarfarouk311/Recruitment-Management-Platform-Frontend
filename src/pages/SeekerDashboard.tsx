@@ -15,9 +15,16 @@ const SeekerDashboard = () => {
     const useActiveTab = useStore.useSeekerDashboardActiveTab;
     const useLoadingTab = useStore.useSeekerDashboardLoadingTab;
     const useSetActiveTab = useStore.useSetSeekerDashboardActiveTab;
+    const clearSeekerJobsAppliedFor = useStore.useClearSeekerJobsAppliedFor();
+    const clearSeekerJobOffers = useStore.useClearSeekerJobOffers();
 
     useEffect(() => {
-        if(activeTab === null) setActiveTab(seekerDashboardTabs.jobsAppliedFor);
+        setActiveTab(seekerDashboardTabs.jobsAppliedFor);
+
+        return () => {
+            clearSeekerJobsAppliedFor();
+            clearSeekerJobOffers();
+        };
     }, []);
 
     return (
