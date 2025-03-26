@@ -57,14 +57,16 @@ const UserNav = ({ children }: UserNavProps) => {
       )}
 
       {/* Right Section (Home Button) */}
-      <div className="flex absolute right-10">
-        <Link
-          to={`/${userRole}/home`}
-          className="flex items-center space-x-2 hover:bg-gray-200 rounded-full px-3 py-2 transition-colors"
-        >
-          <Home className="w-6 h-6" />
-        </Link>
-      </div>
+      {userRole === "seeker" && (
+        <div className="flex absolute right-10">
+          <Link
+            to={`/${userRole}/home`}
+            className="flex items-center space-x-2 hover:bg-gray-200 rounded-full px-3 py-2 transition-colors"
+          >
+            <Home className="w-6 h-6" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

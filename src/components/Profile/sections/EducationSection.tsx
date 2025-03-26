@@ -5,7 +5,6 @@ import EducationForm from "../forms/EducationForm";
 import { Education } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
-import { formatDate } from "date-fns";
 
 export default function EducationSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -17,6 +16,7 @@ export default function EducationSection() {
   const removeEducation = useStore.useSeekerProfileRemoveEducation();
   const fetchEducation = useStore.useSeekerProfileFetchEducation();
   const [showAll, setShowAll] = useState(false);
+  const userRole = useStore.useUserRole();
 
   useEffect(() => {
     setIsLoading(true);
@@ -40,14 +40,16 @@ export default function EducationSection() {
       <div className="p-6 text-center">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Education</h2>
-          <Button
-            variant="outline"
-            className="!w-auto !h-8 !p-3"
-            onClick={handleAddEducation}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
+          {userRole === "seeker" && (
+            <Button
+              variant="outline"
+              className="!w-auto !h-8 !p-3"
+              onClick={handleAddEducation}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          )}
         </div>
 
         <div
@@ -61,50 +63,49 @@ export default function EducationSection() {
             education.map((edu: Education, index) => (
               <div
                 key={edu.id}
-                className={`relative bg-gray-100 p-4 rounded-2xl ${
+                className={`bg-gray-100 p-4 rounded-2xl ${
                   !showAll && index > 0 ? "hidden" : ""
                 }`}
               >
-                <div className="flex items-start">
-                  <div className="absolute right-4 flex space-x-5 mt-0.5">
-                    <button
-                      className="text-gray-400 hover:text-gray-600"
-                      onClick={() => handleEditEducation({ ...edu })}
-                    >
-                      <Edit className="h-5 w-5" />
-                    </button>
-
-                    <button
-                      onClick={() => removeEducation(edu.id!)}
-                      className="text-red-400 hover:text-red-600"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <div className="absolute right-24 flex">
-                    <div className="mr-4">
-                      <p className="text-md text-gray-600">
-                        {formatDate(new Date(edu.startDate), "MMM yyyy") + " "}-
-                        {" " + formatDate(new Date(edu.endDate), "MMM yyyy")}
-                      </p>
-                    </div>
-                  </div>
-
+                <div className="flex items-start gap-4">
                   <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
                     <span className="text-xl text-gray-400">
                       {edu.institution.charAt(0)}
                     </span>
                   </div>
 
-                  <div className="ml-4 text-left max-w-[85%]">
+                  <div className="flex-1 text-left">
                     <h3 className="text-lg font-medium">{edu.degree}</h3>
                     <p className="text-gray-600 break-words">
                       {edu.institution} - {edu.country}, {edu.city}
                     </p>
-                    <p className="mt-4 text-gray-700 break-words whitespace-normal">
+                    <p className="mt-2 text-gray-700 break-words whitespace-normal">
                       Grade: {edu.grade}
                     </p>
+                  </div>
+
+                  {/* Dates and Buttons */}
+                  <div className="flex items-center gap-4 ml-auto pl-4">
+                    <p className="text-md text-gray-600 whitespace-nowrap mr-2">
+                      {edu.startDate} - {edu.endDate}
+                    </p>
+
+                    {userRole === "seeker" && (
+                      <div className="flex gap-4">
+                        <button
+                          className="text-gray-400 hover:text-gray-600"
+                          onClick={() => handleEditEducation({ ...edu })}
+                        >
+                          <Edit className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => removeEducation(edu.id!)}
+                          className="text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -124,13 +125,15 @@ export default function EducationSection() {
         )}
       </div>
 
-      <EducationForm
-        education={editingEducation}
-        onClose={() => {
-          setIsFormOpen(false);
-        }}
-        isOpen={isFormOpen}
-      />
+      {userRole === "seeker" && (
+        <EducationForm
+          education={editingEducation}
+          onClose={() => {
+            setIsFormOpen(false);
+          }}
+          isOpen={isFormOpen}
+        />
+      )}
     </div>
   );
 }

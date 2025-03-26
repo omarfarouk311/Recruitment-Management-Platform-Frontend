@@ -1,4 +1,4 @@
-import ProfileInfo from "../components/Profile/sections/ProfileInfo";
+import ProfileInfo from "../components/Profile/sections/SeekerProfileInfo";
 import ExperienceSection from "../components/Profile/sections/ExperienceSection";
 import EducationSection from "../components/Profile/sections/EducationSection";
 import SkillsSection from "../components/Profile/sections/SkillsSection";
@@ -10,6 +10,7 @@ import useStore from "../stores/globalStore";
 
 function JobSeekerProfile() {
   const clearProfile = useStore.useSeekerProfileClear();
+  const userRole = useStore.useUserRole();
 
   useEffect(() => {
     return () => {
@@ -34,7 +35,7 @@ function JobSeekerProfile() {
             <ExperienceSection />
             <EducationSection />
             <SkillsSection />
-            <ReviewsSection />
+            {userRole === "seeker" && <ReviewsSection />}
           </div>
         </div>
       </div>

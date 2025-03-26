@@ -6,7 +6,7 @@ import JobDialog from "./JobDialog";
 import { mockCVs } from "../../mock data/CVs";
 import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
-import ReviewCard from "../common/Review";
+import ReviewCard from "../Review/ReviewCard";
 import InfoDialog from "../common/InfoDialog";
 
 interface JobDetailsProps {
