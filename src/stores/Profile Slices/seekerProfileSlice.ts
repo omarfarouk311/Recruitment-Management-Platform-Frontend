@@ -6,7 +6,7 @@ import { Review } from '../../types/review.ts';
 import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills, mockSeekerCredentials } from '../../mock data/seekerProfile.ts';
 import { mockSeekerProfileInfo } from '../../mock data/seekerProfile.ts';
 import config from "../../../config/config.ts";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, formatDate } from 'date-fns';
 const { paginationLimit } = config;
 let cnt = 100;
 
@@ -118,7 +118,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchExperience: async () => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
-                set({ seekerProfileExperience: [...mockExperience] });
+                set({
+                    seekerProfileExperience: mockExperience.map(exp => ({
+                        ...exp,
+                        startDate: formatDate(new Date(exp.startDate), "MMM yyyy"),
+                        endDate: formatDate(new Date(exp.endDate), "MMM yyyy")
+                    }))
+                });
                 resolve();
             }, 1000);
         });
@@ -128,7 +134,15 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileExperience: [{ ...experience, id: cnt++ }, ...state.seekerProfileExperience]
+                    seekerProfileExperience: [
+                        {
+                            ...experience,
+                            startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
+                            endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                            id: cnt++
+                        },
+                        ...state.seekerProfileExperience
+                    ]
                 }));
                 resolve();
             }, 1000);
@@ -162,7 +176,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchEducation: async () => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
-                set({ seekerProfileEducation: [...mockEducation] });
+                set({
+                    seekerProfileEducation: mockEducation.map(edu => (
+                        {
+                            ...edu,
+                            startDate: formatDate(new Date(edu.startDate), "MMM yyyy"),
+                            endDate: formatDate(new Date(edu.endDate), "MMM yyyy")
+                        }))
+                });
                 resolve();
             }, 1000);
         });
@@ -172,7 +193,15 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileEducation: [{ ...education, id: cnt++ }, ...state.seekerProfileEducation]
+                    seekerProfileEducation: [
+                        {
+                            ...education,
+                            startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
+                            endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
+                            id: cnt++
+                        },
+                        ...state.seekerProfileEducation
+                    ]
                 }));
                 resolve();
             }, 1000);
@@ -237,7 +266,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchCVs: async () => {
         await new Promise<void>((resolve) => {
             setTimeout(() => {
-                set({ seekerProfileCVs: [...mockCVs] });
+                set({
+                    seekerProfileCVs: mockCVs.map(cv => ({
+                        ...cv,
+                        createdAt: formatDistanceToNow(new Date(cv.createdAt), { addSuffix: true })
+                    }))
+                });
                 resolve();
             }, 1000);
         });
@@ -254,7 +288,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileCVs: [{ ...cv, id: cnt++ }, ...state.seekerProfileCVs]
+                    seekerProfileCVs: [
+                        {
+                            ...cv,
+                            createdAt: formatDistanceToNow(new Date(cv.createdAt), { addSuffix: true }),
+                            id: cnt++
+                        },
+                        ...state.seekerProfileCVs
+                    ]
                 }));
                 resolve();
             }, 1000);
@@ -307,8 +348,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileEducation: state.seekerProfileEducation.map((rev) =>
-                        rev.id === review.id ? { ...rev, ...review } : { ...rev }
+                    seekerProfileReviews: state.seekerProfileReviews.map((rev) => rev.id === review.id ?
+                        { ...rev, ...review } : { ...rev }
                     )
                 }));
                 resolve();
@@ -320,7 +361,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         await new Promise<void>((resolve) => {
             setTimeout(() => {
                 set((state) => ({
-                    seekerProfileReviews: state.seekerProfileReviews.filter((review) => review.id !== id)
+                    seekerProfileReviews: state.seekerProfileReviews.filter((rev) => rev.id !== id)
                 }));
                 resolve();
             }, 1000);

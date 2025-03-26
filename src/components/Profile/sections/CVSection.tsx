@@ -28,18 +28,23 @@ export default function CVSection() {
                     variant="outline"
                     className="!w-auto !h-8 !p-3"
                     onClick={() => setIsFormOpen(true)}
+                    disabled={cvs.length === 5 ? true : false}
                 >
                     <Plus className="h-4 w-4 mr-1" />
-                    Add
+                    {cvs.length === 5 ? "Cvs limit reached" : "Add"}
                 </Button>
             </div>
 
             {isLoading ? (
-                <div className="h-[135px] overflow-hidden">
+                <div className="h-[134px] overflow-hidden">
                     <SkeletonLoader />
                 </div>
+            ) : cvs.length === 0 ? (
+                <div className="h-[134px] flex items-center justify-center text-gray-500">
+                    No CVs found
+                </div>
             ) : (
-                <div className="space-y-4 max-h-[135px] overflow-y-auto">
+                <div className="space-y-4 h-[134px] overflow-y-auto px-2">
                     {cvs.map((cv) => (
                         <div
                             key={cv.id}
@@ -50,12 +55,7 @@ export default function CVSection() {
                                     {cv.name}
                                 </p>
                                 <p className="ml-10 text-sm text-gray-600">
-                                    {formatDistanceToNow(
-                                        new Date(cv.createdAt),
-                                        {
-                                            addSuffix: true,
-                                        }
-                                    )}
+                                    {cv.createdAt}
                                 </p>
                             </div>
 

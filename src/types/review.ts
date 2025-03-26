@@ -4,4 +4,5 @@ export interface Review {
     createdAt: string;
     rating: number;
     description: string;
+    companyData?: { id: number, name: string }
 }

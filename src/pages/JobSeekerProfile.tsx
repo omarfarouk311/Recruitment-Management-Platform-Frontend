@@ -1,4 +1,4 @@
-import ProfileInfo from "../components/Profile/sections/ProfileInfo";
+import ProfileInfo from "../components/Profile/sections/SeekerProfileInfo";
 import ExperienceSection from "../components/Profile/sections/ExperienceSection";
 import EducationSection from "../components/Profile/sections/EducationSection";
 import SkillsSection from "../components/Profile/sections/SkillsSection";

@@ -5,7 +5,6 @@ import ExperienceForm from "../forms/ExperienceForm";
 import { Experience } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
-import { formatDate } from "date-fns";
 
 export default function ExperienceSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -66,7 +65,7 @@ export default function ExperienceSection() {
                 }`}
               >
                 <div className="flex items-start">
-                  <div className="absolute right-4 flex space-x-5 mt-0.5">
+                  <div className="absolute right-4 flex gap-6 mt-0.5">
                     <button
                       className="text-gray-400 hover:text-gray-600"
                       onClick={() => handleEditExperience({ ...experience })}
@@ -85,13 +84,7 @@ export default function ExperienceSection() {
                   <div className="absolute right-24 flex">
                     <div className="mr-4">
                       <p className="text-md text-gray-600">
-                        {formatDate(
-                          new Date(experience.startDate),
-                          "MMM yyyy"
-                        ) + " "}
-                        -
-                        {" " +
-                          formatDate(new Date(experience.endDate), "MMM yyyy")}
+                        {experience.startDate} - {experience.endDate}
                       </p>
                     </div>
                   </div>
