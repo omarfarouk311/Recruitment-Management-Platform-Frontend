@@ -32,17 +32,19 @@ const ReviewCard = ({
             </Link>
           )}
         </h4>
-        <div className="flex items-center gap-8">
-          <span className="text-gray-600">{createdAt}</span>
+
+        {/* Date and Actions Container */}
+        <div className="flex items-center gap-4 ml-auto pl-4">
+          <span className="text-gray-600 whitespace-nowrap mr-2">{createdAt}</span>
+
           {removeReview && updateReview && (
-            <div className="flex gap-6 ml-2">
+            <div className="flex gap-4">
               <button
                 className="text-gray-400 hover:text-gray-600"
                 onClick={() => setIsFormOpen(true)}
               >
                 <Edit className="h-5 w-5" />
               </button>
-
               <button
                 onClick={() => removeReview(id)}
                 className="text-red-400 hover:text-red-600"
@@ -53,11 +55,13 @@ const ReviewCard = ({
           )}
         </div>
       </div>
+
       <div className="flex items-center space-x-1 mb-2">
         {[...Array(Math.floor(rating))].map((_, i) => (
           <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
         ))}
       </div>
+
       <p className="text-gray-800 break-words">{description}</p>
 
       {removeReview && updateReview && (

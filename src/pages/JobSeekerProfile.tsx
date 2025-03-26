@@ -10,6 +10,7 @@ import useStore from "../stores/globalStore";
 
 function JobSeekerProfile() {
   const clearProfile = useStore.useSeekerProfileClear();
+  const userRole = useStore.useUserRole();
 
   useEffect(() => {
     return () => {
@@ -34,7 +35,7 @@ function JobSeekerProfile() {
             <ExperienceSection />
             <EducationSection />
             <SkillsSection />
-            <ReviewsSection />
+            {userRole === "seeker" && <ReviewsSection />}
           </div>
         </div>
       </div>

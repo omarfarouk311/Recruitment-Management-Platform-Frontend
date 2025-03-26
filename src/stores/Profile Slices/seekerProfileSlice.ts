@@ -154,7 +154,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             setTimeout(() => {
                 set((state) => ({
                     seekerProfileExperience: state.seekerProfileExperience.map((exp) =>
-                        exp.id === experience.id ? { ...exp, ...experience } : { ...exp }
+                        exp.id === experience.id ? {
+                            ...exp,
+                            ...experience,
+                            startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
+                            endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                        } : { ...exp }
                     )
                 }));
                 resolve();
@@ -213,7 +218,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             setTimeout(() => {
                 set((state) => ({
                     seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
-                        edu.id === education.id ? { ...edu, ...education } : { ...edu }
+                        edu.id === education.id ? {
+                            ...edu,
+                            ...education,
+                            startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
+                            endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
+                        } : { ...edu }
                     )
                 }));
                 resolve();

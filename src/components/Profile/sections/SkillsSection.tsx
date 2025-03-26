@@ -11,6 +11,7 @@ export default function SkillsSection() {
   const skills = useStore.useSeekerProfileSkills();
   const removeSkill = useStore.useSeekerProfileRemoveSkill();
   const fetchSkills = useStore.useSeekerProfileFetchSkills();
+  const userRole = useStore.useUserRole();
 
   useEffect(() => {
     setIsLoading(true);
@@ -24,14 +25,16 @@ export default function SkillsSection() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Skills</h2>
-          <Button
-            variant="outline"
-            onClick={() => setIsFormOpen(true)}
-            className="!w-auto !h-8 !p-3"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
+          {userRole === "seeker" && (
+            <Button
+              variant="outline"
+              onClick={() => setIsFormOpen(true)}
+              className="!w-auto !h-8 !p-3"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -46,12 +49,14 @@ export default function SkillsSection() {
                 className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
               >
                 <span className="text-sm text-black">{skill.name}</span>
-                <button
-                  onClick={() => removeSkill(skill.id!)}
-                  className="ml-2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                {userRole === "seeker" && (
+                  <button
+                    onClick={() => removeSkill(skill.id!)}
+                    className="ml-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -59,7 +64,9 @@ export default function SkillsSection() {
           <p> className="text-gray-600" No skills to show.</p>
         )}
 
-        <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+        {userRole === "seeker" && (
+          <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+        )}
       </div>
     </div>
   );

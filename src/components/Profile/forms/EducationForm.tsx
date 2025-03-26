@@ -8,6 +8,7 @@ import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import type { Education } from "../../../types/profile";
 import LocationSearch from "../../common/LocationSearch";
+import { format, parse } from "date-fns";
 
 const schema = z.object({
   institution: z.string().min(1, "Institution is required"),
@@ -46,7 +47,7 @@ export default function EducationDialog({
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: education ?? {
+    defaultValues: {
       institution: "",
       degree: "",
       country: "",
@@ -62,8 +63,19 @@ export default function EducationDialog({
   const selectedCity = watch("city");
 
   useEffect(() => {
-    reset(
-      education || {
+    if (education) {
+      // Convert stored dates from MMM yyyy to yyyy-MM format
+      const formatForInput = (dateString: string) => {
+        return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+      };
+
+      reset({
+        ...education,
+        startDate: formatForInput(education.startDate),
+        endDate: formatForInput(education.endDate),
+      });
+    } else {
+      reset({
         institution: "",
         degree: "",
         country: "",
@@ -71,8 +83,8 @@ export default function EducationDialog({
         startDate: "",
         endDate: "",
         grade: "",
-      }
-    );
+      });
+    }
   }, [isOpen]);
 
   const onSubmit = async (data: FormData) => {
@@ -164,12 +176,18 @@ export default function EducationDialog({
                   <LocationSearch
                     selectedCountry={selectedCountry}
                     onCountryChange={(value) => {
-                      setValue("country", value, { shouldValidate: true });
-                      setValue("city", "", { shouldValidate: true });
+                      setValue("country", value, {
+                        shouldValidate: true,
+                      });
+                      setValue("city", "", {
+                        shouldValidate: true,
+                      });
                     }}
                     selectedCity={selectedCity}
                     onCityChange={(value) =>
-                      setValue("city", value, { shouldValidate: true })
+                      setValue("city", value, {
+                        shouldValidate: true,
+                      })
                     }
                   />
                 </div>

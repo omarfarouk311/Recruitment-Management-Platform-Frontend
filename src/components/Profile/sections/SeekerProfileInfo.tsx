@@ -12,6 +12,7 @@ export default function ProfileInfo() {
     const [isLoading, setIsLoading] = useState(true);
     const credentials = useStore.useSeekerCredentials();
     const fetchEmail = useStore.useSeekerProfileFetchEmail();
+    const userRole = useStore.useUserRole();
 
     // State for Profile Dialog
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
@@ -29,13 +30,19 @@ export default function ProfileInfo() {
     }, []);
 
     return (
-        <div className="bg-white rounded-3xl shadow mb-4">
+        <div className="bg-white rounded-3xl shadow mb-4 h-[230px]">
             {isLoading ? (
-                <div className="h-[230px] overflow-hidden">
+                <div className="h-full overflow-hidden">
                     <SkeletonLoader />
                 </div>
             ) : (
-                <div className="flex items-center justify-between px-6 py-14 h-[230px]">
+                <div
+                    className={`flex items-center ${
+                        userRole === "seeker"
+                            ? "justify-between"
+                            : "justify-center mr-12"
+                    } px-6 py-14 h-full`}
+                >
                     <div className="flex items-center">
                         <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
                             {profileInfo.image ? (
@@ -62,45 +69,55 @@ export default function ProfileInfo() {
                         </div>
                     </div>
 
-                    {/* Vertical line divider */}
-                    <div className="self-stretch w-px bg-black mx-6" />
+                    {userRole === "seeker" && (
+                        <>
+                            {/* Vertical line divider */}
+                            <div className="self-stretch w-px bg-black mx-6" />
 
-                    <div className="flex flex-col space-y-6">
-                        {/* Account Settings Button */}
-                        <Button
-                            variant="outline"
-                            className="w-[150px]"
-                            onClick={() => setIsAccountSettingsDialogOpen(true)} // Open the account settings dialog
-                        >
-                            <Settings className="h-4 w-4 mr-2" />
-                            Account Settings
-                        </Button>
+                            <div className="flex flex-col space-y-6">
+                                {/* Account Settings Button */}
+                                <Button
+                                    variant="outline"
+                                    className="w-[150px]"
+                                    onClick={() =>
+                                        setIsAccountSettingsDialogOpen(true)
+                                    } // Open the account settings dialog
+                                >
+                                    <Settings className="h-4 w-4 mr-2" />
+                                    Account Settings
+                                </Button>
 
-                        {/* Edit Profile Button */}
-                        <Button
-                            variant="outline"
-                            className="w-[150px]"
-                            onClick={() => setIsProfileDialogOpen(true)} // Open the profile dialog
-                        >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Profile
-                        </Button>
-                    </div>
+                                {/* Edit Profile Button */}
+                                <Button
+                                    variant="outline"
+                                    className="w-[150px]"
+                                    onClick={() => setIsProfileDialogOpen(true)} // Open the profile dialog
+                                >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit Profile
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 
-            {/* Profile Dialog */}
-            <ProfileDialog
-                isOpen={isProfileDialogOpen}
-                onClose={() => setIsProfileDialogOpen(false)}
-                profileInfo={profileInfo}
-            />
-            {/* Account Settings Dialog */}
-            <CredentialsDialog
-                isOpen={isAccountSettingsDialogOpen}
-                onClose={() => setIsAccountSettingsDialogOpen(false)}
-                credentials={credentials}
-            />
+            {userRole === "seeker" && (
+                <>
+                    {/* Profile Dialog */}
+                    <ProfileDialog
+                        isOpen={isProfileDialogOpen}
+                        onClose={() => setIsProfileDialogOpen(false)}
+                        profileInfo={profileInfo}
+                    />
+                    {/* Account Settings Dialog */}
+                    <CredentialsDialog
+                        isOpen={isAccountSettingsDialogOpen}
+                        onClose={() => setIsAccountSettingsDialogOpen(false)}
+                        credentials={credentials}
+                    />
+                </>
+            )}
         </div>
     );
 }

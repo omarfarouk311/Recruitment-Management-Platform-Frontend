@@ -8,6 +8,7 @@ import useStore from "../../../stores/globalStore";
 import type { Experience } from "../../../types/profile";
 import { useEffect } from "react";
 import LocationSearch from "../../common/LocationSearch";
+import { format, parse } from "date-fns";
 
 // Zod schema for validation
 const schema = z.object({
@@ -47,7 +48,7 @@ export default function ExperienceDialog({
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: experience ?? {
+    defaultValues: {
       companyName: "",
       position: "",
       country: "",
@@ -63,17 +64,30 @@ export default function ExperienceDialog({
   const selectedCity = watch("city");
 
   useEffect(() => {
-    reset(
-      experience || {
-        companyName: "",
-        position: "",
-        country: "",
-        city: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-      }
-    );
+    if (experience) {
+      // Convert stored dates from MMM yyyy to yyyy-MM format
+      const formatForInput = (dateString: string) => {
+        return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+      };
+
+      reset({
+        ...experience,
+        startDate: formatForInput(experience.startDate),
+        endDate: formatForInput(experience.endDate),
+      });
+    } else {
+      reset(
+        experience || {
+          companyName: "",
+          position: "",
+          country: "",
+          city: "",
+          startDate: "",
+          endDate: "",
+          description: "",
+        }
+      );
+    }
   }, [isOpen]);
 
   const onSubmit = async (data: FormData) => {
