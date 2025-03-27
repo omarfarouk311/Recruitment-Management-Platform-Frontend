@@ -1,7 +1,6 @@
 import { StateCreator } from 'zustand';
 import { CompanyCard, CompaniesTabFilters } from '../../types/company';
 import { mockCompanies, mockCompanyIndustries, mockCompanyLocations } from "../../mock data/seekerCompanies";
-import { mockIndustries } from '../../mock data/seekerForYou';
 import { CombinedState } from '../storeTypes';
 import config from '../../../config/config';
 
@@ -14,14 +13,13 @@ export interface CompaniesTabSlice {
     companiesTabIsCompaniesLoading: boolean;
     companiesTabFilters: CompaniesTabFilters;
     companiesTabSearchQuery: string;
-    companiesTabIndustryOptions: { value: string, label: string }[];
     companiesTabFetchCompanies: () => Promise<void>;
     companiesTabSetFilters: (filters: Partial<CompaniesTabSlice['companiesTabFilters']>) => Promise<void>;
     companiesTabSetSearchQuery: (query: string) => void;
     companiesTabApplySearch: () => Promise<void>;
-    companiesTabSetIndustryOptions: () => Promise<void>;
     companiesTabFetchCompanyIndustries: (id: number) => Promise<void>;
     companiesTabFetchCompanyLocations: (id: number) => Promise<void>;
+    companiesTabClear: () => void
 }
 
 export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], CompaniesTabSlice> = (set, get, _api) => ({
@@ -38,7 +36,6 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         rating: ''
     },
     companiesTabSearchQuery: '',
-    companiesTabIndustryOptions: [],
 
     companiesTabFetchCompanies: async () => {
         const { companiesTabHasMore, companiesTabIsCompaniesLoading } = get();
@@ -95,25 +92,6 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         });
 
         await get().companiesTabFetchCompanies();
-    },
-
-    companiesTabSetIndustryOptions: async () => {
-        // mock API call
-        try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set({
-                    companiesTabIndustryOptions: [
-                        { value: "", label: "Any" },
-                        ...mockIndustries.map(({ value, label }) => ({ value: value.toString(), label }))
-                    ]
-                });
-
-                resolve();
-            }, 500));
-        }
-        catch (err) {
-            set({ companiesTabIndustryOptions: [] });
-        }
     },
 
     companiesTabFetchCompanyIndustries: async (id) => {
@@ -178,5 +156,23 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         catch (err) {
             console.error(err);
         }
+    },
+
+    companiesTabClear: () => {
+        set({
+            companiesTabCompanies: [],
+            companiesTabPage: 1,
+            companiesTabHasMore: true,
+            companiesTabIsCompaniesLoading: false,
+            companiesTabFilters: {
+                country: '',
+                city: '',
+                industry: '',
+                type: '',
+                size: '',
+                rating: ''
+            },
+            companiesTabSearchQuery: ''
+        })
     }
 });

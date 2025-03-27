@@ -1,12 +1,10 @@
 export const dateOptions = [
-    { value: "", label: "Any" },
     { value: "today", label: "Today" },
     { value: "last week", label: "Last Week" },
     { value: "last month", label: "Last Month" }
 ];
 
 export const ratingOptions = [
-    { value: "", label: "Any" },
     { value: "1", label: "1 star & up" },
     { value: "2", label: "2 stars & up" },
     { value: "3", label: "3 stars & up" },
@@ -15,13 +13,11 @@ export const ratingOptions = [
 ];
 
 export const typeOptions = [
-    { value: "", label: "Any" },
     { value: "true", label: "Public" },
     { value: "false", label: "Private" },
 ];
 
 export const sizeOptions = [
-    { value: "", label: "Any" },
     { value: "1-50", label: "1-50" },
     { value: "51-200", label: "51-200" },
     { value: "201-500", label: "201-500" },

@@ -19,23 +19,22 @@ export const createHomePageSlice: StateCreator<CombinedState, [], [], HomePageSl
 
     setHomePageActiveTab: async (tab) => {
         const {
-            homePageActiveTab,
-            homePageLoadingTab,
             forYouTabFetchJobs,
-            forYouTabJobs,
             companiesTabFetchCompanies,
-            companiesTabCompanies
+            forYouTabClear,
+            companiesTabClear,
+            homePageActiveTab
         } = get();
 
-        if (tab === homePageActiveTab || homePageLoadingTab) return;
-
         set({ homePageActiveTab: tab, homePageLoadingTab: tab });
-        // fetch recommended jobs on on switch after being in searching state or if no jobs were fetched before
-        if (tab === HomePageTabs.ForYou && (homePageActiveTab === HomePageTabs.JobSearch || !forYouTabJobs.length)) {
+        if (tab === HomePageTabs.ForYou) {
+            if (homePageActiveTab === HomePageTabs.Companies) companiesTabClear();
+            else forYouTabClear();
             await forYouTabFetchJobs();
         }
-        // fetch companies on switch if no companies were fetched before
-        else if (tab === HomePageTabs.Companies && !companiesTabCompanies.length) {
+        else if (tab === HomePageTabs.Companies) {
+            if (homePageActiveTab === HomePageTabs.Companies) companiesTabClear();
+            else forYouTabClear();
             await companiesTabFetchCompanies();
         }
         set({ homePageLoadingTab: null });

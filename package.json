@@ -12,21 +12,31 @@
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-slot": "^1.0.2",
     "@supabase/supabase-js": "^2.39.7",
     "auto-zustand-selectors-hook": "^3.0.1",
-    "axios": "^1.8.1",
+    "axios": "^1.8.4",
+    "class-variance-authority": "^0.7.0",
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
+    "libphonenumber-js": "^1.12.6",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
+    "react-datepicker": "^8.2.1",
     "react-dom": "^18.3.1",
-    "react-phone-number-input": "^3.4.11",
+    "react-hook-form": "^7.51.0",
+    "react-phone-number-input": "^3.4.12",
     "react-router-dom": "^6.22.2",
     "react-select": "^5.9.0",
+    "tailwind-merge": "^3.0.2",
+    "zod": "^3.22.4",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@hookform/resolvers": "^3.3.4",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
@@ -39,6 +49,6 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2"
+    "vite": "^6.2.1"
   }
 }

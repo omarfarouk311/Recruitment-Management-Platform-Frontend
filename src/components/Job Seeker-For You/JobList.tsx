@@ -48,7 +48,7 @@ const JobList = ({
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, isLoading]);
+  }, [isLoading]);
 
   return (
     <>
