@@ -20,7 +20,7 @@ const SeekerJobsAppliedFor = () => {
     const useSetCompanyNames = useStore.useSeekerJobsAppliedForSetCompanyNames();
     const fetchData = useFetchData();
     const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
-    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId();
 
     useEffect(() => {
         setFilters({city: "", country: "", status: "", phase: "", sortBy: "", company: "", remote: false});
@@ -142,7 +142,6 @@ const SeekerJobsAppliedFor = () => {
                 <JobDetailsDialog 
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
         </div>

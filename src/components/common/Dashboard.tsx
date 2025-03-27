@@ -68,7 +68,7 @@ function Dashboard<T>({
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={`pb-4 px-20 text-center ${column.headerClassName || ""}`}
+                className={`pb-4 px-10 text-center ${column.headerClassName || ""}`}
               >
                 {column.header}
               </th>

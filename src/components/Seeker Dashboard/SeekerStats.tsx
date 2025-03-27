@@ -60,7 +60,7 @@ function SeekerStats() {
 
   return (
     <div className="flex items-center mb-6 mt-6 bg-white min-h-[70px] p-4 rounded-2xl shadow w-[70%] mx-auto">
-      <div className="grid grid-flow-col auto-cols-fr justify-evenly w-full">
+      <div className="grid grid-flow-col auto-cols-fr justify-evenly w-full gap-4">
         {
           isLoading? (
             <div className="max-h-[60px] overflow-y-hidden">
@@ -93,7 +93,7 @@ function SeekerStats() {
     
                 {/* Vertical line - positioned after the content */}
                 {index < stats.length - 1 && (
-                  <div className="absolute right-[-2rem] top-1/2 -translate-y-1/2 h-10 w-px bg-gray-300 hidden md:block" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-px bg-gray-300 hidden md:block" />
                 )}
               </div>
             ))
