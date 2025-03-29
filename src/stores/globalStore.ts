@@ -20,6 +20,7 @@ import { createUserSlice, userSlice } from "./User Slices/userSlice";
 import { createSharedEntitiesSlice } from "./Shared Entities Slices/sharedEntities";
 import { createCompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
 import { createCompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
+import { createCompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
 
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
@@ -42,6 +43,7 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createSharedEntitiesSlice(...a),
             ...createCompanyDashboardPageSlice(...a),
             ...createCompanyInvitationsSlice(...a),
+            ...createCompanyLogsSlice(...a),
         }),
         {
             name: "user-store",

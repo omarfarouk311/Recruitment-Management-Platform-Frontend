@@ -22,14 +22,15 @@ export const createCompanyDashboardPageSlice: StateCreator<CombinedState, [], []
     companyDashboardLoadingTab:null,
 
     setCompanyDashboardActiveTab: async (tab) => {
-        const { companyDashboardActiveTab, companyDashboardLoadingTab, companyInvitationsFetchData } = get();
+        const { companyDashboardActiveTab, companyDashboardLoadingTab, companyLogsFetchData,companyInvitationsFetchData } = get();
         if (tab === companyDashboardActiveTab || companyDashboardLoadingTab) return;
 
         set({ companyDashboardActiveTab: tab, companyDashboardLoadingTab: tab });
 
         if(tab === companyDashboardTabs.invitations)
             await companyInvitationsFetchData();
-
+        else if(tab === companyDashboardTabs.logs)
+            await companyLogsFetchData();
         setTimeout(() => {
             set({ companyDashboardLoadingTab: null });
         }, 1000)

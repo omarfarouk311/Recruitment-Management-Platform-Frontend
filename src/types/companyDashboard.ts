@@ -25,3 +25,17 @@ export const InvitationsSortByFilterOptions = [
   { value: "2", label: "Deadline (Ascending)" },
   { value: "-2", label: "Deadline (Descending)" },
 ];
+
+export interface Logs {
+  performedBy: string;
+  performedAt: string;
+  actionType: string;
+  extraData: Object;
+}
+
+export interface LogsFilters {
+  performedBy: string;
+  date: string;
+  action: string;
+}
+

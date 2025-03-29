@@ -5,6 +5,7 @@ import TabGroup from "../components/Tabs/TabGroup";
 import { companyDashboardTabs } from "../stores/Company Dashboard Slice/dashboardPageSlice";
 import useStore from "../stores/globalStore";
 import { useEffect } from "react";
+import CompanyLogs from "../components/Company Dashboard/CompanyLogs";
 
 const CompanyDashboard = () => {
   const activeTab = useStore.useCompanyDashboardActiveTab();
@@ -46,6 +47,8 @@ const CompanyDashboard = () => {
           <SkeletonLoader />
         ) : activeTab == companyDashboardTabs.invitations ? (
           <CompanyInvitations />
+        ) : activeTab == companyDashboardTabs.logs ? (
+          <CompanyLogs />
         ) : null}
       </div>
     </>

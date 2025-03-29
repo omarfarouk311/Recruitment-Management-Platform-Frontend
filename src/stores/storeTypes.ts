@@ -16,6 +16,7 @@ import { userSlice } from "./User Slices/userSlice";
 import { SharedEntitiesSlice } from "./Shared Entities Slices/sharedEntities";
 import { CompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
 import { CompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
+import { CompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
 
 export type CombinedState =
   ForYouTabSlice &
@@ -35,4 +36,5 @@ export type CombinedState =
   userSlice &
   SharedEntitiesSlice&
   CompanyDashboardPageSlice&
-  CompanyInvitationsSlice;
+  CompanyInvitationsSlice&
+  CompanyLogsSlice;
