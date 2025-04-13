@@ -49,6 +49,6 @@ export interface UserCredentials {
 
 export interface RecruiterProfileInfo {
   avatar?: string;
-  name: string;
+  recruitername: string;
 }
 

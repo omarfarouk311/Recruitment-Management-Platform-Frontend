@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Edit } from "lucide-react";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import ProfileDialog from "../../common/RecruiterEditProfileDialog"; // Import the ProfileDialog component
 import CredentialsDialog from "../../common/AccountSettingDialog"; // Import the CredentialsDialog component
 import { RecruiterProfileInfo as UserProfile } from "../../../types/profile";
-import { UserCredentials } from "../../../types/profile"
+import axios from 'axios';
+import SkeletonLoader from "../../common/SkeletonLoader";
 
 
 export default function ProfileHeader() {
+    const [isLoading, setIsLoading] = useState(true);
+
     const profile = useStore.useRecruiterProfile();
-    const updateProfile = useStore.useRecruiterProfileSetProfile();
+    const fetchRecruiterProfile = useStore.useFetchRecruiterProfile();
+    const updateProfile = useStore.useUpdateRecruiterProfile();
+
     const credentials = useStore.useRecruiterCredentials(); // Get credentials from the store
-    const updateCredentials = useStore.useRecruiterSetCredentials(); // Get the update function from the store
 
     // State for Profile Dialog
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
@@ -21,33 +25,78 @@ export default function ProfileHeader() {
     const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] = useState(false);
 
     // Handle saving profile updates
-    const handleSaveProfile = (updatedProfile: UserProfile) => {
-        updateProfile(updatedProfile); // Update the profile in the store
-        setIsProfileDialogOpen(false); // Close the profile dialog
-    };
+    const handleSaveProfile = async (data: UserProfile) => {
+        let cleanup: () => void;
+
+        try {
+            console.log(data)
+            cleanup = await updateProfile(data);
+            alert("Profile saved!");
+        } catch (error) {
+            if (!axios.isCancel(error)) {
+                alert(`Error`)
+                console.log(error)
+            }
+        }
+
+        return () => {
+            // Cancel request if component unmounts
+            cleanup?.();
+        };
+    }
+
+    useEffect(() => {
+        let cleanup: () => void;
+
+        const loadData = async () => {
+            try {
+                setIsLoading(true);
+                cleanup = await fetchRecruiterProfile(); // Get cleanup function
+            } catch (error) {
+                if (!axios.isCancel(error)) {
+                    console.error("Failed to load profile:", error);
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+
+        loadData();
+
+        return () => {
+            // Cancel request if component unmounts
+            cleanup?.();
+        };
+    }, []);
 
 
     return (
-        <div className="pt-40 bg-gray-100 min-h-screen">
+        isLoading ? (
+            <div className="h-[230px] overflow-hidden">
+                <SkeletonLoader />
+            </div>
+        ) :
+         ( <div className="pt-40 bg-gray-100 min-h-screen">
             <div className="bg-white rounded-2xl shadow p-12 w-full max-w-2xl flex mx-auto">
                 {/* Left Side: Profile Photo and Name */}
                 <div className="flex-1 flex flex-col items-center justify-center space-y-6 pr-8">
                     <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                         {!profile.avatar && (
                             <span className="text-4xl text-gray-400">
-                                {profile.name.charAt(0)}
+                                {profile.recruitername}
                             </span>
                         )}
                         {profile.avatar && (
                             <img
                                 src={profile.avatar}
-                                alt={profile.name}
+                                alt={profile.recruitername}
                                 className="h-full w-full object-cover"
                             />
                         )}
                     </div>
                     {/* User Name */}
-                    <h2 className="text-xl font-medium text-gray-700">{profile.name}</h2>
+                    <h2 className="text-xl font-medium text-gray-700">{profile.recruitername}</h2>
                 </div>
 
                 {/* Vertical Line */}
@@ -91,9 +140,10 @@ export default function ProfileHeader() {
                 onClose={() => setIsAccountSettingsDialogOpen(false)}
                 credentials={credentials}
                 updateCredentials={async (data) => {
-                    useStore.getState().recruiterSetCredentials(data);
+                    useStore.getState().updateRecruiterCredentials(data);
                 }}
             />
         </div>
+            )
     );
 }
