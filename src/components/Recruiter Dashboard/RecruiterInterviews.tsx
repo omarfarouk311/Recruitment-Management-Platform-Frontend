@@ -30,10 +30,9 @@ const RecruiterInterviews = () => {
     }, []);
 
     // Function to handle date update
-    const handleUpdateDate = async (jobId: number, newDate: string) => {
+    const handleUpdateDate = async (jobId: number, seekerId: number, newDate: string) => {
         try {
-            await useUpdateDate({ jobId, date: newDate }); // Call the store function to update the date
-            fetchData(); // Refresh the data after updating
+            await useUpdateDate({ jobId, seekerId, date: newDate }); // Call the store function to update the date
         } catch (error) {
             console.error("Failed to update date:", error);
         }
@@ -61,11 +60,12 @@ const RecruiterInterviews = () => {
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [currentJobId, setCurrentJobId] = useState<number | null>(null);
+    const [currentSeekerId, setCurrentSeekerId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
     // Function to handle date selection
     const handleDateConfirm = () => {
-        if (selectedDate && currentJobId) {
+        if (selectedDate && currentJobId && currentSeekerId) {
             // Convert the selected local time to UTC
             const utcDate = new Date(
                 Date.UTC(
@@ -79,10 +79,11 @@ const RecruiterInterviews = () => {
             );
 
             const formattedDate = utcDate.toISOString(); // Format the date as needed
-            handleUpdateDate(currentJobId, formattedDate); // Call the update function
+            handleUpdateDate(currentJobId, currentSeekerId, formattedDate); // Call the update function
             setSelectedDate(null); // Reset the selected date
             setCurrentJobId(null); // Reset the job ID
             setIsModalOpen(false); // Close the modal
+            setCurrentSeekerId(null); // Reset the seeker ID
         }
     };
 
@@ -133,7 +134,8 @@ const RecruiterInterviews = () => {
                 <div>
                     <Button
                         onClick={() => {
-                            setCurrentJobId(row.userId); // Set the job ID for the current row
+                            setCurrentJobId(row.jobId); // Set the job ID for the current row
+                            setCurrentSeekerId(row.userId);
                             setSelectedDate(row.date ? new Date(row.date) : null); // Set the current date if available
                             setIsModalOpen(true); // Open the modal
                         }}
@@ -183,12 +185,13 @@ const RecruiterInterviews = () => {
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <DatePicker
                             selected={selectedDate}
-                            onChange={(date: Date | null) => setSelectedDate(date)}
+                            onChange={setSelectedDate}
                             showTimeSelect
-                            timeFormat="HH:mm"
+                            timeFormat="h:mm aa"  // AM/PM format
                             timeIntervals={15}
-                            dateFormat="yyyy-MM-dd HH:mm"
-                            inline // Renders the calendar inline
+                            dateFormat="MMMM d, yyyy h:mm aa" // "June 5, 2023 2:30 PM"
+                            timeCaption="Time"
+                            className="border rounded p-2 w-full"
                         />
                         <div className="flex justify-end space-x-4 mt-4">
                             <Button onClick={handleDateConfirm}>Confirm</Button>

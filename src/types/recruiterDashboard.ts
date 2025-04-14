@@ -26,6 +26,7 @@ export interface DashboardInterviewsFilters {
 
 export interface updateInterviewDate {
     jobId: number;
+    seekerId: number;
     date: string;
 }
 
