@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
-import { mockJobOffersOverview } from "../../mock data/jobOffers";
 import { JobOfferOverviewType } from "../../types/jobOffer";
 import { SeekerJobOffersDashboardFilter } from "../../types/seekerDashboard";
 import axios from "axios";
@@ -113,12 +112,18 @@ export const createSeekerJobOffersSlice: StateCreator<
     },
 
     seekerJobOffersSetCompanyNames: async () => {
+        const { status } = get().seekerJobOffersFilters;
+        let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/company-names/`, { params: status? {status: status}: {} });
+        
+        if (res.status !== 200) {
+            throw new Error("Error fetching data");
+        }
+
         set({
             seekerJobOffersCompanyNames: [
-                { value: "", label: "Any" },
-                ...mockJobOffersOverview.map(({ companyName }) => ({
-                    value: companyName,
-                    label: companyName,
+                ...res.data.map((company: {companyId: number; companyName: string}) => ({
+                    value: company.companyId,
+                    label: company.companyName,
                 })),
             ],
         });
@@ -139,23 +144,18 @@ export const createSeekerJobOffersSlice: StateCreator<
     },
 
     seekerJobOfferMakeDecision: async (jobId, decision) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                mockJobOffersOverview[jobId].status = JobOfferDecision[decision];
-                set((prev) => ({
-                    seekerJobOffersData: prev.seekerJobOffersData.map(value => {
-                        if (jobId === value.jobId) {
-                            return {
-                                ...value,
-                                status: JobOfferDecision[decision]
-                            };
-                        }
-                        return value;
-                    })
-                }));
-                resolve();
-            }, 500);
-        });
+        let res = await axios.patch(`${config.API_BASE_URL}/seekers/job-offers/reply/${jobId}`, { status: decision });
+        if (res.status !== 200) {
+            throw new Error("Error making decision");
+        }
+        set((prev) => ({
+            seekerJobOffersData: prev.seekerJobOffersData.filter(value => {
+                if (jobId === value.jobId) {
+                    return false;
+                }
+                return true;
+            })
+        }));
     },
 
     clearSeekerJobOffers: () => {

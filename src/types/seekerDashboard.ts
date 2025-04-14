@@ -33,7 +33,6 @@ export const DashboardStatusFilterOptions = [
 ]
 
 export const DashboardSortByFilterOptions = [
-    { value: "", label: "Any" },
     { value: "1", label: "Date Applied (Ascending)" },
     { value: "-1", label: "Date Applied (Descending)" },
     { value: "2", label: "Last Status Update (Ascending)" },

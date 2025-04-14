@@ -155,6 +155,7 @@ const SeekerJobOffers = () => {
                         options={DashboardStatusFilterOptions}
                         selectedValue={filters.status}
                         onSelect={(value) => setFilters({ status: value })}
+                        addAnyOption={false}
                     />
 
                     <FilterDropdown
