@@ -24,6 +24,8 @@ export interface DashboardFilters{
     company: string  
 }
 
+export type SeekerJobOffersDashboardFilter = Omit<DashboardFilters, 'phase'>;
+
 export const DashboardStatusFilterOptions = [
     { value: "", label: "Pending" },
     { value: "0", label: "Rejected" },

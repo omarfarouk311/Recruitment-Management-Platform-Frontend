@@ -200,7 +200,6 @@ const RecruiterCandidates = () => {
                 <JobDetailsDialog
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
         </div>
