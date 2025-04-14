@@ -48,7 +48,6 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createCompanyDashboardPageSlice(...a),
             ...createCompanyInvitationsSlice(...a),
             ...createCompanyLogsSlice(...a),
-            ...createInterviewsSlice(...a),
             ...createRecruiterProfileSlice(...a),
         }),
         {

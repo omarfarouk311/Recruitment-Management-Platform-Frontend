@@ -1,6 +1,6 @@
 export interface Invitations {
     department: string;
-    companyName: string;
+    name: string;
     companyId: number
     dateReceived: string;
     deadline: string;
@@ -16,6 +16,7 @@ export interface Interviews {
     date: string;
     location: string;
     candidateLocation: string;
+    isRemote: boolean;
 }
 
 export interface DashboardInterviewsFilters {
@@ -25,6 +26,7 @@ export interface DashboardInterviewsFilters {
 
 export interface updateInterviewDate {
     jobId: number;
+    seekerId: number;
     date: string;
 }
 
@@ -36,13 +38,12 @@ export interface DashboardFilters {
 }
 
 export const DashboardStatusFilterOptions = [
-    { value: "", label: "Pending" },
+    { value: "-1", label: "Pending" },
     { value: "0", label: "Rejected" },
     { value: "1", label: "Accepted" },
 ]
 
 export const DashboardSortByFilterOptions = [
-    { value: "", label: "Any" },
     { value: "1", label: "Date (Ascending)" },
     { value: "-1", label: "Date (Descending)" },
     { value: "2", label: "Deadline (Ascending)" },

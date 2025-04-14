@@ -6,7 +6,6 @@ import { z } from "zod";
 import Button from "../common/Button";
 import { useEffect, useState } from "react";
 import type { UserCredentials } from "../../types/profile";
-import useStore from "../../stores/globalStore";
 
 // Zod schema for validation
 const schema = z.object({
