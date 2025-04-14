@@ -1,9 +1,12 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { Interviews, DashboardInterviewsFilters, updateInterviewDate } from "../../types/recruiterDashboard";
-import { mockInterviews } from "../../mock data/recruiterInterviews";
+import axios from 'axios';
+import config from '../../../config/config.ts';
+const API_BASE_URL = config.API_BASE_URL;
 
 export interface RecruiterInterviewsSlice {
+    recruiterJobTitles: string[];
     recruiterInterviewsData: Interviews[];
     recruiterInterviewsPage: number;
     recruiterInterviewsHasMore: boolean;
@@ -13,6 +16,7 @@ export interface RecruiterInterviewsSlice {
     recruiterInterviewsSetUpateDate: (date: updateInterviewDate) => Promise<void>;
     recruiterInterviewsFetchData: () => Promise<void>;
     recruiterInterviewsSetFilters: (filters: Partial<RecruiterInterviewsSlice['recruiterInterviewsFilters']>) => void;
+    resetAllData: () => void;
 }
 
 
@@ -21,7 +25,8 @@ export const createInterviewsSlice: StateCreator<
     [],
     [],
     RecruiterInterviewsSlice
-> = (set, get) => ({
+    > = (set, get) => ({
+    recruiterJobTitles: [],
     recruiterInterviewsData: [],
     recruiterInterviewsPage: 1,
     recruiterInterviewsHasMore: true,
@@ -33,6 +38,23 @@ export const createInterviewsSlice: StateCreator<
     recruiterInterviewsUpateDate: {
         jobId: 0,
         date: "",
+    },
+    resetAllData: () => {
+        set({
+            recruiterJobTitles: [],
+            recruiterInterviewsData: [],
+            recruiterInterviewsPage: 1,
+            recruiterInterviewsHasMore: true,
+            recruiterInterviewsIsLoading: false,
+            recruiterInterviewsFilters: {
+                sortByDate: "",
+                jobTitle: "",
+            },
+            recruiterInterviewsUpateDate: {
+                jobId: 0,
+                date: "",
+            },
+        });
     },
     recruiterInterviewsSetUpateDate: async ({ jobId, date }) => {
         const { recruiterInterviewsData } = get();
@@ -59,47 +81,41 @@ export const createInterviewsSlice: StateCreator<
         set({ recruiterInterviewsIsLoading: true });
 
         try {
-            // Simulate API call with a delay
-            await new Promise<void>((resolve) =>
-                setTimeout(() => {
-                    const startIndex = (recruiterInterviewsPage - 1) * 5;
-                    const endIndex = startIndex + 5;
 
-                    // Apply filters (if any)
-                    const filteredData = mockInterviews.filter((interview) => {
-                        if (recruiterInterviewsFilters.jobTitle && interview.jobTitle !== recruiterInterviewsFilters.jobTitle) {
-                            return false;
-                        }
-                        return true;
-                    });
+            // Make API call with filters and pagination
+            const jobTitles = await axios.get(`${API_BASE_URL}/candidates/job-title-filter`)
+            set(() => ({
+                recruiterJobTitles: jobTitles.data.jobTitle
+            }))
+            const response = await axios.get(`${API_BASE_URL}/interviews`, {
+                params: Object.fromEntries(
+                    Object.entries({
+                        page: recruiterInterviewsPage,
+                        sort: recruiterInterviewsFilters.sortByDate,
+                        title: recruiterInterviewsFilters.jobTitle
+                    }).filter(([_, value]) => value !== '' && value !== undefined && value !== null)
+                ),
+            });
+            const newRows = response.data.interviews;
+            const hasMore = response.data.length > 0;
+            set((state) => ({
+                recruiterInterviewsData: [
+                    ...state.recruiterInterviewsData, // Existing data after
+                    ...newRows, // New data from API
 
-                    // Slice the data for pagination
-                    const newRows = filteredData.slice(startIndex, endIndex);
-
-                    // Update state with new data
-                    set((state) => ({
-                        recruiterInterviewsData: [
-                            ...state.recruiterInterviewsData,
-                            ...newRows.map((interview) => ({
-                                ...interview
-                            })),
-                        ],
-                        recruiterInterviewsHasMore:
-                            endIndex < filteredData.length,
-                        recruiterInterviewsIsLoading: false,
-                        recruiterInterviewsPage: state.recruiterInterviewsPage + 1,
-                    }));
-
-                    resolve();
-                }, 500) // Simulate network delay
-            );
+                ],
+                recruiterInterviewsHasMore: hasMore,
+                recruiterInterviewsIsLoading: false,
+                recruiterInterviewsPage: state.recruiterInterviewsPage + 1,
+            }));    
         } catch (err) {
             set({ recruiterInterviewsIsLoading: false });
         }
     },
 
     // Set filters function
-    recruiterInterviewsSetFilters: (filters) => {
+        recruiterInterviewsSetFilters: (filters) => {
+        console.log(filters)
         set((state) => ({
             recruiterInterviewsFilters: { ...state.recruiterInterviewsFilters, ...filters },
             recruiterInterviewsData: [], // Reset data when filters change
@@ -110,5 +126,5 @@ export const createInterviewsSlice: StateCreator<
         // Fetch new data after updating filters
         get().recruiterInterviewsFetchData();
     },
-    
+
 });

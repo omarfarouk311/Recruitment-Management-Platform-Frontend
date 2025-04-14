@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { Invitations, DashboardFilters } from "../../types/recruiterDashboard";
+import { Invitations } from "../../types/recruiterDashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
@@ -18,10 +18,18 @@ const RecruiterInvitations = () => {
     const useMakeDecision = useStore.useRecruiterInvitationsMakeDecision();
     const [useIsMakingDecision, useSetIsMakingDecision] = useState<null | number>(null);
     const fetchData = useFetchData();
+    const cancelRequests = useStore.useRecruiterInvitationsCancelRequests();
 
+
+    // Fetch data when component mounts and when filters change
     useEffect(() => {
         fetchData();
-    }, []);
+
+        // Cleanup function to cancel pending requests
+        return () => {
+            cancelRequests();
+        };
+    }, []); 
 
     
     // Format deadline to remove .00Z
@@ -59,11 +67,11 @@ const RecruiterInvitations = () => {
                             className="text-blue-600 hover:underline underline-offset-2"
                             title="View company profile"
                         >
-                            {row.companyName}
+                            {row.name}
                         </Link>
                     ) : (
                         <span className="cursor-default" title="Company profile not available">
-                            {row.companyName}
+                            {row.name}
                         </span>
                     )}
                 </div>
@@ -130,6 +138,7 @@ const RecruiterInvitations = () => {
                 <h1 className="px-6 py-2 text-3xl font-bold">Invitations</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-10">
                     <FilterDropdown
+                        key="status_filter"
                         label="Status"
                         options={DashboardStatusFilterOptions}
                         selectedValue={filters.status}
@@ -137,18 +146,20 @@ const RecruiterInvitations = () => {
                     />
 
                     <FilterDropdown
+                        key="date_filter"
                         label="Sort by Date Received"
                         options={DashboardSortByFilterOptions.filter(
-                            (option) => option.value === "" || option.value === "1" || option.value === "-1"
+                            (option) => option.value === "1" || option.value === "-1"
                         )}
                         selectedValue={filters.sortByDateReceived}
                         onSelect={(value) => setFilters({ ...filters, sortByDateReceived: value })}
                     />
 
                     <FilterDropdown
+                        key="deadline_filter"
                         label="Sort by Deadline"
                         options={DashboardSortByFilterOptions.filter(
-                            (option) => option.value === "" || option.value === "2" || option.value === "-2"
+                            (option) => option.value === "2" || option.value === "-2"
                         )}
                         selectedValue={filters.sortByDeadline}
                         onSelect={(value) => setFilters({ ...filters, sortByDeadline: value })}

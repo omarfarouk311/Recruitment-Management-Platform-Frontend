@@ -1,6 +1,6 @@
 import { Candidate } from "../types/candidates";
 
-export const candidatesMockData :Candidate[] =  Array(10)
+export const candidatesMockData :Candidate[] =  Array(20)
 .fill({})
 .map((_, index) => ({
     seekerId: index,

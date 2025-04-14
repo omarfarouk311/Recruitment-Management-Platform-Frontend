@@ -20,7 +20,12 @@ const RecruiterInterviews = () => {
     const useUpdateDate = useStore.useRecruiterInterviewsSetUpateDate(); // Add this to your store
     const fetchData = useFetchData();
 
+    const jobTitles = useStore.useRecruiterJobTitles();
+
+    const resetData = useStore.useResetAllData();
+
     useEffect(() => {
+        resetData();
         fetchData();
     }, []);
 
@@ -148,7 +153,7 @@ const RecruiterInterviews = () => {
                     <FilterDropdown
                         label="Sort by Date"
                         options={DashboardSortByFilterOptions.filter(
-                            (option) => option.value === "" || option.value === "1" || option.value === "-1"
+                            (option) => option.value === "1" || option.value === "-1"
                         )}
                         selectedValue={filters.sortByDate}
                         onSelect={(value) => setFilters({ ...filters, sortByDate: value })}
@@ -156,7 +161,7 @@ const RecruiterInterviews = () => {
 
                     <FilterDropdown
                         label="Job Title"
-                        options={DashboardJobTitleFilterOptions}
+                        options={jobTitles.map((title) => ({ value: title, label: title }))}
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ ...filters, jobTitle: value })}
                     />
