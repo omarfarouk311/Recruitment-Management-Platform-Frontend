@@ -23,6 +23,7 @@ import { createAssessmentSlice } from "./Assessment/assessment";
 import { createCompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
 import { createCompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 import { createCompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
+import { createRecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
 
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
@@ -47,6 +48,8 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createCompanyDashboardPageSlice(...a),
             ...createCompanyInvitationsSlice(...a),
             ...createCompanyLogsSlice(...a),
+            ...createInterviewsSlice(...a),
+            ...createRecruiterProfileSlice(...a),
         }),
         {
             name: "user-store",

@@ -115,6 +115,9 @@ export default function ProfileInfo() {
                         isOpen={isAccountSettingsDialogOpen}
                         onClose={() => setIsAccountSettingsDialogOpen(false)}
                         credentials={credentials}
+                        updateCredentials={async (data) => {
+                            useStore.getState().seekerProfileUpdateCredentials(data);
+                        }}
                     />
                 </>
             )}
