@@ -13,7 +13,7 @@ function App() {
   const setName = useStore.useUserSetName();
   const setRole = useStore.useUserSetRole();
   // change according to the type you need to test
-  setRole("company");
+  setRole("recruiter");
   setName("John Doe");
   ///////////////////////
 

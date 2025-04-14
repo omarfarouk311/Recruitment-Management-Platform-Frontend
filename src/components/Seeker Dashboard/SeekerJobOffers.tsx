@@ -183,7 +183,7 @@ const SeekerJobOffers = () => {
                 <JobDetailsDialog 
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
+                   // useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
                 <JobOfferDialog
                     useIsOpen={useStore.useSeekerJobOfferDialogIsOpen}

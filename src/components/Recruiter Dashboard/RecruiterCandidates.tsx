@@ -6,30 +6,37 @@ import { ColumnDef } from "../common/Dashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
-import { CandidateSortOptions, Candidate } from "../../types/candidates";
+import { CandidateSortOptions, Candidate, CandidatePhases } from "../../types/candidates";
 import JobDetailsDialog from "../common/JobDetailsDialog";
+import { set } from "date-fns";
 
 const RecruiterCandidates = () => {
     // State hooks
     const filters = useStore.useRecruiterCandidatesFilters();
     const positionTitles = useStore.useRecruiterCandidatesPositionTitles();
+    const phaseTypes = useStore.useRecruiterCandidatesPhases();
     const useMakeDecision = useStore.useRecruiterCandidatesMakeDecision();
     const [useIsMakingDecision, useSetIsMakingDecision] = useState<
         null | number
     >(null);
     const useSetJobDetailsDialogIsOpen =
-        useStore.useJobDetailsDialogSetIsOpen();
+    useStore.useJobDetailsDialogSetIsOpen();
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
 
     // Action hooks
     const setFilters = useStore.useRecruiterCandidatesSetFilters();
     const fetchCandidates = useStore.useRecruiterCandidatesFetchCandidates();
-    const setPositionTitles =
-        useStore.useRecruiterCandidatesSetPositionTitles();
+    const setPositionTitles =useStore.useRecruiterCandidatesSetPositionTitles();
+    const resetRecruiterCandidates = useStore.useResetRecruiterCandidates();
+    const setPhaseTypes = useStore.useRecruiterCandidatesSetPhases();
 
     useEffect(() => {
+        
+        resetRecruiterCandidates();
         setPositionTitles();
+        setPhaseTypes();
         fetchCandidates();
+
     }, []);
 
     const columns: ColumnDef<Candidate>[] = [
@@ -173,7 +180,15 @@ const RecruiterCandidates = () => {
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ jobTitle: value })}
                     />
-
+                    
+                    <FilterDropdown
+                        label="Phase Type"
+                        options={phaseTypes}
+                        selectedValue={filters.phaseType}
+                        onSelect={(value) =>
+                            setFilters({ phaseType: value })
+                        }
+                    />
                     <FilterDropdown
                         label="Sort By"
                         options={CandidateSortOptions}
@@ -200,7 +215,7 @@ const RecruiterCandidates = () => {
                 <JobDetailsDialog
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
+                    //useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
         </div>
