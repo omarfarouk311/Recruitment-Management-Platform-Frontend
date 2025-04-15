@@ -38,24 +38,6 @@ const RecruiterInterviews = () => {
         }
     };
 
-    // Format date to remove .00Z
-    const formatDate = (date: string) => {
-        if (!date) return "---";
-
-        // Parse the date string into a Date object
-        const parsedDate = new Date(date);
-
-        // Extract date and time components
-        const year = parsedDate.getUTCFullYear();
-        const month = String(parsedDate.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-        const day = String(parsedDate.getUTCDate()).padStart(2, "0");
-        const hours = String(parsedDate.getUTCHours()).padStart(2, "0");
-        const minutes = String(parsedDate.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(parsedDate.getUTCSeconds()).padStart(2, "0");
-
-        // Format as "YYYY-MM-DD HH:MM:SS"
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };
 
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -115,7 +97,35 @@ const RecruiterInterviews = () => {
         {
             key: "date",
             header: "Date (GMT)",
-            render: (row) => <span>{formatDate(row.date)}</span>,
+            render: (row) => {
+                const date = new Date(row.date);
+
+                // Format date (e.g., "Jan 15, 2023")
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'GMT'
+                });
+
+                // Format time with AM/PM (e.g., "02:30:45 PM")
+                const formattedTime = date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'GMT',
+                    hour12: false  // This enables AM/PM display
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-xs text-gray-500">
+                            {formattedTime} GMT
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: "location",
@@ -163,9 +173,13 @@ const RecruiterInterviews = () => {
 
                     <FilterDropdown
                         label="Job Title"
-                        options={jobTitles.map((title) => ({ value: title, label: title }))}
+                        options={jobTitles && jobTitles.length > 0
+                            ? jobTitles.map((title) => ({ value: title, label: title }))
+                            : [{ value: '', label: 'No job titles available' }]
+                        }
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ ...filters, jobTitle: value })}
+                        disabled={!jobTitles || jobTitles.length === 0}
                     />
                 </div>
             </div>

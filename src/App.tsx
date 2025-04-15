@@ -7,6 +7,8 @@ import SeekerRoutes from "./routes/SeekerRoutes";
 import RecruiterRoutes from "./routes/RecruiterRoutes";
 import useStore from "./stores/globalStore";
 import CompanyRoutes from "./routes/CompanyRoutes";
+import { ToastContainer } from 'react-toastify';
+
 
 function App() {
   // for testing different user types. Will be removed after completing
@@ -20,28 +22,31 @@ function App() {
   const userRole = useStore.useUserRole();
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
 
-        {userRole === "seeker" && (
-          <Route path="/seeker/*" element={<SeekerRoutes />} />
-        )}
+          {userRole === "seeker" && (
+            <Route path="/seeker/*" element={<SeekerRoutes />} />
+          )}
 
-        {userRole === "recruiter" && (
-          <Route path="/recruiter/*" element={<RecruiterRoutes />} />
-        )}
+          {userRole === "recruiter" && (
+            <Route path="/recruiter/*" element={<RecruiterRoutes />} />
+          )}
 
-        {/* To be added after creating company routes */}
-        {userRole === "company" && (
-          <Route path="/company/*" element={<CompanyRoutes />} />
-        )}
+          {/* To be added after creating company routes */}
+          {userRole === "company" && (
+            <Route path="/company/*" element={<CompanyRoutes />} />
+          )}
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+      <ToastContainer />
+    </>
   );
 }
 

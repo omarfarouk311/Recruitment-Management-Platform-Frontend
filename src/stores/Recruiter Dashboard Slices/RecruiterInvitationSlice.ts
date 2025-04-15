@@ -2,9 +2,10 @@ import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import { Invitations, DashboardFilters, DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
-import { mockInvitations } from "../../mock data/recruiterInvitaions";
 import axios, { CancelTokenSource } from 'axios';
 import config from '../../../config/config.ts';
+import { showErrorToast } from '../../util/errorHandler';
+
 const API_BASE_URL = config.API_BASE_URL;
 
 export enum JobOfferDecision {
@@ -21,7 +22,8 @@ export interface RecruiterInvitationsSlice {
     recruiterInvitationsCompanyNames: { value: string; label: string }[];
     recruiterInvitationsFetchData: () => Promise<void>;
     recruiterInvitationsSetFilters: (filters: Partial<RecruiterInvitationsSlice['recruiterInvitationsFilters']>) => void;
-    recruiterInvitationsMakeDecision: (companyId: number, decision: number) => Promise<void>;
+    recruiterInvitationsMakeDecision: (invitationId: number, decision: number) => Promise<void>;
+
     recruiterInvitationsCancelRequests: () => void;
     recruiterInvitationsCancelToken?: CancelTokenSource;
 
@@ -77,10 +79,10 @@ export const createInvitationsSlice: StateCreator<
         const currentStatus = DashboardStatusFilterOptions.find(
             option => option.value === recruiterInvitationsFilters.status
         );
-       
+
         try {
             // Make API call with filters and pagination
-            const response = await axios.get(`${API_BASE_URL}/invitations`, {
+            const response = await axios.get(`${API_BASE_URL}/invitations/`, {
                 params: Object.fromEntries(
                     Object.entries({
                         page: recruiterInvitationsPage,
@@ -88,7 +90,7 @@ export const createInvitationsSlice: StateCreator<
                         sortByDate: recruiterInvitationsFilters.sortByDateReceived,
                         sortByDeadline: recruiterInvitationsFilters.sortByDeadline == "" ? "" : (recruiterInvitationsFilters.sortByDeadline == "2" ? "1" : "-1")
                     }).filter(([_, value]) => value !== '' && value !== undefined && value !== null)
-                ),  
+                ),
                 cancelToken: cancelToken.token
             });
             console.log(response.data)
@@ -99,9 +101,9 @@ export const createInvitationsSlice: StateCreator<
                     ...state.recruiterInvitationsData, // Existing data after
                     ...newRows.map((invitation: Invitations) => ({   // New data first
                         ...invitation,
-                        dateReceived: formatDistanceToNow(new Date(invitation.dateReceived)), 
+                        dateReceived: formatDistanceToNow(new Date(invitation.dateReceived)),
                     })),
-                
+
                 ],
                 recruiterInvitationsHasMore: hasMore,
                 recruiterInvitationsIsLoading: false,
@@ -133,24 +135,52 @@ export const createInvitationsSlice: StateCreator<
     },
 
     // Make decision function
-    recruiterInvitationsMakeDecision: async (companyId, decision) => {
-        // Simulate API call to update decision
-        await new Promise<void>((resolve) =>
-            setTimeout(() => {
-                mockInvitations[companyId].status = JobOfferDecision[decision];
-                set((state) => ({
-                    recruiterInvitationsData: state.recruiterInvitationsData.map((invitation) => {
-                        if (companyId === invitation.companyId) {
-                            return {
-                                ...invitation,
-                                status: JobOfferDecision[decision]
-                            };
+    recruiterInvitationsMakeDecision: async (invitationId, decision) => {
+        const cancelToken = axios.CancelToken.source();
+        set({ recruiterInvitationsIsLoading: true, recruiterInvitationsCancelToken: cancelToken });
+
+        try {
+            await axios.patch(`${API_BASE_URL}/invitations/${invitationId}`, {
+                status: decision,
+                date: new Date().toISOString()
+            }, {
+                cancelToken: cancelToken.token
+            });
+
+            set((state) => ({
+                recruiterInvitationsData: state.recruiterInvitationsData.map(invitation =>
+                    invitation.id === invitationId
+                        ? {
+                            ...invitation,
+                            status: decision === JobOfferDecision.Accepted ? "Accepted" : "Rejected",
                         }
-                        return invitation;
-                    }),
-                }));
-                resolve();
-            }, 500) // Simulate network delay
-        );
+                        : invitation
+                ),
+                recruiterInvitationsIsLoading: false,
+                recruiterInvitationsCancelToken: undefined,
+            }));
+
+        } catch (err) {
+            if (!axios.isCancel(err)) {
+                let errorMessage = "Something went wrong. Please try again.";
+
+                if (axios.isAxiosError(err) && err.response?.status === 409) {
+                    errorMessage = "You're already hired in a company, so you cannot accept this invitation.";
+                }
+                else if (axios.isAxiosError(err) && err.response?.status === 400) {
+                    errorMessage = "The invitation has expired.";
+                }
+
+
+                set({
+                    recruiterInvitationsIsLoading: false,
+                    recruiterInvitationsCancelToken: undefined,
+                });
+                const error =  new Error(errorMessage); // Throw error to be caught by component
+                showErrorToast(
+                    error.message
+                );
+            }
+        }
     },
 });

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
 import { Invitations } from "../../types/recruiterDashboard";
@@ -7,6 +9,8 @@ import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
 import { DashboardStatusFilterOptions, DashboardSortByFilterOptions } from "../../types/recruiterDashboard";
+import { showErrorToast } from '../../util/errorHandler';
+
 
 const RecruiterInvitations = () => {
     const filters = useStore.useRecruiterInvitationsFilters();
@@ -20,7 +24,6 @@ const RecruiterInvitations = () => {
     const fetchData = useFetchData();
     const cancelRequests = useStore.useRecruiterInvitationsCancelRequests();
 
-
     // Fetch data when component mounts and when filters change
     useEffect(() => {
         fetchData();
@@ -29,27 +32,15 @@ const RecruiterInvitations = () => {
         return () => {
             cancelRequests();
         };
-    }, []); 
+    }, []);
 
-    
-    // Format deadline to remove .00Z
-    const formatDeadline = (deadline: string) => {
-        if (!deadline) return "---";
 
-        // Parse the deadline string into a Date object
-        const date = new Date(deadline);
-
-        // Extract date and time components
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-        const day = String(date.getUTCDate()).padStart(2, "0");
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(date.getUTCSeconds()).padStart(2, "0");
-
-        // Format as "YYYY-MM-DD HH:MM:SS"
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    const handleDecision = async (rowId: number, decision: number) => {
+            useSetIsMakingDecision(rowId);
+            await useMakeDecision(rowId, decision);
+            useSetIsMakingDecision(null);
     };
+
     const columns: ColumnDef<Invitations>[] = [
         {
             key: "department",
@@ -67,11 +58,11 @@ const RecruiterInvitations = () => {
                             className="text-blue-600 hover:underline underline-offset-2"
                             title="View company profile"
                         >
-                            {row.name}
+                            {row.companyName}
                         </Link>
                     ) : (
                         <span className="cursor-default" title="Company profile not available">
-                            {row.name}
+                            {row.companyName}
                         </span>
                     )}
                 </div>
@@ -80,8 +71,34 @@ const RecruiterInvitations = () => {
         { key: "dateReceived", header: "Date Received" },
         {
             key: "deadline",
-            header: "Deadline",
-            render: (row) => <span>{formatDeadline(row.deadline)}</span>,
+            header: "Deadline (GMT)",
+            render: (row) => {
+                const deadline = new Date(row.deadline);
+
+                const formattedDate = deadline.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'GMT'
+                });
+
+                const formattedTime = deadline.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'GMT',
+                    hour12: false
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-xs text-gray-500">
+                            {formattedTime} GMT
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: "status",
@@ -107,23 +124,17 @@ const RecruiterInvitations = () => {
                 row.status === "Pending" ? (
                     <div className="flex items-center space-x-4">
                         <Button
-                            onClick={async () => {
-                                useSetIsMakingDecision(row.companyId);
-                                await useMakeDecision(row.companyId, 1); // Accept
-                                useSetIsMakingDecision(null);
-                            }}
+                            onClick={() => handleDecision(row.id, 1)}
                             className="w-[50%]"
+                            disabled={useIsMakingDecision === row.id}
                         >
                             Accept
                         </Button>
                         <Button
                             variant="report"
-                            onClick={async () => {
-                                useSetIsMakingDecision(row.companyId);
-                                await useMakeDecision(row.companyId, 0); // Reject
-                                useSetIsMakingDecision(null);
-                            }}
+                            onClick={() => handleDecision(row.id, 0)}
                             className="w-[50%]"
+                            disabled={useIsMakingDecision === row.id}
                         >
                             Reject
                         </Button>
@@ -134,6 +145,7 @@ const RecruiterInvitations = () => {
 
     return (
         <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
+
             <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Invitations</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-10">

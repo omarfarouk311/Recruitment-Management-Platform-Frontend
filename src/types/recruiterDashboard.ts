@@ -1,6 +1,7 @@
 export interface Invitations {
+    id: number;
     department: string;
-    name: string;
+    companyName: string;
     companyId: number
     dateReceived: string;
     deadline: string;

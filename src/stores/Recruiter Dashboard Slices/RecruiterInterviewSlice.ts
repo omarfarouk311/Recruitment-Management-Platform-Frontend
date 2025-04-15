@@ -55,19 +55,20 @@ export const createInterviewsSlice: StateCreator<
     },
     recruiterInterviewsSetUpateDate: async ({ jobId, seekerId, date }) => {
         try {
-            set({ recruiterInterviewsIsLoading: true });
+            set({ recruiterInvitationsIsLoading: true});
+
+            await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
+                timestamp: date
+            });
             set((state) => ({
                 recruiterInterviewsData: state.recruiterInterviewsData.map(interview =>
                     interview.jobId === jobId && interview.userId === seekerId
                         ? { ...interview, date: date }
                         : interview
-                )
+                ),
+                recruiterInterviewsIsLoading: false,    
             }));
-            await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
-                timestamp: date
-            });
-            // Fetch new data after updating filters
-            get().recruiterInterviewsFetchData();
+          
         } catch (error) {
             console.error("Failed to update interview date:", error);
         }
