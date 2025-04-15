@@ -19,17 +19,15 @@ export interface DashboardFilters{
     country: string;
     city: string;
     status: string;
-    phase: string;
     sortBy: string;
     company: string  
 }
 
-export type SeekerJobOffersDashboardFilter = Omit<DashboardFilters, 'phase'>;
 
 export const DashboardStatusFilterOptions = [
     { value: "", label: "Pending" },
-    { value: "0", label: "Rejected" },
-    { value: "1", label: "Accepted" },
+    { value: "3", label: "Rejected" },
+    { value: "2", label: "Accepted" },
 ]
 
 export const DashboardSortByFilterOptions = [
