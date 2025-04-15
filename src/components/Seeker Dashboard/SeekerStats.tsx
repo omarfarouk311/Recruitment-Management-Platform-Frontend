@@ -8,9 +8,11 @@ import {
 import { Transition } from "@headlessui/react";
 import { mockSeekerStats } from "../../mock data/Stats";
 import SkeletonLoader from "../common/SkeletonLoader";
+import axios from "axios";
+import config from "../../../config/config";
 
 function SeekerStats() {
-  type StatKey = "jobsAppliedFor" | "offers" | "assessments" | "interviews";
+  type StatKey = "jobsAppliedFor" | "jobOffers" | "assessments" | "interviews";
   let [stats, setStats] = useState<
     { key: StatKey; label: string; value: number; icon: any }[]
   >([
@@ -21,7 +23,7 @@ function SeekerStats() {
       icon: BriefcaseIcon,
     },
     {
-      key: "offers",
+      key: "jobOffers",
       label: "Pending Job Offers",
       value: 0,
       icon: DocumentTextIcon,
@@ -43,19 +45,21 @@ function SeekerStats() {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  async function loadStats() {
     setIsLoading(true);
-    setTimeout(() => {
-      setStats((prevValue) =>
-        prevValue.map((stat) => ({
-          ...stat,
-          value: mockSeekerStats[stat.key as StatKey],
-        }))
-      );
-      setIsLoading(false);
-      setTimeout(() => setIsVisible(true), 50);
-    }, 5000);
+    let res = await axios.get(`${config.API_BASE_URL}/seekers/stats`)
+    setStats((prevValue) =>
+      prevValue.map((stat) => ({
+        ...stat,
+        value: res.data[stat.key as StatKey],
+      }))
+    );
+    setIsLoading(false);
+    setTimeout(() => setIsVisible(true), 50);
+  }
 
+  useEffect(() => {
+    loadStats();
   }, []);
 
   return (
