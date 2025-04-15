@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { Interviews, DashboardInterviewsFilters, DashboardJobTitleFilterOptions } from "../../types/recruiterDashboard";
+import { Interviews } from "../../types/recruiterDashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
