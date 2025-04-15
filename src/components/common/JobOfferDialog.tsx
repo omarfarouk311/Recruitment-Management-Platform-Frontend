@@ -32,6 +32,8 @@ const JobOfferDialog = ({
     const useUpdateOfferData = useStore.useJobOfferDialogUpdateData();
     const [useSelectedTemplate, useSetSelectedTemplate] = [useStore.useJobOfferDialogSelectedTemplateId(), useStore.useJobOfferDialogSetTemplateId()];
     const [useIsLoadingSubmit, setUseIsLoadingSubmit] = useState(false);
+    const validationErrors = useStore.useJobOfferDialogValidationErrors();
+
     const onClose = () => {
         if(useSelectedTemplate) {
             reset();
@@ -121,7 +123,7 @@ const JobOfferDialog = ({
                     <DialogTitle className="text-2xl font-bold mb-6">
                         Job Offer
                     </DialogTitle>
-
+                    
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
                             {candidateId && (useIsLoadingTemplateList ? (
@@ -199,6 +201,15 @@ const JobOfferDialog = ({
                                             )}
                                     </div>
                                 </>
+                            )}
+                            {validationErrors && validationErrors.length > 0 && (
+                                <div className="text-red-700 p-4 rounded-2xl">
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        {validationErrors.map((error, index) => (
+                                            <li key={index}>{error}</li>
+                                        ))}
+                                    </ul>
+                                </div>
                             )}
                         </div>
 
