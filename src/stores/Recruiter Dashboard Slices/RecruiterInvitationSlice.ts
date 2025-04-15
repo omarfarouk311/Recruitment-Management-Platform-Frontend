@@ -122,14 +122,27 @@ export const createInvitationsSlice: StateCreator<
 
     // Set filters function
     recruiterInvitationsSetFilters: (filters) => {
-        console.log(filters)
-        set((state) => ({
-            recruiterInvitationsFilters: { ...state.recruiterInvitationsFilters, ...filters },
-            recruiterInvitationsData: [], // Reset data when filters change
-            recruiterInvitationsPage: 1, // Reset pagination
-            recruiterInvitationsHasMore: true, // Reset hasMore flag
-        }));
-
+        const currentFilters = get().recruiterInvitationsFilters;
+        let tmp = 0;
+        // Check if both sort filters are being set simultaneously
+        if (filters.sortByDateReceived && filters.sortByDeadline) {
+            tmp = 1;
+            // Keep the existing sort filter that was already set
+            if (currentFilters.sortByDateReceived) {
+                filters.sortByDeadline = ""; // Clear the other sort
+            } else if (currentFilters.sortByDeadline) {
+                filters.sortByDateReceived = ""; // Clear the other sort
+            } 
+            showErrorToast("Please sort by either date received or deadline, not both");
+        }
+        if (!tmp) {
+            set((state) => ({
+                recruiterInvitationsFilters: { ...state.recruiterInvitationsFilters, ...filters },
+                recruiterInvitationsData: [], // Reset data when filters change
+                recruiterInvitationsPage: 1, // Reset pagination
+                recruiterInvitationsHasMore: true, // Reset hasMore flag
+            }));
+        }
         // Fetch new data after updating filters
         get().recruiterInvitationsFetchData();
     },
