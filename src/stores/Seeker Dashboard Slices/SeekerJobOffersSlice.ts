@@ -2,7 +2,7 @@ import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import { JobOfferOverviewType } from "../../types/jobOffer";
-import { SeekerJobOffersDashboardFilter } from "../../types/seekerDashboard";
+import { DashboardFilters } from "../../types/seekerDashboard";
 import axios from "axios";
 import config from "../../../config/config.ts";
 
@@ -16,7 +16,7 @@ export interface SeekerJobOffersSlice {
     seekerJobOffersPage: number;
     seekerJobOffersHasMore: boolean;
     seekerJobOffersIsLoading: boolean;
-    seekerJobOffersFilters: SeekerJobOffersDashboardFilter;
+    seekerJobOffersFilters: DashboardFilters;
     seekerJobOffersCompanyNames: { value: string; label: string }[];
     seekerJobOfferDialogIsOpen: boolean;
     seekerJobOfferDialogJobIdAndCandidateId: { jobId: number; candidateId?: number };
@@ -48,7 +48,6 @@ export const createSeekerJobOffersSlice: StateCreator<
         country: "",
         city: "",
         status: "",
-        phase: "",
         sortBy: "",
         company: "",
     },
@@ -99,13 +98,14 @@ export const createSeekerJobOffersSlice: StateCreator<
                         ),
                         city: jobOffer.city,
                         country: jobOffer.country,
-                        status: jobOffer.status === '1'? "Accepted": jobOffer.status === '0'? "Rejected": "Pending",
+                        status: parseInt(jobOffer.status) == 2? "Accepted": parseInt(jobOffer.status) == 3? "Rejected": "Pending",
                     })),
                 ],
                 seekerJobOffersHasMore: res.data.length > 0,
                 seekerJobOffersIsLoading: false,
                 seekerJobOffersPage: state.seekerJobOffersPage + 1,
             }));
+            console.log(res.data);
         } catch (err) {
             set({ seekerJobOffersIsLoading: false });
         }

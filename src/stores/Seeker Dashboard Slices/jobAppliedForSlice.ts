@@ -4,11 +4,9 @@ import {
   JobsAppliedForFilters,
 } from "../../types/seekerDashboard";
 import { CombinedState } from "../storeTypes";
-import {
-  mockJobsAppliedFor,
-  mockJobsAppliedForCompanies,
-} from "../../mock data/seekerDashboard";
 import { formatDistanceToNow } from "date-fns";
+import axios from "axios";
+import config from "../../../config/config.ts";
 
 export interface SeekerJobsAppliedForSlice {
   seekerJobsAppliedForData: JobsAppliedFor[];
@@ -40,7 +38,6 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
     country: "",
     city: "",
     status: "",
-    phase: "",
     sortBy: "",
     company: "",
   },
@@ -51,49 +48,58 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
       seekerJobsAppliedForPage,
       seekerJobsAppliedForHasMore,
       seekerJobsAppliedForIsLoading,
+      seekerJobsAppliedForFilters: { remote, country, city, status, sortBy, company },
     } = get();
     if (!seekerJobsAppliedForHasMore || seekerJobsAppliedForIsLoading) return;
     set({ seekerJobsAppliedForIsLoading: true });
 
     // mock API call, don't forget to include the filters in the query string if they are populated
     try {
-      await new Promise<void>((resolve) =>
-        setTimeout(() => {
-          const startIndex = (seekerJobsAppliedForPage - 1) * 5;
-          const endIndex = startIndex + 5;
-          const newRows = mockJobsAppliedFor.slice(startIndex, endIndex);
-
-          set((state) => ({
-            seekerJobsAppliedForData: [
-              ...state.seekerJobsAppliedForData,
-              ...newRows.map((job) => ({
-                ...job,
-                dateApplied: formatDistanceToNow(new Date(job.dateApplied), {
-                  addSuffix: true,
-                }),
-                lastStatusUpdate: formatDistanceToNow(
-                  new Date(job.lastStatusUpdate),
-                  { addSuffix: true }
-                ),
-              })),
-            ],
-            seekerJobsAppliedForHasMore: endIndex < mockJobsAppliedFor.length,
-            seekerJobsAppliedForIsLoading: false,
-            seekerJobsAppliedForPage: state.seekerJobsAppliedForPage + 1,
-          }));
-          resolve();
-        }, 500)
+      let params = Object.fromEntries(
+        Object.entries({
+          page: seekerJobsAppliedForPage,
+          remote: remote ? "true" : undefined,
+          country: country || undefined,
+          city: city || undefined,
+          status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
+          companyName: company || undefined,
+          sortByDate: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
+          sortByStatusUpdate: Math.abs(parseInt(sortBy)) === 2 ? parseInt(sortBy) / 2 : undefined,
+        }).filter(([_, value]) => value !== undefined)
       );
+
+      let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for`, {
+        params,
+      });
+      set((state) => ({
+        seekerJobsAppliedForData: [
+          ...state.seekerJobsAppliedForData,
+          ...res.data.map((job: JobsAppliedFor) => ({
+            ...job,
+            dateApplied: formatDistanceToNow(new Date(job.dateApplied), {
+              addSuffix: true,
+            }),
+            lastStatusUpdate: formatDistanceToNow(
+              new Date(job.lastStatusUpdate),
+              { addSuffix: true }
+            ),
+          })),
+        ],
+        seekerJobsAppliedForHasMore:  res.data.length > 0,
+        seekerJobsAppliedForIsLoading: false,
+        seekerJobsAppliedForPage: state.seekerJobsAppliedForPage + 1,
+      }));
     } catch (err) {
       set({ seekerJobsAppliedForIsLoading: false });
     }
   },
 
   seekerJobsAppliedForSetCompanyNames: async () => {
+    let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
+    if(res.status !== 200) return;
     set({
       seekerJobsAppliedForCompanyNames: [
-        { value: "", label: "Any" },
-        ...mockJobsAppliedForCompanies.map((company) => ({
+        ...res.data.map((company: string) => ({
           value: company,
           label: company,
         })),
@@ -126,7 +132,6 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
         country: "",
         city: "",
         status: "",
-        phase: "",
         sortBy: "",
         company: "",
       },

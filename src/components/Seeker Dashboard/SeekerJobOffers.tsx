@@ -26,11 +26,14 @@ const SeekerJobOffers = () => {
     const useSeekerJobOfferDialogSetJobIdAndCandidateId = useStore.useSeekerJobOfferDialogSetJobIdAndCandidateId();
     const useMakeDecision = useStore.useSeekerJobOfferMakeDecision();
     const [ useIsMakingDecision, useSetIsMakingDecision ] = useState<null | number>(null);
+    const clear = useStore.useClearSeekerJobOffers();
 
     useEffect(() => {
-        setFilters({city: "", country: "", status: "", sortBy: "", company: ""});
+        clear();
         useSetCompanyNames();
         fetchData();
+
+        return clear;
     }, []);
 
     const columns: ColumnDef<JobOfferOverviewType>[] = [
