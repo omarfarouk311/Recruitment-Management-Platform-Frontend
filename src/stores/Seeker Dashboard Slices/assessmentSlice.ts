@@ -3,14 +3,12 @@ import {
   assessment,
   DashboardFilters
 } from "../../types/seekerDashboard";
-import{
-  mockJobsAppliedForCompanies
-} from "../../mock data/seekerDashboard";
+
 import { CombinedState } from "../storeTypes";
-import {
-  mockAssessment,
-} from "../../mock data/assessmentDashboard";
+
 import { formatDistanceToNow } from "date-fns";
+import axios from "axios";
+import config from "../../../config/config.ts";
 
 export interface SeekerAssessmentsSlice {
   seekerAssessmentsData: assessment[];
@@ -24,6 +22,7 @@ export interface SeekerAssessmentsSlice {
     filters: Partial<SeekerAssessmentsSlice["seekerAssessmentsFilters"]>
   ) => Promise<void>;
   seekerAssessmentsSetCompanyNames: () => Promise<void>;
+  clearSeekerAssessment: () => void;
 }
 
 export const createSeekerAssessmentsSlice: StateCreator<
@@ -37,11 +36,9 @@ export const createSeekerAssessmentsSlice: StateCreator<
   seekerAssessmentsHasMore: true,
   seekerAssessmentsIsLoading: false,
   seekerAssessmentsFilters: {
-    remote: false,
     country: "",
     city: "",
     status: "",
-    phase: "",
     sortBy: "",
     company: "",
   },
@@ -52,49 +49,65 @@ export const createSeekerAssessmentsSlice: StateCreator<
       seekerAssessmentsPage,
       seekerAssessmentsHasMore,
       seekerAssessmentsIsLoading,
+      seekerAssessmentsFilters:{country,city,status,company,sortBy}
     } = get();
     if (!seekerAssessmentsHasMore || seekerAssessmentsIsLoading) return;
     set({ seekerAssessmentsIsLoading: true });
 
     // Mock API call, don't forget to include the filters in the query string if they are populated
-    try {
-      await new Promise<void>((resolve) =>
-        setTimeout(() => {
-          const startIndex = (seekerAssessmentsPage - 1) * 5;
-          const endIndex = startIndex + 5;
-          const newRows = mockAssessment.slice(startIndex, endIndex);
 
-          set((state) => ({
-            seekerAssessmentsData: [
-              ...state.seekerAssessmentsData,
-              ...newRows.map((job) => ({
-                ...job,
-                dateApplied: formatDistanceToNow(new Date(job.dateAdded), {
-                  addSuffix: true,
-                }),
-                lastStatusUpdate: formatDistanceToNow(
-                  new Date(job.deadline),
-                  { addSuffix: true }
-                ),
-              })),
-            ],
-            seekerAssessmentsHasMore: endIndex < mockAssessment.length,
-            seekerAssessmentsIsLoading: false,
-            seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
-          }));
-          resolve();
-        }, 500)
+    try {
+      let params = Object.fromEntries(
+        Object.entries({
+          page: seekerAssessmentsPage,
+          country: country || undefined,
+          city: city || undefined,
+          status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
+          companyName: company || undefined,
+          sortByDate: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
+        }).filter(([_, value]) => value !== undefined)
       );
-    } catch (err) {
+
+      let res = await axios.get(`${config.API_BASE_URL}/assessments/seeker-assessment-dashboard`, {
+        params,
+      });
+      
+      set((state) => ({
+        seekerAssessmentsData: [
+          ...state.seekerAssessmentsData,
+          ...res.data.result.map((a: any) => ({
+            assessmentId: a.assessment_id,
+            jobTitle: a.title,
+            jobId: a.jobid,
+            companyName: a.name,
+            companyId: a.companyid,
+            country: a.country,
+            city: a.city,
+            assessmentTime:a.assessment_time,
+            dateAdded:formatDistanceToNow(new Date(a.date_applied), { addSuffix: true }),
+            deadline: formatDistanceToNow(new Date(a.phase_deadline), { addSuffix: true }),
+            status: a.status,
+          })),
+        ],
+        seekerAssessmentsHasMore:  res.data.length > 0,
+        seekerAssessmentsIsLoading: false,
+        seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
+      }));
+
+    }catch (err) {
       set({ seekerAssessmentsIsLoading: false });
     }
+
+
+
   },
 
   seekerAssessmentsSetCompanyNames: async () => {
+    let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
+    if(res.status !== 200) return;
     set({
       seekerAssessmentsCompanyNames: [
-        { value: "", label: "Any" },
-        ...mockJobsAppliedForCompanies.map((company) => ({
+        ...res.data.map((company:string) => ({
           value: company,
           label: company,
         })),
@@ -114,5 +127,22 @@ export const createSeekerAssessmentsSlice: StateCreator<
     }));
 
     await get().seekerAssessmentsFetchData();
+  },
+  
+  clearSeekerAssessment: () => {
+    set({
+      seekerAssessmentsData: [],
+      seekerAssessmentsPage: 1,
+      seekerAssessmentsHasMore: true,
+      seekerAssessmentsIsLoading: false,
+      seekerAssessmentsFilters: {
+        country: "",
+        city: "",
+        status: "",
+        sortBy: "",
+        company: "",
+      },
+      seekerAssessmentsCompanyNames: [],
+    });
   },
 });

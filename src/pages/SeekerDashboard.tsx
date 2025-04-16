@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
 import SeekerStats from "../components/Seeker Dashboard/SeekerStats";
 import SeekerJobOffers from "../components/Seeker Dashboard/SeekerJobOffers";
-import SeekerInterviews from "../components/SeekerInterviews/SeekerInterviews";
+
 
 const SeekerDashboard = () => {
     const activeTab = useStore.useSeekerDashboardActiveTab();
@@ -48,7 +48,9 @@ const SeekerDashboard = () => {
                 <SeekerJobsAppliedFor />
             ) : activeTab == 3? (
                 <SeekerJobOffers />
-            ) : null }
+            )  : activeTab ==1 ?(
+                <SeekerAssessments/>
+            ): null }
         </div>
         </>
     );

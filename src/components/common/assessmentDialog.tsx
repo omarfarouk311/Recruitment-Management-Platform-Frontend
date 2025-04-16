@@ -15,9 +15,11 @@ interface AssessmentDetails {
 }
 
 const AssessmentDialog = () => {
+    const setAssessmentId=useStore.useSetSelectedAssessment();
     const isOpen = useStore.useAssessmentDialogIsOpen();
     const setIsOpen = useStore.useSetAssessmentDialogIsOpen();
     const selectedAssessmentId = useStore.useSelectedAssessmentId();
+    const SeekerAssessmentData=useStore.useSeekerAssessmentsData();
 
     const [assessmentDetails, setAssessmentDetails] = useState<AssessmentDetails>({
         assessmentId:0,
@@ -30,32 +32,28 @@ const AssessmentDialog = () => {
     useEffect(() => {
         if (selectedAssessmentId) {
             // Fetch assessment details from the backend
-            fetchAssessmentDetails(selectedAssessmentId)
-                .then((data) => {
+           
+            const data={assessmentId:-1,companyName:"",jobTitle:"",assessmentTime:"",instructions:"instructions"};
+            for(let i=0;i<SeekerAssessmentData.length;i++){
+                if(SeekerAssessmentData[i].assessmentId===selectedAssessmentId){
+                    data.assessmentId=SeekerAssessmentData[i].assessmentId;
+                    data.companyName=SeekerAssessmentData[i].companyName;
+                    data.jobTitle=SeekerAssessmentData[i].jobTitle;
+                    data.assessmentTime=SeekerAssessmentData[i].assessmentTime;
+                    break;
+                }
+            }
+        
+                try{
                     setAssessmentDetails(data); // Update state with fetched data
-                })
-                .catch((error) => {
+                }catch(error){
                     console.error("Failed to fetch assessment details:", error);
-                });
+                };
         }
     }, [selectedAssessmentId]);
 
-    const fetchAssessmentDetails = async (assessmentId: number): Promise<AssessmentDetails> => {
-        // Replace this with your actual API call
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    assessmentId:1,
-                    companyName: "Tech Corp",
-                    jobTitle: "Software Engineer",
-                    instructions: "Complete the following tasks within the given time.",
-                    assessmentTime: "60 minutes",
-                });
-            }, 1000); 
-        });
-    };
+   
     
-
     return (
         <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
             <div
@@ -143,7 +141,7 @@ const AssessmentDialog = () => {
                                 className="rounded-full"
                                 onClick={() => {
                                     // Handle starting the assessment
-                                    console.log("Starting assessment:", selectedAssessmentId);
+                                     setAssessmentId(selectedAssessmentId!)
                                 }}
                             >
                                 Start Assessment

@@ -7,7 +7,6 @@ import LocationSearch from "../common/LocationSearch";
 import AssessmentDialog  from "../common/assessmentDialog";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
-import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
 
 
@@ -25,14 +24,18 @@ const SeekerAssessment = () => {
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
     const useSetSelectAssessmentId= useStore.useSetSelectedAssessmentId();
     const useSetAssessmentDialogIsOpen=useStore.useSetAssessmentDialogIsOpen();
+    const clear = useStore.useClearSeekerAssessment();
 
     useEffect(() => {
+         clear();
         useSetCompanyNames();
         fetchData();
+
+        return clear;
     }, []);
 
     const handleEnterAssessment = (assessmentId:number) => {
-        console.log(assessmentId)
+        
          useSetSelectAssessmentId(assessmentId);
          useSetAssessmentDialogIsOpen(true);
     };
@@ -124,6 +127,7 @@ const SeekerAssessment = () => {
                     <FilterDropdown
                         label="Status"
                         options={DashboardStatusFilterOptions}
+                        addAnyOption={false}
                         selectedValue={filters.status}
                         onSelect={(value) => setFilters({ status: value })}
                     />
@@ -151,13 +155,10 @@ const SeekerAssessment = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
-                <JobDetailsDialog 
-                    useIsOpen={useStore.useJobDetailsDialogIsOpen}
-                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
-                />
+
                  <AssessmentDialog /> {
-                 /* Add the AssessmentDialog here */}
+
+                 }
             </div>
         </div>
     );

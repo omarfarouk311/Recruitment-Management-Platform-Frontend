@@ -23,6 +23,7 @@ export interface assessment  {
     dateAdded: string;
     deadline: string;
     status: string;
+    assessmentTime:string
 }
 
 export interface interview  {
