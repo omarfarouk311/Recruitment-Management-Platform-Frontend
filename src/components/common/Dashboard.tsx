@@ -63,12 +63,12 @@ function Dashboard<T>({
   return (
     
       <table className="w-full">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead className="sticky top-0 bg-white">
           <tr className="text-gray-500">
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={`pb-4 px-20 text-center ${column.headerClassName || ""}`}
+                className={`pb-4 px-10 text-center ${column.headerClassName || ""}`}
               >
                 {column.header}
               </th>

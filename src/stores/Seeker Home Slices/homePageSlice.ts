@@ -7,23 +7,36 @@ export interface HomePageSlice {
     setHomePageActiveTab: (tab: number) => void;
 }
 
+export enum HomePageTabs {
+    ForYou = 0,
+    Companies = 1,
+    JobSearch = 2,
+}
+
 export const createHomePageSlice: StateCreator<CombinedState, [], [], HomePageSlice> = (set, get) => ({
     homePageActiveTab: null,
     homePageLoadingTab: null,
 
     setHomePageActiveTab: async (tab) => {
-        const { homePageActiveTab, homePageLoadingTab: homePageIsTabLoading, forYouTabFetchJobs } = get();
-        if (tab === homePageActiveTab || homePageIsTabLoading) return;
+        const {
+            forYouTabFetchJobs,
+            companiesTabFetchCompanies,
+            forYouTabClear,
+            companiesTabClear,
+            homePageActiveTab
+        } = get();
 
         set({ homePageActiveTab: tab, homePageLoadingTab: tab });
-
-        // toggle for you tab after being in searching state
-        if (tab === 0 && homePageActiveTab === null) {
+        if (tab === HomePageTabs.ForYou) {
+            if (homePageActiveTab === HomePageTabs.Companies) companiesTabClear();
+            else forYouTabClear();
             await forYouTabFetchJobs();
         }
-
-        setTimeout(() => {
-            set({ homePageLoadingTab: null });
-        }, 1000)
+        else if (tab === HomePageTabs.Companies) {
+            if (homePageActiveTab === HomePageTabs.Companies) companiesTabClear();
+            else forYouTabClear();
+            await companiesTabFetchCompanies();
+        }
+        set({ homePageLoadingTab: null });
     }
 });

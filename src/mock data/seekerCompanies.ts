@@ -3,7 +3,7 @@ import { CompanyCard } from '../types/company';
 export const mockCompanies: CompanyCard[] = Array(20)
     .fill({})
     .map((_, index) => ({
-        id: 1,
+        id: index,
         image: "https://www.microsoft.com/favicon.ico",
         name: `Microsoft ${index + 1}`,
         overview: "At Microsoft, our mission is to empower every person and every organization on the planet to achieve more. When you join Microsoft, you're not just taking on a job, you're embracing a calling. A calling where your individual contributions amplify into a collective force championing global progress and innovation.",
@@ -13,4 +13,16 @@ export const mockCompanies: CompanyCard[] = Array(20)
         jobsCount: 1600,
         locationsCount: 4,
         industriesCount: 2,
+        locations: [],
+        industries: [],
+    }));
+
+export const mockCompanyIndustries: string[] = Array(10)
+    .fill('')
+    .map((_, index) => `Technology ${index}`);
+
+export const mockCompanyLocations: { country: string, city: string }[] = Array(10)
+    .fill('')
+    .map((_, index) => ({
+        country: 'USA', city: `New York ${index}`
     }));

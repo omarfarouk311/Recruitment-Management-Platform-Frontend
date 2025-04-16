@@ -20,11 +20,15 @@ const SeekerJobsAppliedFor = () => {
     const useSetCompanyNames = useStore.useSeekerJobsAppliedForSetCompanyNames();
     const fetchData = useFetchData();
     const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
-    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId();
+    const clear = useStore.useClearSeekerJobsAppliedFor();
 
     useEffect(() => {
+        clear();
         useSetCompanyNames();
         fetchData();
+
+        return clear;
     }, []);
 
     const columns: ColumnDef<JobsAppliedFor>[] = [
@@ -113,6 +117,7 @@ const SeekerJobsAppliedFor = () => {
                         options={DashboardStatusFilterOptions}
                         selectedValue={filters.status}
                         onSelect={(value) => setFilters({ status: value })}
+                        addAnyOption={false}
                     />
 
                     <FilterDropdown
@@ -141,7 +146,6 @@ const SeekerJobsAppliedFor = () => {
                 <JobDetailsDialog 
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
             </div>
         </div>

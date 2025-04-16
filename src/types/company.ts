@@ -9,14 +9,15 @@ export interface CompanyCard {
     jobsCount: number;
     locationsCount: number;
     industriesCount: number;
+    locations: { country: string, city: string }[];
+    industries: string[];
 }
 
 export interface CompaniesTabFilters {
     country: string;
     city: string;
     industry: string;
-    sizeFrom: string;
-    sizeTo: string
+    size: string;
     rating: string;
     type: string;
 }

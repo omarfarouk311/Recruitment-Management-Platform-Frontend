@@ -2,27 +2,35 @@ import { Dialog } from "@headlessui/react";
 import { useState, useEffect } from "react";
 import Button from "../common/Button";
 import { CheckCircle, XCircle } from "lucide-react";
+import { CV } from "../../types/CV";
 
 type DialogType = "apply" | "report";
 
 interface JobDialogProps {
   type: DialogType | null;
-  cvs: string[];
+  cvs: CV[];
   onClose: () => void;
-  onSubmit: (type: DialogType, data: string) => void;
+  onApplySubmit: (cvId: number) => void;
+  onReportSubmit: (message: string) => void;
 }
 
-const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
-  const [selectedCV, setSelectedCV] = useState("");
+const JobDialog = ({
+  type,
+  cvs,
+  onClose,
+  onApplySubmit,
+  onReportSubmit,
+}: JobDialogProps) => {
+  const [selectedCVId, setSelectedCVId] = useState<number | null>(null);
   const [reportMessage, setReportMessage] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     setIsValid(
-      type === "apply" ? !!selectedCV : reportMessage.trim().length >= 10
+      type === "apply" ? !!selectedCVId : reportMessage.trim().length >= 10
     );
-  }, [selectedCV, reportMessage, type]);
+  }, [selectedCVId, reportMessage, type]);
 
   useEffect(() => {
     if (isSubmitted) {
@@ -37,10 +45,11 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
 
   const handleSubmit = () => {
     if (!type || !isValid) return;
-    onSubmit(type, type === "apply" ? selectedCV : reportMessage);
+    if (type === "apply") onApplySubmit(selectedCVId!);
+    else onReportSubmit(reportMessage);
     setIsSubmitted(true);
     setReportMessage("");
-    setSelectedCV("");
+    setSelectedCVId(null);
   };
 
   if (!type) return null;
@@ -59,7 +68,7 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
           aria-modal="true"
           aria-labelledby="dialog-heading"
         >
-          <div className="p-8 max-h-[80vh] overflow-y-auto">
+          <div className="p-8 max-h-[80vh]">
             {isSubmitted ? (
               <div className="text-center py-8 min-h-[200px] flex flex-col justify-center">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -80,7 +89,10 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                   <h2 className="text-2xl font-bold" id="dialog-heading">
                     {type === "apply" ? "Apply with CV" : "Report Job"}
                   </h2>
-                  <button onClick={onClose}>
+                  <button
+                    onClick={onClose}
+                    className="hover:bg-gray-200 rounded-full p-2 transition-colors"
+                  >
                     <XCircle className="w-4 h-4" />
                   </button>
                 </div>
@@ -91,25 +103,20 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                     <div className="grid gap-3">
                       {cvs.slice(0, 5).map((cv) => (
                         <label
-                          key={cv}
+                          key={cv.id}
                           className="flex items-center p-3 rounded-xl border border-gray-200 hover:border-blue-500 transition-colors cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50"
                         >
                           <input
                             type="radio"
                             name="cv"
-                            value={cv}
-                            checked={selectedCV === cv}
-                            onChange={(e) => setSelectedCV(e.target.value)}
+                            value={cv.name}
+                            checked={selectedCVId === cv.id}
+                            onChange={() => setSelectedCVId(cv.id)}
                             className="mr-3 w-4 h-4 text-blue-600"
                           />
-                          <span className="font-medium">{cv}</span>
+                          <span className="font-medium">{cv.name}</span>
                         </label>
                       ))}
-                      {cvs.length > 5 && (
-                        <p className="text-sm text-red-500 mt-2">
-                          Maximum of 5 CVs allowed
-                        </p>
-                      )}
                     </div>
                   </div>
                 ) : (
@@ -132,13 +139,6 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
 
                 <div className="mt-8 flex justify-end gap-3">
                   <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="rounded-full"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
                     onClick={handleSubmit}
                     disabled={!isValid}
                     variant={
@@ -146,9 +146,9 @@ const JobDialog = ({ type, cvs, onClose, onSubmit }: JobDialogProps) => {
                         ? type === "apply"
                           ? "primary"
                           : "report"
-                        : "currentTab"
+                        : "outline"
                     }
-                    className={!isValid ? (type === "apply" ? "bg-black/70" : "bg-red-600/70") : ""}
+                    className={"!w-auto"}
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}
                   </Button>

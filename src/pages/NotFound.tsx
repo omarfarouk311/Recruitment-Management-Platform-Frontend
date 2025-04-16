@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
 import notFoundImage from "../assets/not-found.png";
-import Button from "../components/common/Button";
 
 const NotFound = () => {
   return (
@@ -14,9 +12,6 @@ const NotFound = () => {
         <h2 className="text-3xl md:text-4xl text-gray-800 mt-8 text-center">
           Page not found
         </h2>
-        <Link to="/home" className="mt-10">
-          <Button className="w-60">Back to homepage</Button>
-        </Link>
       </div>
     </div>
   );
