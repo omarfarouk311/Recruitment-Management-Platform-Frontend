@@ -14,9 +14,11 @@ function App() {
   // for testing different user types. Will be removed after completing
   const setName = useStore.useUserSetName();
   const setRole = useStore.useUserSetRole();
+  const setUserId = useStore.useUserSetId();
   // change according to the type you need to test
   setRole("seeker");
   setName("John Doe");
+  setUserId(3);
   ///////////////////////
 
   const userRole = useStore.useUserRole();

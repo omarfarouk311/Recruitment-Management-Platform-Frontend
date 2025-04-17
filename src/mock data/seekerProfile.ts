@@ -8,7 +8,7 @@ export const mockSeekerProfileInfo: SeekerProfileInfo = {
   city: 'California',
   phone: '+201125831866',
   gender: 'male',
-  birthdate: '2000-01-01',
+  birthDate: '2000-01-01',
   image: '',
 };
 

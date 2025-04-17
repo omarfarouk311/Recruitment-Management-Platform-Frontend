@@ -47,15 +47,19 @@ function SeekerStats() {
 
   async function loadStats() {
     setIsLoading(true);
-    let res = await axios.get(`${config.API_BASE_URL}/seekers/stats`)
-    setStats((prevValue) =>
-      prevValue.map((stat) => ({
-        ...stat,
-        value: res.data[stat.key as StatKey],
-      }))
-    );
-    setIsLoading(false);
-    setTimeout(() => setIsVisible(true), 50);
+    try {
+      let res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
+      setStats((prevValue) =>
+        prevValue.map((stat) => ({
+          ...stat,
+          value: res.data[stat.key as StatKey],
+        }))
+      );
+      setIsLoading(false);
+      setTimeout(() => setIsVisible(true), 50);
+    } catch (err) {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -65,44 +69,42 @@ function SeekerStats() {
   return (
     <div className="flex items-center mb-6 mt-6 bg-white min-h-[70px] p-4 rounded-2xl shadow w-[70%] mx-auto">
       <div className="grid grid-flow-col auto-cols-fr justify-evenly w-full gap-4">
-        {
-          isLoading? (
-            <div className="max-h-[60px] overflow-y-hidden">
-              <SkeletonLoader />
-            </div>
-          ) : (
-            stats.map((stat, index) => (
-              <div
-                key={stat.label}
-                className="flex items-center justify-center gap-4 relative"
+        {isLoading ? (
+          <div className="max-h-[60px] overflow-y-hidden">
+            <SkeletonLoader />
+          </div>
+        ) : (
+          stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className="flex items-center justify-center gap-4 relative"
+            >
+              <Transition
+                as="div"
+                show={isVisible}
+                enter="transition-opacity duration-[2000ms]"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                className="flex items-center gap-2"
               >
-                <Transition
-                  as="div"
-                  show={isVisible}
-                  enter="transition-opacity duration-[2000ms]"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  className="flex items-center gap-2"
-                >
-                  <stat.icon className="h-8 w-8 text-black-500" />
-                  <div>
+                <stat.icon className="h-8 w-8 text-black-500" />
+                <div>
                   <p className="text-lg text-black-500 font-semibold">
                     {stat.label}
                   </p>
                   <p className="text-xl font-semibold text-black-900">
                     {stat.value}
                   </p>
-                  </div>
-                </Transition>
-    
-                {/* Vertical line - positioned after the content */}
-                {index < stats.length - 1 && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-px bg-gray-300 hidden md:block" />
-                )}
-              </div>
-            ))
-          )
-        }
+                </div>
+              </Transition>
+
+              {/* Vertical line - positioned after the content */}
+              {index < stats.length - 1 && (
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-px bg-gray-300 hidden md:block" />
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

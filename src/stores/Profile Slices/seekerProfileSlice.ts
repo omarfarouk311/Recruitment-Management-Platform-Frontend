@@ -7,6 +7,9 @@ import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills, mockSe
 import { mockSeekerProfileInfo } from '../../mock data/seekerProfile.ts';
 import config from "../../../config/config.ts";
 import { formatDistanceToNow, formatDate } from 'date-fns';
+import axios from 'axios';
+import { date } from 'zod';
+import { toast } from 'react-toastify';
 const { paginationLimit } = config;
 let cnt = 100;
 
@@ -38,9 +41,9 @@ export interface SeekerProfileSlice {
 
     seekerProfileCVs: CV[];
     seekerProfileFetchCVs: () => Promise<void>;
-    seekerProfileAddCV: (cv: CV) => Promise<void>;
+    seekerProfileAddCV: (cv: File, createdAt: string) => Promise<void>;
     seekerProfileRemoveCV: (id: number) => Promise<void>;
-    seekerProfileGetCV: (id: number) => Promise<void>;
+    seekerProfileGetCV: (id: number) => Promise<Blob | undefined>;
 
     seekerProfileReviews: Review[];
     seekerProfileReviewsHasMore: boolean;
@@ -50,6 +53,7 @@ export interface SeekerProfileSlice {
     seekerProfileUpdateReview: (review: Review) => Promise<void>;
     seekerProfileRemoveReview: (id: number) => Promise<void>;
 
+    seekerProfileSelectedSeekerData: {seekerId?: number, jobId?: number};
     seekerProfileClear: () => void;
 }
 
@@ -60,7 +64,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         city: '',
         phone: '',
         gender: '',
-        birthdate: '',
+        birthDate: '',
     },
     seekerCredentials: {
         email: '',
@@ -74,27 +78,79 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileReviewsHasMore: true,
     seekerProfileReviewsPage: 1,
     seekerProfileReviewsIsLoading: false,
+    seekerProfileSelectedSeekerData: {},
 
     seekerProfileFetchInfo: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({ seekerProfileInfo: { ...mockSeekerProfileInfo } });
-                resolve();
-            }, 1000);
-        });
+        const { userId, seekerProfileSelectedSeekerData } = get();
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            set({ seekerProfileInfo: { 
+                ...res.data, 
+                phone: res.data.phoneNumber, 
+                birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
+                gender: res.data.gender ? 'male' : 'female',
+                image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+            }});
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if(err.response?.status === 404) {
+                    set({ seekerProfileInfo: {
+                        name: '',
+                        country: '',
+                        city: '',
+                        phone: '',
+                        gender: '',
+                        birthDate: '',
+                        image: undefined
+                    }})
+                }
+            }
+        }
     },
 
     seekerProfileUpdateInfo: async (profile) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({
-                    seekerProfileInfo: { ...profile },
-                    userName: profile.name,
-                    userImage: profile.image
+        const { userId } = get();
+        try {
+            let promises = [];
+            let res = axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
+                name: profile.name,
+                country: profile.country,
+                city: profile.city,
+                phoneNumber: profile.phone,
+                dateOfBirth: (new Date(profile.birthDate)).toISOString(),
+                gender: profile.gender === 'male'
+            });
+            promises.push(res);
+            let imageRes;
+            if(profile.image instanceof File) {
+                imageRes = axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
+                    headers: {
+                        'Content-Type': 'image/jpeg',
+                        'File-Name': profile.image.name,
+                    }
                 });
-                resolve();
-            }, 1000);
-        });
+                promises.push(imageRes);
+            }
+
+            await Promise.all(promises);
+            let tmpDate = Date.now();
+            set({
+                seekerProfileInfo: { ...profile, image: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${tmpDate}` },
+                userName: profile.name,
+                userImage: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${tmpDate}`
+            });
+
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                }
+            }
+            throw err;
+        }
     },
 
     seekerProfileFetchEmail: async () => {
@@ -274,57 +330,101 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchCVs: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({
-                    seekerProfileCVs: mockCVs.map(cv => ({
-                        ...cv,
-                        createdAt: formatDistanceToNow(new Date(cv.createdAt), { addSuffix: true })
-                    }))
-                });
-                resolve();
-            }, 1000);
-        });
+        const { userRole, seekerProfileSelectedSeekerData } = get();
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, { params: userRole === 'seeker' ? {}: { 
+                ...seekerProfileSelectedSeekerData
+            }});
+            set({
+                seekerProfileCVs: res.data.cvNames.map((cv: {id: number; name: string; created_at: string}) => ({
+                    ...cv,
+                    createdAt: formatDistanceToNow(new Date(cv.created_at), { addSuffix: true })
+                }))
+            });
+        } catch(err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 404) {
+                    set({ seekerProfileCVs: [] });
+                    toast.info('No CVs found.');
+                } else {
+                    toast.error(`Failed to fetch CVs: ${err.response?.statusText || 'Network error'}`);
+                }
+            } else {
+                toast.error('Failed to fetch CVs: Unexpected error');
+            }
+        }
     },
 
-    seekerProfileAddCV: async (cv) => {
+    seekerProfileAddCV: async (cv, createdAt) => {
         const { seekerProfileCVs } = get();
         if (seekerProfileCVs.length === 5) {
-            const err: Error & { status?: number } = new Error('You can only have 5 CVs');
-            err.status = 409;
+            toast.error('You can only have 5 CVs');
+            return;
+        }
+        try {
+            await axios.post(`${config.API_BASE_URL}/seekers/cvs`, cv, {
+                headers: {
+                    'File-Name': cv.name,
+                    'Content-Type': cv.type,
+                }
+            });
+
+            set((state) => ({
+                seekerProfileCVs: [
+                    {
+                        name: cv.name,
+                        createdAt: formatDistanceToNow(new Date(createdAt), { addSuffix: true }),
+                        id: cnt++
+                    },
+                    ...state.seekerProfileCVs
+                ]
+            }));
+        } catch(err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 409) {
+                    toast.error('CVs limit reached. Please remove an existing CV before adding a new one.');
+                } else if (err.response?.status === 400) {
+                    toast.error('Invalid CV format. Please upload a valid file.');
+                } else {
+                    toast.error(`Failed to add CV: ${err.response?.statusText || 'Network error'}`);
+                }
+            } else {
+                toast.error('Failed to add CV: Unexpected error');
+            }
             throw err;
         }
-
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileCVs: [
-                        {
-                            ...cv,
-                            createdAt: formatDistanceToNow(new Date(cv.createdAt), { addSuffix: true }),
-                            id: cnt++
-                        },
-                        ...state.seekerProfileCVs
-                    ]
-                }));
-                resolve();
-            }, 1000);
-        });
     },
 
     seekerProfileRemoveCV: async (id) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileCVs: state.seekerProfileCVs.filter((cv) => cv.id !== id)
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.delete(`${config.API_BASE_URL}/seekers/cvs/${id}`);
+            set((state) => ({
+                seekerProfileCVs: state.seekerProfileCVs.filter((cv) => cv.id !== id)
+            }));
+        } catch(err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status && err.response.status >= 400 && err.response.status < 600) {
+                    toast.error(`Failed to remove CV: ${err.response.statusText || 'Unknown error'}`);
+                } else {
+                    toast.error('Failed to remove CV: Network error');
+                }
+            } else {
+                toast.error('Failed to remove CV: Unexpected error');
+            }
+            throw err;
+        }
     },
 
     // will be implemented to request the CV file from the API
     seekerProfileGetCV: async (id) => {
+        try {
+            const res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/${id}`, {
+                responseType: 'arraybuffer'
+            });
+            return res.data;
+        } catch (err) {
+            throw err;
+        }
     },
 
     seekerProfileFetchReviews: async () => {
@@ -386,7 +486,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 city: '',
                 phone: '',
                 gender: '',
-                birthdate: '',
+                birthDate: '',
             },
             seekerCredentials: {
                 email: '',

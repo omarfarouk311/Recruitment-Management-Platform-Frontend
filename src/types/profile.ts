@@ -32,13 +32,13 @@ export interface CV {
 }
 
 export interface SeekerProfileInfo {
-  image?: string;
+  image?: string | File;
   name: string;
   country: string;
   city: string;
   phone: string;
   gender: "male" | "female" | "";
-  birthdate: string;
+  birthDate: string;
 }
 
 export interface UserCredentials {
