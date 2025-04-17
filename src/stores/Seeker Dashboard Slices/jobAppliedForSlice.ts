@@ -95,16 +95,20 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
   },
 
   seekerJobsAppliedForSetCompanyNames: async () => {
-    let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
-    if(res.status !== 200) return;
-    set({
-      seekerJobsAppliedForCompanyNames: [
-        ...res.data.map((company: string) => ({
-          value: company,
-          label: company,
-        })),
-      ],
-    });
+    try {
+      let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
+      if(res.status !== 200) return;
+      set({
+        seekerJobsAppliedForCompanyNames: [
+          ...res.data.map((company: string) => ({
+            value: company,
+            label: company,
+          })),
+        ],
+      });
+    } catch (err) {
+      
+    }
   },
 
   seekerJobsAppliedForSetFilters: async (filters) => {
