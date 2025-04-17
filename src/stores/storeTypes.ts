@@ -20,7 +20,8 @@ import { CompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPa
 import { CompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 import { CompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
 
-import { RecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlice";
+import { RecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
+import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlice";
 import { SeekerInterviewsSlice } from "./Seeker Dashboard Slices/interviewSlice";
 import { AssessmentDialogSlice } from "./Dialogs/assessmentDialogSlice";
 

@@ -7,6 +7,7 @@ import LocationSearch from "../common/LocationSearch";
 import useStore from "../../stores/globalStore";
 import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
+import Button from "../common/Button";
 
 
 const SeekerInterviews = () => {
@@ -21,11 +22,23 @@ const SeekerInterviews = () => {
     const fetchData = useFetchData();
     const setDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
     const setSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const clear = useStore.useClearSeekerInterviews();
 
     useEffect(() => {
-        useSetCompanyNames();
-        fetchData();
-    }, [useSetCompanyNames, fetchData]);
+       clear();
+       useSetCompanyNames();
+       fetchData();
+
+       return clear;
+   }, []);
+
+   const handleEnterInterview = (row:number) => {
+    console.log("Entering interview for:", row);
+    // You can navigate to another page, open a modal, etc.
+  };
+  
+   
+
 
     const columns: ColumnDef<interview>[] = [
         { 
@@ -69,23 +82,25 @@ const SeekerInterviews = () => {
         },
         { key: "country", header: "Locations" }, // Updated header to "Locations"
         { key: "date", header: "Date" }, // Updated header to "Date"
-        { key: "recruiter", header: "recruiter" }, // Updated header to "Date"
-
+        { key: "recruiter", header: "recruiter" }, 
         {
-            key: 'status',
-            header: 'Status',
+            key: 'actions',
+            header: 'Actions',
             render: (row) => (
-              <span
-                className={
-                  row.status === 'Pending' ? 'text-yellow-600' :
-                  row.status === 'Accepted' ? 'text-green-600' : 'text-red-600'
-                }
+              <Button
+                variant="primary"
+                className="h-7 text-sm !w-auto ml-4"
+                onClick={() => handleEnterInterview(row.companyId!)} 
               >
-                {row.status}
-              </span>
+                Enter Interview
+              </Button>
             )
-        },
+          },
+          
+
+
     ];
+    
     return (
         <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
             <div className="flex justify-between items-center mb-8">
@@ -133,7 +148,7 @@ const SeekerInterviews = () => {
                 <JobDetailsDialog 
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
+               
                 />
             </div>
         </div>

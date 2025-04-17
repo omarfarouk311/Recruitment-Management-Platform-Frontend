@@ -121,6 +121,7 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
     await get().seekerJobsAppliedForFetchData();
   },
 
+
   clearSeekerJobsAppliedFor: () => {
     set({
       seekerJobsAppliedForData: [],
