@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { Interviews, DashboardInterviewsFilters, DashboardJobTitleFilterOptions } from "../../types/recruiterDashboard";
+import { Interviews } from "../../types/recruiterDashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
@@ -20,47 +20,34 @@ const RecruiterInterviews = () => {
     const useUpdateDate = useStore.useRecruiterInterviewsSetUpateDate(); // Add this to your store
     const fetchData = useFetchData();
 
+    const jobTitles = useStore.useRecruiterJobTitles();
+
+    const resetData = useStore.useResetAllData();
+
     useEffect(() => {
+        resetData();
         fetchData();
     }, []);
 
     // Function to handle date update
-    const handleUpdateDate = async (jobId: number, newDate: string) => {
+    const handleUpdateDate = async (jobId: number, seekerId: number, newDate: string) => {
         try {
-            await useUpdateDate({ jobId, date: newDate }); // Call the store function to update the date
-            fetchData(); // Refresh the data after updating
+            await useUpdateDate({ jobId, seekerId, date: newDate }); // Call the store function to update the date
         } catch (error) {
             console.error("Failed to update date:", error);
         }
     };
 
-    // Format date to remove .00Z
-    const formatDate = (date: string) => {
-        if (!date) return "---";
-
-        // Parse the date string into a Date object
-        const parsedDate = new Date(date);
-
-        // Extract date and time components
-        const year = parsedDate.getUTCFullYear();
-        const month = String(parsedDate.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-        const day = String(parsedDate.getUTCDate()).padStart(2, "0");
-        const hours = String(parsedDate.getUTCHours()).padStart(2, "0");
-        const minutes = String(parsedDate.getUTCMinutes()).padStart(2, "0");
-        const seconds = String(parsedDate.getUTCSeconds()).padStart(2, "0");
-
-        // Format as "YYYY-MM-DD HH:MM:SS"
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };
 
     // State for the date picker
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [currentJobId, setCurrentJobId] = useState<number | null>(null);
+    const [currentSeekerId, setCurrentSeekerId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
     // Function to handle date selection
     const handleDateConfirm = () => {
-        if (selectedDate && currentJobId) {
+        if (selectedDate && currentJobId && currentSeekerId) {
             // Convert the selected local time to UTC
             const utcDate = new Date(
                 Date.UTC(
@@ -74,10 +61,11 @@ const RecruiterInterviews = () => {
             );
 
             const formattedDate = utcDate.toISOString(); // Format the date as needed
-            handleUpdateDate(currentJobId, formattedDate); // Call the update function
+            handleUpdateDate(currentJobId, currentSeekerId, formattedDate); // Call the update function
             setSelectedDate(null); // Reset the selected date
             setCurrentJobId(null); // Reset the job ID
             setIsModalOpen(false); // Close the modal
+            setCurrentSeekerId(null); // Reset the seeker ID
         }
     };
 
@@ -109,7 +97,35 @@ const RecruiterInterviews = () => {
         {
             key: "date",
             header: "Date (GMT)",
-            render: (row) => <span>{formatDate(row.date)}</span>,
+            render: (row) => {
+                const date = new Date(row.date);
+
+                // Format date (e.g., "Jan 15, 2023")
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'GMT'
+                });
+
+                // Format time with AM/PM (e.g., "02:30:45 PM")
+                const formattedTime = date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: 'GMT',
+                    hour12: false  // This enables AM/PM display
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-xs text-gray-500">
+                            {formattedTime} GMT
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: "location",
@@ -128,7 +144,8 @@ const RecruiterInterviews = () => {
                 <div>
                     <Button
                         onClick={() => {
-                            setCurrentJobId(row.userId); // Set the job ID for the current row
+                            setCurrentJobId(row.jobId); // Set the job ID for the current row
+                            setCurrentSeekerId(row.userId);
                             setSelectedDate(row.date ? new Date(row.date) : null); // Set the current date if available
                             setIsModalOpen(true); // Open the modal
                         }}
@@ -148,7 +165,7 @@ const RecruiterInterviews = () => {
                     <FilterDropdown
                         label="Sort by Date"
                         options={DashboardSortByFilterOptions.filter(
-                            (option) => option.value === "" || option.value === "1" || option.value === "-1"
+                            (option) => option.value === "1" || option.value === "-1"
                         )}
                         selectedValue={filters.sortByDate}
                         onSelect={(value) => setFilters({ ...filters, sortByDate: value })}
@@ -156,9 +173,13 @@ const RecruiterInterviews = () => {
 
                     <FilterDropdown
                         label="Job Title"
-                        options={DashboardJobTitleFilterOptions}
+                        options={jobTitles && jobTitles.length > 0
+                            ? jobTitles.map((title) => ({ value: title, label: title }))
+                            : [{ value: '', label: 'No job titles available' }]
+                        }
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ ...filters, jobTitle: value })}
+                        disabled={!jobTitles || jobTitles.length === 0}
                     />
                 </div>
             </div>
@@ -178,12 +199,13 @@ const RecruiterInterviews = () => {
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <DatePicker
                             selected={selectedDate}
-                            onChange={(date: Date | null) => setSelectedDate(date)}
+                            onChange={setSelectedDate}
                             showTimeSelect
-                            timeFormat="HH:mm"
+                            timeFormat="h:mm aa"  // AM/PM format
                             timeIntervals={15}
-                            dateFormat="yyyy-MM-dd HH:mm"
-                            inline // Renders the calendar inline
+                            dateFormat="MMMM d, yyyy h:mm aa" // "June 5, 2023 2:30 PM"
+                            timeCaption="Time"
+                            className="border rounded p-2 w-full"
                         />
                         <div className="flex justify-end space-x-4 mt-4">
                             <Button onClick={handleDateConfirm}>Confirm</Button>

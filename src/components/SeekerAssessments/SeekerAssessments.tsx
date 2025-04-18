@@ -1,37 +1,46 @@
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { JobsAppliedFor, DashboardSortByFilterOptions, DashboardStatusFilterOptions } from "../../types/seekerDashboard";
+import { assessment, DashboardSortByFilterOptions, DashboardStatusFilterOptions } from "../../types/seekerDashboard";
 import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
+import AssessmentDialog  from "../common/assessmentDialog";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
-import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
 
-const SeekerJobsAppliedFor = () => {
-    const filters = useStore.useSeekerJobsAppliedForFilters();
-    const setFilters = useStore.useSeekerJobsAppliedForSetFilters();
-    const useData = useStore.useSeekerJobsAppliedForData;
-    const useHasMore = useStore.useSeekerJobsAppliedForHasMore;
-    const useIsLoading = useStore.useSeekerJobsAppliedForIsLoading;
-    const useFetchData = useStore.useSeekerJobsAppliedForFetchData;
-    const CompanyNames = useStore.useSeekerJobsAppliedForCompanyNames();
-    const useSetCompanyNames = useStore.useSeekerJobsAppliedForSetCompanyNames();
+
+const SeekerAssessment = () => {
+    const filters = useStore.useSeekerAssessmentsFilters()
+    const setFilters = useStore.useSeekerAssessmentsSetFilters();
+    const useData = useStore.useSeekerAssessmentsData
+    const useHasMore = useStore.useSeekerAssessmentsHasMore
+    const useIsLoading = useStore.useSeekerAssessmentsIsLoading
+    const useFetchData = useStore.useSeekerAssessmentsFetchData
+    const CompanyNames = useStore.useSeekerAssessmentsCompanyNames();
+    const useSetCompanyNames = useStore.useSeekerAssessmentsSetCompanyNames();
     const fetchData = useFetchData();
     const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
-    const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId();
-    const clear = useStore.useClearSeekerJobsAppliedFor();
+    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const useSetSelectAssessmentId= useStore.useSetSelectedAssessmentId();
+    const useSetAssessmentDialogIsOpen=useStore.useSetAssessmentDialogIsOpen();
+    const clear = useStore.useClearSeekerAssessment();
 
     useEffect(() => {
-        clear();
+         clear();
         useSetCompanyNames();
         fetchData();
 
         return clear;
     }, []);
 
-    const columns: ColumnDef<JobsAppliedFor>[] = [
+    const handleEnterAssessment = (assessmentId:number) => {
+        
+         useSetSelectAssessmentId(assessmentId);
+         useSetAssessmentDialogIsOpen(true);
+    };
+
+    const columns: ColumnDef<assessment>[] = [
         { 
             key: "jobTitle", 
             header: "Job Title",
@@ -47,7 +56,6 @@ const SeekerJobsAppliedFor = () => {
                     title={row.jobId ? "Click to view job details" : "No job details available"}>
                         {row.jobTitle}
                     </button>
-
                 </div>
             )}
         },
@@ -73,9 +81,8 @@ const SeekerJobsAppliedFor = () => {
             )}
         },
         { key: "country", header: "Location" },
-        { key: "dateApplied", header: "Date Applied" },
-        { key: "lastStatusUpdate", header: "Last Updated" },
-        { key: "phase", header: "Phase" },
+        { key: "dateAdded", header: "Date Applied" },
+        { key: "deadline", header: "Deadline" },
         {
             key: 'status',
             header: 'Status',
@@ -89,7 +96,20 @@ const SeekerJobsAppliedFor = () => {
                 {row.status}
               </span>
             )
-          },
+        },
+        {
+            key: 'actions',
+            header: 'Actions',
+            render: (row) => (
+                <Button
+                    variant="primary"
+                    className="h-7 text-sm !w-auto"
+                    onClick={() => handleEnterAssessment(row.assessmentId)} 
+                >
+                    Enter Assessment
+                </Button>
+            )
+        }
     ];
 
     return (
@@ -97,14 +117,6 @@ const SeekerJobsAppliedFor = () => {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Jobs Applied For</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
-                    <Button
-                        variant={filters.remote ? "currentTab" : "outline"}
-                        className="h-7 text-sm !w-auto"
-                        onClick={() => setFilters({ remote: !filters.remote })}
-                    >
-                        Remote
-                    </Button>
-
                     <LocationSearch
                         selectedCountry={filters.country}
                         onCountryChange={(value) => setFilters({ country: value, city: "" })}
@@ -115,9 +127,9 @@ const SeekerJobsAppliedFor = () => {
                     <FilterDropdown
                         label="Status"
                         options={DashboardStatusFilterOptions}
+                        addAnyOption={false}
                         selectedValue={filters.status}
                         onSelect={(value) => setFilters({ status: value })}
-                        addAnyOption={false}
                     />
 
                     <FilterDropdown
@@ -143,13 +155,13 @@ const SeekerJobsAppliedFor = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
-                <JobDetailsDialog 
-                    useIsOpen={useStore.useJobDetailsDialogIsOpen}
-                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                />
+
+                 <AssessmentDialog /> {
+
+                 }
             </div>
         </div>
     );
 }
 
-export default SeekerJobsAppliedFor;
+export default SeekerAssessment;

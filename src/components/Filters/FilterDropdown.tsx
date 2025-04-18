@@ -10,6 +10,7 @@ interface FilterDropdownProps {
   variant?: "primary" | "outline" | "currentTab";
   className?: string;
   disabled?: boolean;
+  addAnyOption?: boolean;
 }
 
 const FilterDropdown = ({
@@ -20,15 +21,16 @@ const FilterDropdown = ({
   variant = "outline",
   className = "",
   disabled = false,
+  addAnyOption = true,
 }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedValue, setHighlightedValue] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownMenuRef = useRef<HTMLDivElement>(null);
-  options = [
+  options = addAnyOption? [
     { value: "", label: "Any" },
     ...options.sort((a, b) => a.label.localeCompare(b.label)),
-  ];
+  ]: [...options.sort((a, b) => a.label.localeCompare(b.label))];
   const selectedLabel =
     options.find((o) => o.value === selectedValue)?.label || "";
 

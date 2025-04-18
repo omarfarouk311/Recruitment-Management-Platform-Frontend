@@ -20,13 +20,13 @@ export const createRecruiterDashboardPageSlice: StateCreator<CombinedState, [], 
     recruiterDashboardLoadingTab: null,
 
     setRecruiterDashboardActiveTab: async (tab) => {
-        const { recruiterDashboardActiveTab, recruiterDashboardLoadingTab, recruiterInvitationsFetchData } = get();
+        const { recruiterDashboardActiveTab, recruiterDashboardLoadingTab } = get();
         if (tab === recruiterDashboardActiveTab || recruiterDashboardLoadingTab) return;
 
         set({ recruiterDashboardActiveTab: tab, recruiterDashboardLoadingTab: tab });
 
         if (tab === 3) {
-            await recruiterInvitationsFetchData();
+            // await recruiterInvitationsFetchData();
             console.log("Fetching data for invitations tab");
 
         }

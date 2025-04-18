@@ -20,6 +20,11 @@ import { CompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPa
 import { CompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 import { CompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
 
+import { RecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
+import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlice";
+import { SeekerInterviewsSlice } from "./Seeker Dashboard Slices/interviewSlice";
+import { AssessmentDialogSlice } from "./Dialogs/assessmentDialogSlice";
+
 export type CombinedState =
   ForYouTabSlice &
   CompaniesTabSlice &
@@ -27,14 +32,14 @@ export type CombinedState =
   SeekerJobsAppliedForSlice &
   DashboardPageSlice &
   SeekerProfileSlice &
-  JobDetailsDialogSlice &
+  JobDetailsDialogSlice&SeekerAssessmentsSlice&SeekerInterviewsSlice&AssessmentDialogSlice &
   SeekerJobOffersSlice &
   JobOfferDialogSlice &
   RecruiterCandidatesSlice &
   RecruiterInvitationsSlice &
   recruiterDashboardPageSlice &
   RecruiterJobOfferSlice &
-  RecruiterInterviewsSlice &
+  RecruiterInterviewsSlice & RecruiterProfileSlice &
   userSlice &
   SharedEntitiesSlice &
   Assessment&

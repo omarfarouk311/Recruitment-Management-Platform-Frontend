@@ -6,7 +6,6 @@ import { z } from "zod";
 import Button from "../common/Button";
 import { useEffect, useState } from "react";
 import type { UserCredentials } from "../../types/profile";
-import useStore from "../../stores/globalStore";
 
 // Zod schema for validation
 const schema = z.object({
@@ -20,16 +19,16 @@ interface CredentialsDialogProps {
     isOpen: boolean;
     onClose: () => void;
     credentials: UserCredentials;
+    updateCredentials: (data: UserCredentials) => Promise<void>;
 }
 
 export default function CredentialsDialog({
     isOpen,
     onClose,
     credentials,
+    updateCredentials
 }: CredentialsDialogProps) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const updateCredentials = useStore.useSeekerProfileUpdateCredentials();
-
     const {
         register,
         handleSubmit,
@@ -49,7 +48,6 @@ export default function CredentialsDialog({
     const handleFormSubmit = async (data: FormData) => {
         const isValid = await trigger();
         if (!isValid) return;
-
         await updateCredentials(data);
         onClose();
     };

@@ -3,7 +3,6 @@ import { createSelectorHooks, ZustandHookSelectors } from "auto-zustand-selector
 import { createForYouTabSlice } from "./Seeker Home Slices/forYouTabSlice";
 import { createCompaniesTabSlice } from "./Seeker Home Slices/companiesTabSlice";
 import { createHomePageSlice } from "./Seeker Home Slices/homePageSlice";
-import { createSeekerJobsAppliedForSlice } from "./Seeker Dashboard Slices/jobAppliedForSlice";
 import { CombinedState } from "./storeTypes";
 import { createSeekerDashboardPageSlice } from "./Seeker Dashboard Slices/dashboardPageSlice";
 import { createSeekerProfileSlice } from "./Profile Slices/seekerProfileSlice";
@@ -23,6 +22,15 @@ import { createAssessmentSlice } from "./Assessment/assessment";
 import { createCompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
 import { createCompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 import { createCompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
+import { createRecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
+
+
+import { createSeekerJobsAppliedForSlice } from './Seeker Dashboard Slices/jobAppliedForSlice';
+import { createSeekerAssessmentsSlice } from './Seeker Dashboard Slices/assessmentSlice';
+import { createSeekerInterviewsSlice } from './Seeker Dashboard Slices/interviewSlice';
+import { createAssessmentDialogSlice } from './Dialogs/assessmentDialogSlice'; 
+
+
 
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
@@ -47,6 +55,16 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createCompanyDashboardPageSlice(...a),
             ...createCompanyInvitationsSlice(...a),
             ...createCompanyLogsSlice(...a),
+            ...createRecruiterProfileSlice(...a),
+
+            ...createSeekerJobsAppliedForSlice(...a),
+            ...createSeekerAssessmentsSlice(...a),
+            ...createSeekerInterviewsSlice(...a),
+            ...createAssessmentDialogSlice(...a), 
+
+
+            
+
         }),
         {
             name: "user-store",

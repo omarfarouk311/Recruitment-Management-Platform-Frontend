@@ -75,9 +75,9 @@ export default function EducationSection() {
                   </div>
 
                   <div className="flex-1 text-left">
-                    <h3 className="text-lg font-medium">{edu.degree}</h3>
+                    <h3 className="text-lg font-medium">{edu.institution}</h3>
                     <p className="text-gray-600 break-words">
-                      {edu.institution} - {edu.country}, {edu.city}
+                      {edu.degree}, {edu.fieldOfStudy}
                     </p>
                     <p className="mt-2 text-gray-700 break-words whitespace-normal">
                       Grade: {edu.grade}

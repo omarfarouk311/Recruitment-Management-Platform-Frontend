@@ -47,7 +47,7 @@ export default function ProfileInfo() {
                         <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
                             {profileInfo.image ? (
                                 <img
-                                    src={profileInfo.image}
+                                    src={profileInfo.image as string}
                                     alt={profileInfo.name}
                                     className="h-24 w-24 rounded-full object-cover"
                                 />
@@ -115,6 +115,9 @@ export default function ProfileInfo() {
                         isOpen={isAccountSettingsDialogOpen}
                         onClose={() => setIsAccountSettingsDialogOpen(false)}
                         credentials={credentials}
+                        updateCredentials={async (data) => {
+                            useStore.getState().seekerProfileUpdateCredentials(data);
+                        }}
                     />
                 </>
             )}

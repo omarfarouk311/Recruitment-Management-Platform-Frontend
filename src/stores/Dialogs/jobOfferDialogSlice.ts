@@ -4,12 +4,14 @@ import {
 } from "../../types/jobOffer";
 import { CombinedState } from "../storeTypes";
 import { StateCreator } from "zustand";
-import { mockJobOffersDetails, mockTemplates } from "../../mock data/jobOffers";
+import axios from "axios";
+import config from "../../../config/config";
 
 export interface JobOfferDialogSlice {
     jobOfferDialogTemplateList: JobOfferTemplateListType[];
     jobOfferDialogData: JobOfferDetailsType | null;
     jobOfferDialogSelectedTemplateId: number | null;
+    jobOfferDialogValidationErrors: string[]; 
     jobOfferDialogSetTemplateId: (templateId: number | null) => void;
     jobOfferDialogSetTemplateList: () => Promise<void>;
     jobOfferDialogFetchData: (
@@ -34,68 +36,113 @@ export const createJobOfferDialogSlice: StateCreator<
     jobOfferDialogData: null,
     jobOfferDialogTemplateList: [],
     jobOfferDialogSelectedTemplateId: null,
+    jobOfferDialogValidationErrors: [],
     jobOfferDialogSetTemplateList: async () => {
         const { jobOfferDialogTemplateList } = get();
         if (jobOfferDialogTemplateList.length) return;
-        set({
-            jobOfferDialogTemplateList: mockTemplates.map((template) => ({
-                templateId: template.templateId,
-                templateName: template.templateName,
-            })),
-        })
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/templates`, {
+                params: {
+                    simplified: true
+                }
+            });
+            set({
+                jobOfferDialogTemplateList: res.data.map((template: {id: number; name: string}) => ({
+                    templateId: template.id,
+                    templateName: template.name,
+                })),
+            })
+        } catch (err) {
+            
+        }
     },
-    jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) =>
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                if (templateId) {
-                    set({
-                        jobOfferDialogData: {
-                            ...mockTemplates[templateId],
-                        },
-                    });
-                } else if (jobId) {
-                    set({
-                        jobOfferDialogData: {
-                            ...mockJobOffersDetails[jobId],
-                        },
-                    });
-                    if (mockJobOffersDetails[jobId].templateId) {
-                        set({
-                            jobOfferDialogSelectedTemplateId:
-                                mockJobOffersDetails[jobId].templateId,
-                        });
+    jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) => {
+        try {
+            if (templateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch template data");
+                }
+                set({
+                    jobOfferDialogData: {
+                        ...res.data,
+                        templateName: res.data.name,
+                        templateId: templateId
                     }
-                } else {
+                });
+            } else if (jobId && !candidateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch job offer data");
+                }
+                set({
+                    jobOfferDialogData: {
+                        description: res.data.offer,
+                        placeholders: res.data.placeholdersParams,
+                        templateName: "",
+                        templateId: -1,
+                    },
+                });
+                
+            } else if (jobId && candidateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch job offer data");
+                }
+                set({
+                    jobOfferDialogData: {
+                        templateId: res.data.template_id,
+                        description: res.data.template_description,
+                        placeholders: res.data.placeholders_params, 
+                        templateName: res.data.template_name,
+                    },
+                });
+                if (res.data.template_id) {
                     set({
-                        jobOfferDialogData: null,
+                        jobOfferDialogSelectedTemplateId: res.data.template_id
                     });
                 }
-                resolve();
-            }, 500);
-        }),
+            }
+        } catch (err) {
+            
+        }
+    },
+
     jobOfferDialogResetData: () =>
         set({
             jobOfferDialogSelectedTemplateId: null,
             jobOfferDialogData: null,
         }),
+
+
     jobOfferDialogUpdateData: async (jobId, candidateId) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                const { jobOfferDialogData } = get();
-                if (!jobOfferDialogData) {
-                    return;
+        const { jobOfferDialogData, jobOfferDialogSelectedTemplateId } = get();
+        if (!jobOfferDialogData) {
+            return;
+        }
+        try {
+            let res = await axios.post(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`, {
+                templateId: jobOfferDialogSelectedTemplateId,
+                placeholders: jobOfferDialogData?.placeholders,
+            });
+            if(res.status === 400) {
+                set({
+                    jobOfferDialogValidationErrors: res.data.validationErrors,
+                });
+                return;
+            }
+        } catch (err) {
+            if(axios.isAxiosError(err)) {
+                if(err.response?.status === 400) {
+                    set({
+                        jobOfferDialogValidationErrors: err.response.data.validationErrors,
+                    });
                 }
-                mockJobOffersDetails[jobId] = {
-                    ...jobOfferDialogData,
-                    placeholders: {
-                        ...mockJobOffersDetails[jobId].placeholders,
-                        ...jobOfferDialogData.placeholders,
-                    },
-                };
-                resolve();
-            }, 500);
-        });
+            }
+        }
     },
+
+
     jobOfferDialogModifyData: (data) =>
         set({
             jobOfferDialogData: data,

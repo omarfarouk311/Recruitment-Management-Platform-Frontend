@@ -5,7 +5,7 @@ import axios from 'axios';
 // const api = axios.create({baseURL: 'http://localhost:3000/recruiter/dashboard'});
 // api.get('/candidates',)
 
-export const candidatesMockData :Candidate[] =  Array(10)
+export const candidatesMockData :Candidate[] =  Array(20)
 .fill({})
 .map((_, index) => ({
     seekerId: index,

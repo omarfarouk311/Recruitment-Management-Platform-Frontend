@@ -154,7 +154,6 @@ const RecruiterJobOffer = () => {
                 <JobDetailsDialog
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                    useSelectedJobId={useStore.useJobDetailsDialogSelectedJobId}
                 />
 
                 <JobOfferDialog

@@ -36,7 +36,6 @@ export interface RecruiterJobOfferFilters{
 }
 
 export const JobOfferSortByFilterOptions = [
-    { value: "", label: "Any" },
     { value: "1", label: "Date Recieved (Ascending)" },
     { value: "-1", label: "Date Recieved (Descending)" },
 ]
