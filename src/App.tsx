@@ -7,8 +7,8 @@ import SeekerRoutes from "./routes/SeekerRoutes";
 import RecruiterRoutes from "./routes/RecruiterRoutes";
 import useStore from "./stores/globalStore";
 import CompanyRoutes from "./routes/CompanyRoutes";
-import { ToastContainer } from 'react-toastify';
-
+import { ToastContainer } from "react-toastify";
+import { UserRole } from "./stores/User Slices/userSlice";
 
 function App() {
   // for testing different user types. Will be removed after completing
@@ -16,7 +16,7 @@ function App() {
   const setRole = useStore.useUserSetRole();
   const setUserId = useStore.useUserSetId();
   // change according to the type you need to test
-  setRole("company");
+  setRole(UserRole.SEEKER);
   setName("John Doe");
   setUserId(3);
   ///////////////////////
@@ -31,16 +31,16 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
 
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Route path="/seeker/*" element={<SeekerRoutes />} />
           )}
 
-          {userRole === "recruiter" && (
+          {userRole === UserRole.RECRUITER && (
             <Route path="/recruiter/*" element={<RecruiterRoutes />} />
           )}
 
           {/* To be added after creating company routes */}
-          {userRole === "company" && (
+          {userRole === UserRole.COMPANY && (
             <Route path="/company/*" element={<CompanyRoutes />} />
           )}
 

@@ -10,6 +10,7 @@ import { formatDistanceToNow, formatDate } from 'date-fns';
 import axios from 'axios';
 import { date } from 'zod';
 import { toast } from 'react-toastify';
+import { UserRole } from '../User Slices/userSlice.ts';
 const { paginationLimit } = config;
 let cnt = 100;
 
@@ -456,7 +457,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchCVs: async () => {
         const { userRole, seekerProfileSelectedSeekerData } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, { params: userRole === 'seeker' ? {}: { 
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, {
+                params: userRole === UserRole.SEEKER ? {}: { 
                 ...seekerProfileSelectedSeekerData
             }});
             set({

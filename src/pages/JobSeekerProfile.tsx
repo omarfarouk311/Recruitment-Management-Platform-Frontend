@@ -7,6 +7,7 @@ import ReviewsSection from "../components/Profile/sections/ReviewsSection";
 import UserNav from "../components/Header/UserNav";
 import { useEffect } from "react";
 import useStore from "../stores/globalStore";
+import { UserRole } from "../stores/User Slices/userSlice";
 
 function JobSeekerProfile() {
   const clearProfile = useStore.useSeekerProfileClear();
@@ -35,7 +36,7 @@ function JobSeekerProfile() {
             <ExperienceSection />
             <EducationSection />
             <SkillsSection />
-            {userRole === "seeker" && <ReviewsSection />}
+            {userRole === UserRole.SEEKER && <ReviewsSection />}
           </div>
         </div>
       </div>
