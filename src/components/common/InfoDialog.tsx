@@ -34,7 +34,7 @@ const InfoDialog = ({ header, data, onClose, isOpen }: InfoDialogProps) => {
                 onClick={onClose}
                 className="hover:bg-gray-200 rounded-full p-2 transition-colors"
               >
-                <XCircle className="w-4 h-4" />
+                <XCircle className="w-5 h-5" />
               </button>
             </div>
 
