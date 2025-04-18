@@ -115,7 +115,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
                 ),
                 seekerId: item.id, 
                 jobId: 1,    
-                status: "PENDING"  
+                status: "Pending"  
               })),
             ],
 
