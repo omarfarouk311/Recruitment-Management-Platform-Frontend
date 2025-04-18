@@ -17,10 +17,15 @@ const CompanyInvitations = () => {
   const useIsLoading = useStore.useCompanyInvitationsIsLoading;
   const useFetchData = useStore.useCompanyInvitationsFetchData;
   const fetchData = useFetchData();
+  const clear = useStore.useCompanyInvitationsTabClear();
+
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    clear();
+   fetchData();
+
+   return clear;
+}, []);
 
   const columns: ColumnDef<Invitations>[] = [
     {
@@ -66,6 +71,7 @@ const CompanyInvitations = () => {
             <FilterDropdown
                 label="Status"
                 options={InvitationsStatusFilterOptions}
+                addAnyOption={false}
                 selectedValue={filters.status}
                 onSelect={(value) => setFilters({ status: value })}
             />
@@ -73,6 +79,7 @@ const CompanyInvitations = () => {
             <FilterDropdown
                 label="Sort By"
                 options={InvitationsSortByFilterOptions}
+                addAnyOption={false}
                 selectedValue={filters.sortBy}
                 onSelect={(value) => setFilters({ sortBy: value })}
             />

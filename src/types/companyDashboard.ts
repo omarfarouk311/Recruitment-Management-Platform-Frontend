@@ -4,6 +4,7 @@ export interface Invitations {
   dateSent: string;
   deadline: string;
   status: string;
+  recruiterId: number;
 }
 
 export interface InvitationsFilters {

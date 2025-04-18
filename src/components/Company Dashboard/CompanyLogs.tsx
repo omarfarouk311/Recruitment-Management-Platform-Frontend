@@ -18,11 +18,14 @@ const CompanyLogs = () => {
   const useIsLoading = useStore.useCompanyLogsIsLoading;
   const useFetchData = useStore.useCompanyLogsFetchData;
   const fetchData = useFetchData();
+  const clear= useStore.useCompanyLogsTabClear();
 
   useEffect(() => {
+    clear();
     setActionType();
     setPerformedBy();
     fetchData();
+    return clear;
   }, []);
 
   const columns: ColumnDef<Logs>[] = [
