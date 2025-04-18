@@ -50,3 +50,22 @@ export interface ForYouTabFilters {
     city: string;
     remote: boolean;
 }
+
+
+/////////////////////
+
+// export interface CompanyJobList {
+//     id: number;
+//     title: string;
+//     country: string;
+//     city?: string;
+//     datePosted: string;
+// }
+export interface CompanyJobListFilters {
+    jobs: {
+        id: number;
+        jobTitle: string;
+    },
+    sortBy: string;
+}
+

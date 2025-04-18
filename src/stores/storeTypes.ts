@@ -25,6 +25,10 @@ import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlic
 import { SeekerInterviewsSlice } from "./Seeker Dashboard Slices/interviewSlice";
 import { AssessmentDialogSlice } from "./Dialogs/assessmentDialogSlice";
 
+import { CompanyCandidatesSlice } from "./Company Dashboard Slice/CompanyJobsCandidatesSlice";
+
+import{ CompanyJobListSlice } from './Company Dashboard Slice/CompanyJobListsSlice'
+ 
 export type CombinedState =
   ForYouTabSlice &
   CompaniesTabSlice &
@@ -45,4 +49,6 @@ export type CombinedState =
   Assessment&
   CompanyDashboardPageSlice&
   CompanyInvitationsSlice&
-  CompanyLogsSlice;
+  CompanyLogsSlice &
+  CompanyCandidatesSlice &
+  CompanyJobListSlice;
