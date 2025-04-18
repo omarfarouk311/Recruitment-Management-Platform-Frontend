@@ -4,6 +4,7 @@ import { Candidate, CandidateFilters } from "../../types/candidates";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config";
+import { showErrorToast } from "../../util/errorHandler";
 
 export interface RecruiterCandidatesSlice {
     Recruitercandidates: Candidate[];
@@ -79,21 +80,27 @@ export const createRecruiterCandidatesSlice: StateCreator<
     },
 
     RecruiterCandidatesMakeDecision: async (seekerId, decision, jobId) => {
-        let res = await axios.post(
-            `${config.API_BASE_URL}/candidates/make-decision`,
-            { jobId, decision, candidates: [seekerId] }
-        );
-        if (res.status !== 200) {
-            throw Error("Error in making decision");
+        try{
+            let res = await axios.post(
+                `${config.API_BASE_URL}/candidates/make-decision`,
+                { jobId, decision, candidates: [seekerId] }
+            );
+
+            const { Recruitercandidates } = get();
+            const updatedCandidates = Recruitercandidates.filter((candidate) => {
+                if (candidate.seekerId === seekerId && candidate.jobId === jobId) {
+                    return false;
+                }
+                return true;
+            });
+            set({ Recruitercandidates: updatedCandidates });
+
         }
-        const { Recruitercandidates } = get();
-        const updatedCandidates = Recruitercandidates.filter((candidate) => {
-            if (candidate.seekerId === seekerId && candidate.jobId === jobId) {
-                return false;
+        catch (err) {
+            if(axios.isAxiosError(err)) {
+                showErrorToast("Error making decision");
             }
-            return true;
-        });
-        set({ Recruitercandidates: updatedCandidates });
+        }
     },
 
     RecruiterCandidatesFetchCandidates: async () => {
@@ -145,47 +152,64 @@ export const createRecruiterCandidatesSlice: StateCreator<
                 RecruiterCandidatesPage: state.RecruiterCandidatesPage + 1,
             }));
         } catch (err) {
+            if (axios.isAxiosError(err)) {
+                showErrorToast("Something went wrong");
+            }
             set({ RecruiterCandidatesIsLoading: false });
         }
     },
 
     RecruiterCandidatesSetPositionTitles: async () => {
-
-        const {
-          RecruiterCandidatesFilters,
-        } = get();
-
-          //Simplified will always be false
-          const params = {
-              jobTitle: RecruiterCandidatesFilters.jobTitle || undefined,      
-          };
-
-          // Remove undefined values from params
-          for (const key in params) {
-              if (params[key as keyof typeof params] === undefined) {
-                  delete params[key as keyof typeof params];
-              }
-          }
-
-          let res = await axios.get(
-              `${config.API_BASE_URL}/candidates/job-title-filter`,
-              { params }
-          );
-
-        const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
-        set({
-            RecruiterCandidatesPositionTitles: positionTitles,
-        });
+        try{
+            const {
+                RecruiterCandidatesFilters,
+              } = get();
+      
+                //Simplified will always be false
+                const params = {
+                    jobTitle: RecruiterCandidatesFilters.jobTitle || undefined,      
+                };
+      
+                // Remove undefined values from params
+                for (const key in params) {
+                    if (params[key as keyof typeof params] === undefined) {
+                        delete params[key as keyof typeof params];
+                    }
+                }
+      
+                let res = await axios.get(
+                    `${config.API_BASE_URL}/candidates/job-title-filter`,
+                    { params }
+                );
+      
+              const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
+              set({
+                  RecruiterCandidatesPositionTitles: positionTitles,
+              });
+        }
+        catch(err){
+            if(axios.isAxiosError(err)) {
+                showErrorToast("Something went wrong");
+            }
+        }
+        
     },
 
     RecruiterCandidatesSetPhases: async() => {
-
-        let res = await axios.get(
-            `${config.API_BASE_URL}/candidates/phase-types`
-        );
-        const phases = res.data.map((phaseType:{id:number; name:string}) => ({value: phaseType.id, label: phaseType.name}));
-        set({
-            RecruiterCandidatesPhases: phases,
-        });
+        try{
+            let res = await axios.get(
+                `${config.API_BASE_URL}/candidates/phase-types`
+            );
+            const phases = res.data.map((phaseType:{id:number; name:string}) => ({value: phaseType.id, label: phaseType.name}));
+            set({
+                RecruiterCandidatesPhases: phases,
+            });
+        }
+        catch(err){
+            if(axios.isAxiosError(err)) {
+                showErrorToast("Something went wrong");
+            }
+        }
+        
     },
 });

@@ -2,6 +2,7 @@ import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import { DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
+import { showErrorToast } from "../../util/errorHandler";
 
 import {
     RecruiterJobOfferInfo,
@@ -95,7 +96,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
                 delete params[key as keyof typeof params];
             }
         }
-      
+          
           const res = await axios.get(`${config.API_BASE_URL}/recruiters/job-offer-sent`, { params });
 
           // Extract the jobOffers array from the response
@@ -125,36 +126,46 @@ export const createRecruiterJobOfferSlice: StateCreator<
             RecruiterJobOfferPage: state.RecruiterJobOfferPage + 1,
           }));
         } catch (err) {
-          console.error("Fetch error:", err); // Log errors
+          if(axios.isAxiosError(err)) {
+              showErrorToast("Something went wrong");
+          }
           set({ RecruiterJobOfferIsLoading: false });
         }
       },
 
     RecruiterJobOfferSetPositionTitles: async () => {
-      const {
-        RecruiterJobOfferFilters,
-      } = get();
+      try{
+        const {
+          RecruiterJobOfferFilters,
+        } = get();
+  
+          //Simplified will always be false
+          const params = {
+              jobTitle: RecruiterJobOfferFilters.jobTitle || undefined,      
+          };
+  
+          // Remove undefined values from params
+          for (const key in params) {
+              if (params[key as keyof typeof params] === undefined) {
+                  delete params[key as keyof typeof params];
+              }
+          }
+  
+          let res = await axios.get(
+              `${config.API_BASE_URL}/candidates/job-title-filter`,
+              { params }
+          );
+  
+        const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
+        set({
+          RecruiterJobOfferPositionTitles: positionTitles,
+        });
 
-        //Simplified will always be false
-        const params = {
-            jobTitle: RecruiterJobOfferFilters.jobTitle || undefined,      
-        };
-
-        // Remove undefined values from params
-        for (const key in params) {
-            if (params[key as keyof typeof params] === undefined) {
-                delete params[key as keyof typeof params];
-            }
+      }
+      catch(err){
+        if(axios.isAxiosError(err)) {
+            showErrorToast("Something went wrong");
         }
-
-        let res = await axios.get(
-            `${config.API_BASE_URL}/candidates/job-title-filter`,
-            { params }
-        );
-
-      const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
-      set({
-        RecruiterJobOfferPositionTitles: positionTitles,
-      });
+      }
     },
 });
