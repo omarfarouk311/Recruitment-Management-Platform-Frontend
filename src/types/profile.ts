@@ -12,9 +12,8 @@ export interface Experience {
 export interface Education {
   id?: number;
   institution: string;
+  fieldOfStudy: string;
   degree: string;
-  country: string;
-  city: string;
   startDate: string;
   endDate: string;
   grade: string;

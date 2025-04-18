@@ -36,7 +36,7 @@ export interface SeekerProfileSlice {
 
     seekerProfileSkills: Skill[];
     seekerProfileFetchSkills: () => Promise<void>;
-    seekerProfileAddSkill: (skill: Skill) => Promise<void>;
+    seekerProfileAddSkill: (id: number) => Promise<void>;
     seekerProfileRemoveSkill: (id: number) => Promise<void>;
 
     seekerProfileCVs: CV[];
@@ -54,6 +54,8 @@ export interface SeekerProfileSlice {
     seekerProfileRemoveReview: (id: number) => Promise<void>;
 
     seekerProfileSelectedSeekerData: {seekerId?: number, jobId?: number};
+    seekerProfileSkillsFormData: Skill[];
+    seekerProfileFetchSkillsFormData: () => Promise<void>;
     seekerProfileClear: () => void;
 }
 
@@ -79,6 +81,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileReviewsPage: 1,
     seekerProfileReviewsIsLoading: false,
     seekerProfileSelectedSeekerData: {},
+    seekerProfileSkillsFormData: [],
 
     seekerProfileFetchInfo: async () => {
         const { userId, seekerProfileSelectedSeekerData } = get();
@@ -172,161 +175,282 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchExperience: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({
-                    seekerProfileExperience: mockExperience.map(exp => ({
-                        ...exp,
-                        startDate: formatDate(new Date(exp.startDate), "MMM yyyy"),
-                        endDate: formatDate(new Date(exp.endDate), "MMM yyyy")
-                    }))
-                });
-                resolve();
-            }, 1000);
-        });
+        const { seekerProfileSelectedSeekerData, userId } = get();
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/experiences/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            set({
+                seekerProfileExperience: res.data.map((exp: Experience & {jobTitle: string}) => ({
+                    ...exp,
+                    startDate: formatDate(new Date(exp.startDate), "MMM yyyy"),
+                    endDate: formatDate(new Date(exp.endDate), "MMM yyyy"),
+                    position: exp.jobTitle,
+                }))
+            });
+        } catch (err) {
+            toast.error('Failed to fetch experiences. Please try again later.');
+        }
     },
 
     seekerProfileAddExperience: async (experience) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileExperience: [
-                        {
-                            ...experience,
-                            startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
-                            endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
-                            id: cnt++
-                        },
-                        ...state.seekerProfileExperience
-                    ]
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.post(`${config.API_BASE_URL}/seekers/experiences`, {
+                ...experience,
+                startDate: new Date(experience.startDate).toISOString(),
+                endDate: experience.endDate ? new Date(experience.endDate).toISOString() : undefined,
+                jobTitle: experience.position,
+            });
+            set((state) => ({
+                seekerProfileExperience: [
+                    {
+                        ...experience,
+                        startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
+                        endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                        id: cnt++
+                    },
+                    ...state.seekerProfileExperience
+                ]
+            }));
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                }
+                else {
+                    toast.error('Failed to add experience. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to add experience. Please try again later.');
+            }
+            throw err;
+        }
+
     },
 
     seekerProfileUpdateExperience: async (experience) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileExperience: state.seekerProfileExperience.map((exp) =>
-                        exp.id === experience.id ? {
-                            ...exp,
-                            ...experience,
-                            startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
-                            endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
-                        } : { ...exp }
-                    )
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.put(`${config.API_BASE_URL}/seekers/experiences/${experience.id}`, {
+                ...experience,
+                startDate: new Date(experience.startDate).toISOString(),
+                endDate: experience.endDate ? new Date(experience.endDate).toISOString() : undefined,
+                jobTitle: experience.position,
+            });
+
+            set((state) => ({
+                seekerProfileExperience: state.seekerProfileExperience.map((exp) =>
+                    exp.id === experience.id ? {
+                        ...exp,
+                        ...experience,
+                        startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
+                        endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                    } : { ...exp }
+                )
+            }));
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                } else {
+                    toast.error('Failed to update experience. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to update experience. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileRemoveExperience: async (id) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileExperience: state.seekerProfileExperience.filter((exp) => exp.id !== id)
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.delete(`${config.API_BASE_URL}/seekers/experiences/${id}`);
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    set((state) => ({
+                        seekerProfileExperience: state.seekerProfileExperience.filter((exp) => exp.id !== id)
+                    }));
+                    resolve();
+                }, 1000);
+            });
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                } else {
+                    toast.error('Failed to remove experience. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to remove experience. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileFetchEducation: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({
-                    seekerProfileEducation: mockEducation.map(edu => (
-                        {
-                            ...edu,
-                            startDate: formatDate(new Date(edu.startDate), "MMM yyyy"),
-                            endDate: formatDate(new Date(edu.endDate), "MMM yyyy")
-                        }))
-                });
-                resolve();
-            }, 1000);
-        });
+        const { seekerProfileSelectedSeekerData, userId } = get();
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/educations/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            set({
+                seekerProfileEducation: res.data.education.map((edu: Education & {start_date: string; end_date: string; school_name: string; field: string;}) => (
+                    {
+                        ...edu,
+                        startDate: formatDate(new Date(edu.start_date), "MMM yyyy"),
+                        endDate: formatDate(new Date(edu.end_date), "MMM yyyy"),
+                        institution: edu.school_name,
+                        fieldOfStudy: edu.field,
+                    }
+                ))
+            });
+        } catch (err) {
+            toast.error('Failed to fetch education. Please try again later.');
+        }
     },
 
     seekerProfileAddEducation: async (education) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileEducation: [
-                        {
-                            ...education,
-                            startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
-                            endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
-                            id: cnt++
-                        },
-                        ...state.seekerProfileEducation
-                    ]
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.post(`${config.API_BASE_URL}/seekers/educations/add`, {
+                ...education,
+                start_date: new Date(education.startDate).toISOString(),
+                end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
+                school_name: education.institution,
+                field: education.fieldOfStudy,
+            })
+            set((state) => ({
+                seekerProfileEducation: [
+                    {
+                        ...education,
+                        startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
+                        endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
+                        id: cnt++
+                    },
+                    ...state.seekerProfileEducation
+                ]
+            }));
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                } else {
+                    toast.error('Failed to add education. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to add education. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileUpdateEducation: async (education) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
-                        edu.id === education.id ? {
-                            ...edu,
-                            ...education,
-                            startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
-                            endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
-                        } : { ...edu }
-                    )
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.patch(`${config.API_BASE_URL}/seekers/educations/${education.id}`, {
+                ...education,
+                start_date: new Date(education.startDate).toISOString(),
+                end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
+                school_name: education.institution,
+                field: education.fieldOfStudy,
+            })
+            set((state) => ({
+                seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
+                    edu.id === education.id ? {
+                        ...edu,
+                        ...education,
+                        startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
+                        endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
+                    } : { ...edu }
+                )
+            }));
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        toast.error(error);
+                    });
+                } else {
+                    toast.error('Failed to update education. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to update education. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileRemoveEducation: async (id) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.delete(`${config.API_BASE_URL}/seekers/educations/${id}`);
+            set((state) => ({
+                seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
+            }));
+        } catch (err) { 
+            toast.error('Failed to remove education. Please try again later.');
+            throw err;
+        }
     },
 
     seekerProfileFetchSkills: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({ seekerProfileSkills: [...mockSkills] });
-                resolve();
-            }, 1000);
-        });
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`);
+            set({ seekerProfileSkills: res.data.map((skill: {skillid: number; skillname: string}) => ({id: skill.skillid, name: skill.skillname})) });
+        } catch (err) {
+            toast.error('Failed to fetch skills. Please try again later.');
+        }
     },
 
-    seekerProfileAddSkill: async (skill) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileSkills: [{ ...skill, id: cnt++ }, ...state.seekerProfileSkills,]
-                }))
-                resolve();
-            }, 1000);
-        });
+    seekerProfileAddSkill: async (id) => {
+        const { seekerProfileSkillsFormData } = get();
+        try {
+            await axios.post(`${config.API_BASE_URL}/seekers/skills`, {skills: [{skillId: id}]});
+            set((state) => ({
+                seekerProfileSkills: [seekerProfileSkillsFormData.find(skill => skill.id === id)!, ...state.seekerProfileSkills,]
+            }))
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    if(validationErrors.length !== 0) {
+                        validationErrors.forEach((error: string) => {
+                            toast.error(error);
+                        });
+                    }
+                    else {
+                        toast.error('Skill already exists.');
+                    }
+                } else {
+                    toast.error('Failed to add skill. Please try again later.');
+                }
+            } else {
+                toast.error('Failed to add skill. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileRemoveSkill: async (id) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
-                }))
-                resolve();
-            }, 1000);
-        });
+        try {
+            await axios.delete(`${config.API_BASE_URL}/seekers/skills/${id}`);
+            set((state) => ({
+                seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
+            }))
+        } catch (err) {
+            toast.error('Failed to remove skill. Please try again later.');
+            throw err;
+        }
+    },
+
+    // TODO: Skills for the user to select from 
+    seekerProfileFetchSkillsFormData: async () => {
+
     },
 
     seekerProfileFetchCVs: async () => {

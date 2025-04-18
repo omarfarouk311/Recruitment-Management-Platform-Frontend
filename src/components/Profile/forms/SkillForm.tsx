@@ -42,8 +42,8 @@ export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
   const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
     if (!isValid) return;
-
-    await addSkill(data);
+    if(data)
+      await addSkill(parseInt(data.name));
     onClose();
   };
 
