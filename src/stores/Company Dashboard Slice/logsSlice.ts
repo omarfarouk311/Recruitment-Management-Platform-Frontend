@@ -2,7 +2,9 @@ import { StateCreator } from "zustand";
 import { Logs, LogsFilters } from "../../types/companyDashboard";
 import { CombinedState } from "../storeTypes";
 import { format } from "date-fns";
-import { mockCompanyActions, mockCompanyLogs, mockCompanyPerformedBy } from "../../mock data/companyLogs";
+
+import axios from "axios";
+import config from "../../../config/config.ts";
 
 export interface CompanyLogsSlice {
   companyLogsData: Logs[];
@@ -40,34 +42,46 @@ export const createCompanyLogsSlice: StateCreator<
   companyLogsActionType: [],
 
   companyLogsFetchData: async () => {
-    const { companyLogsPage, companyLogsHasMore, companyLogsIsLoading } = get();
+    const { companyLogsPage,
+            companyLogsHasMore,
+            companyLogsIsLoading, 
+            companyLogsFilters: { performedBy,date, action },
+     } = get();
     if (!companyLogsHasMore || companyLogsIsLoading) return;
     set({ companyLogsIsLoading: true });
 
     // mock API call, don't forget to include the filters in the query string if they are populated
-    await new Promise<void>((resolve) =>
-      setTimeout(() => {
-        const startIndex = (companyLogsPage - 1) * 8;
-        const endIndex = startIndex + 8;
-        const newLogs = mockCompanyLogs.slice(startIndex, endIndex);
-        set((state) => ({
-          companyLogsData: [
-            ...state.companyLogsData,
-            ...newLogs.map((log) => ({
-              ...log,
-              performedAt: format(
-                new Date(log.performedAt),
-                "MM/dd/yyyy h:mm a"
-              ),
-            })),
-          ],
-          companyLogsPage: state.companyLogsPage + 1,
-          companyLogsHasMore: endIndex < mockCompanyLogs.length,
-          companyLogsIsLoading: false,
-        }));
-        resolve();
-      }, 500)
-    );
+    try {
+      let params = Object.fromEntries(
+        Object.entries({
+          page: companyLogsPage,
+          performedBy: performedBy||undefined,
+          action: action||undefined,
+        }).filter(([_, value]) => value !== undefined)
+      );
+
+      let res = await axios.get(`${config.API_BASE_URL}/logs`, {
+        params,
+      });
+      
+      set((state) => ({
+        companyLogsData: [
+          ...state.companyLogsData,
+          ...res.data.map((a: any) => ({
+            performedBy: a.performedBy,
+            performedAt: format(new Date(a.createdAt), "dd/MM/yyyy"),
+            actionType: a.action,
+            extraData: a.extraData,
+          })),
+        ],
+        companyLogsHasMore:  res.data.length > 0,
+        companyLogsIsLoading: false,
+        companyLogsPage: state.companyLogsPage + 1,
+      }));
+
+    }catch (err) {
+      set({ companyLogsIsLoading: false });
+    }
   },
 
   companyLogsSetFilters: async (filters) => {
@@ -83,11 +97,32 @@ export const createCompanyLogsSlice: StateCreator<
     await get().companyLogsFetchData();
   },
   companyLogsSetActionType: async () => {
-    set({companyLogsActionType: [{value: "", label: "Any"}, ...mockCompanyActions.map((action) => ({value: String(action.id), label: action.name}))]});
+    let res = await axios.get(`${config.API_BASE_URL}/logs/actions`);
+    if(res.status !== 200) return;
+    set({
+      companyLogsActionType: [
+        ...res.data.map((logs: {id:number; action:string}) => ({
+          value: logs.id,
+          label: logs.action,
+        })),
+      ],
+    });
+    // set({companyLogsActionType: [{value: "", label: "Any"}, ...mockCompanyActions.map((action) => ({value: String(action.id), label: action.name}))]});
   },
 
   companyLogsSetPerformedBy: async () => {
-    set({companyLogsPerformedBy: [{value: "", label: "Any"}, ...mockCompanyPerformedBy.map((performedby) => ({value:performedby, label:performedby}))]});
+    let res = await axios.get(`${config.API_BASE_URL}/recruiters/allRecruiters`);
+    console.log(res.data)
+    if(res.status !== 200) return;
+    set({
+      companyLogsPerformedBy: [
+        ...res.data.map((recruiter:{id:number;name:string}) => ({
+          value: recruiter.id,
+          label: recruiter.name,
+        })),
+      ],
+    });
+    // set({companyLogsPerformedBy: [{value: "", label: "Any"}, ...mockCompanyPerformedBy.map((performedby) => ({value:performedby, label:performedby}))]});
   },
 
   companyLogsTabClear: () => {
