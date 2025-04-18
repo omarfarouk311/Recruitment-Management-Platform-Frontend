@@ -4,6 +4,8 @@ import useStore from "../../../stores/globalStore";
 import CVForm from "../forms/CVForm";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
+import { toast } from "react-toastify";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function CVSection() {
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -11,6 +13,7 @@ export default function CVSection() {
     const cvs = useStore.useSeekerProfileCVs();
     const removeCV = useStore.useSeekerProfileRemoveCV();
     const fetchCVs = useStore.useSeekerProfileFetchCVs();
+    const getCV = useStore.useSeekerProfileGetCV();
     const userRole = useStore.useUserRole();
 
     useEffect(() => {
@@ -20,11 +23,47 @@ export default function CVSection() {
         });
     }, []);
 
+    const handleCVClick = async (cvId: number, cvName: string) => {
+        try {
+            const response = await getCV(cvId);
+            if (!response) {
+                toast.error("CV not found");
+                return;
+            }
+
+            // Create Blob from ArrayBuffer
+            const blob = new Blob([response], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+
+            // Try to open in new window with PDF viewer
+            const pdfWindow = window.open(url, "_blank");
+            if (
+                !pdfWindow ||
+                pdfWindow.closed ||
+                typeof pdfWindow.closed === "undefined"
+            ) {
+                // Fallback to download if popup blocked
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = cvName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // Clean up after 1 minute
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (error) {
+            toast.error("Failed to load CV");
+            console.error("Error handling CV:", error);
+        }
+    };
+
     return (
         <div className="bg-white rounded-3xl shadow p-6 mb-4 h-[230px] flex flex-col">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">CVs</h2>
-                {userRole === "seeker" && (
+                {userRole === UserRole.SEEKER && (
                     <Button
                         variant="outline"
                         className="!w-auto !h-8 !p-3"
@@ -50,7 +89,8 @@ export default function CVSection() {
                     {cvs.map((cv) => (
                         <div
                             key={cv.id}
-                            className="flex items-center justify-between p-4 bg-gray-100 rounded-2xl"
+                            className="flex items-center justify-between p-4 bg-gray-100 rounded-2xl cursor-pointer hover:bg-gray-200"
+                            onClick={() => handleCVClick(cv.id!, cv.name)}
                         >
                             {/* CV Name */}
                             <p className="text-black break-words max-w-[70%]">
@@ -63,9 +103,12 @@ export default function CVSection() {
                                     {cv.createdAt}
                                 </p>
 
-                                {userRole === "seeker" && (
+                                {userRole === UserRole.SEEKER && (
                                     <button
-                                        onClick={() => removeCV(cv.id!)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            removeCV(cv.id!);
+                                        }}
                                         className="text-red-400 hover:text-red-600"
                                     >
                                         <Trash2 className="h-5 w-5" />
@@ -77,7 +120,7 @@ export default function CVSection() {
                 </div>
             )}
 
-            {userRole === "seeker" && (
+            {userRole === UserRole.SEEKER && (
                 <CVForm
                     isOpen={isFormOpen}
                     onClose={() => setIsFormOpen(false)}

@@ -4,6 +4,7 @@ import useStore from "../../../stores/globalStore";
 import Button from "../../common/Button";
 import SkillForm from "../forms/SkillForm"; // Add this import
 import SkeletonLoader from "../../common/SkeletonLoader";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function SkillsSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function SkillsSection() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Skills</h2>
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Button
               variant="outline"
               onClick={() => setIsFormOpen(true)}
@@ -49,7 +50,7 @@ export default function SkillsSection() {
                 className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
               >
                 <span className="text-sm text-black">{skill.name}</span>
-                {userRole === "seeker" && (
+                {userRole === UserRole.SEEKER && (
                   <button
                     onClick={() => removeSkill(skill.id!)}
                     className="ml-2 text-gray-400 hover:text-gray-600"
@@ -64,7 +65,7 @@ export default function SkillsSection() {
           <p> className="text-gray-600" No skills to show.</p>
         )}
 
-        {userRole === "seeker" && (
+        {userRole === UserRole.SEEKER && (
           <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
         )}
       </div>

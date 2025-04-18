@@ -1,26 +1,53 @@
-import { Star, Dot } from "lucide-react";
+import { Star, Dot, Edit3, Trash2 } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
 import { useState } from "react";
 
 interface BaseJobCardProps {
   job: Job;
-  useRemoveRecommendation?: () => (id: number) => Promise<void>;
 }
 
-interface SelectionHandlers extends BaseJobCardProps {
+interface BaseSelectionHandlers extends BaseJobCardProps {
   useSelectedJobId: () => number | null;
   useSetSelectedJobId: () => (id: number) => Promise<void>;
   usePushToJobDetails?: never;
+}
+
+// Case 1: With edit/delete actions
+interface SelectionWithEditDelete extends BaseSelectionHandlers {
+  editJob: () => void;
+  useDeleteJob: () => (id: number) => Promise<void>;
+  useRemoveRecommendation?: never;
+}
+
+// Case 2: With remove recommendation
+interface SelectionWithRemoveRecommendation extends BaseSelectionHandlers {
+  useRemoveRecommendation: () => (id: number) => Promise<void>;
+  editJob?: never;
+  useDeleteJob?: never;
+}
+
+// Case 3: Just base selection handlers without any actions
+interface SelectionWithoutActions extends BaseSelectionHandlers {
+  editJob?: never;
+  useDeleteJob?: never;
+  useRemoveRecommendation?: never;
 }
 
 interface DetailsHandler extends BaseJobCardProps {
   usePushToJobDetails: () => (id: number) => Promise<void>;
   useSelectedJobId?: never;
   useSetSelectedJobId?: never;
+  useRemoveRecommendation?: never;
+  editJob?: never;
+  useDeleteJob?: never;
 }
 
-type JobCardProps = SelectionHandlers | DetailsHandler;
+type JobCardProps =
+  | DetailsHandler
+  | SelectionWithEditDelete
+  | SelectionWithRemoveRecommendation
+  | SelectionWithoutActions;
 
 const JobCard = ({
   job: {
@@ -35,6 +62,8 @@ const JobCard = ({
   useSetSelectedJobId,
   usePushToJobDetails,
   useRemoveRecommendation,
+  editJob,
+  useDeleteJob,
 }: JobCardProps) => {
   const selectedJobId = useSelectedJobId?.();
   const setSelectedJobId = useSetSelectedJobId?.();
@@ -42,6 +71,8 @@ const JobCard = ({
   const pushToJobDetails = usePushToJobDetails?.();
   const removeRecommendation = useRemoveRecommendation?.();
   const [removing, setRemoving] = useState(false);
+  const deleteJob = useDeleteJob?.();
+  const [deleting, setDeleting] = useState(false);
 
   return (
     <div
@@ -61,10 +92,11 @@ const JobCard = ({
         {removeRecommendation && (
           <button
             className="absolute right-1 hover:text-red-500"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
               setRemoving(true);
-              setTimeout(() => removeRecommendation(id), 500);
+              await removeRecommendation(id);
+              setTimeout(() => setRemoving(false), 500);
             }}
             title="Remove recommendation"
           >
@@ -73,10 +105,41 @@ const JobCard = ({
         )}
       </div>
 
+      <div className="relative">
+        {editJob && (
+          <button
+            className="absolute right-1 hover:text-blue-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              editJob();
+            }}
+            title="Edit job"
+          >
+            <Edit3 />
+          </button>
+        )}
+        {deleteJob && (
+          <button
+            className="absolute right-1 mt-12 hover:text-red-500"
+            onClick={async (e) => {
+              e.stopPropagation();
+              setDeleting(true);
+              await deleteJob(id);
+              setTimeout(() => setDeleting(false), 500);
+            }}
+            title="Delete job"
+          >
+            <Trash2 />
+          </button>
+        )}
+      </div>
+
       {removing ? (
         <p className="text-red-500 text-md font-semibold">
           Job Recommendation removed
         </p>
+      ) : deleting ? (
+        <p className="text-red-500 text-md font-semibold">Job Deleted</p>
       ) : (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">

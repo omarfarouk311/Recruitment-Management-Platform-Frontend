@@ -40,64 +40,71 @@ export const createJobOfferDialogSlice: StateCreator<
     jobOfferDialogSetTemplateList: async () => {
         const { jobOfferDialogTemplateList } = get();
         if (jobOfferDialogTemplateList.length) return;
-        let res = await axios.get(`${config.API_BASE_URL}/templates`, {
-            params: {
-                simplified: true
-            }
-        });
-        set({
-            jobOfferDialogTemplateList: res.data.map((template: {id: number; name: string}) => ({
-                templateId: template.id,
-                templateName: template.name,
-            })),
-        })
-    },
-    jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) => {
-        
-        if (templateId) {
-            let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
-            if(res.status !== 200) {
-                throw new Error("Failed to fetch template data");
-            }
-            set({
-                jobOfferDialogData: {
-                    ...res.data,
-                    templateName: res.data.name,
-                    templateId: templateId
+        try {
+            let res = await axios.get(`${config.API_BASE_URL}/templates`, {
+                params: {
+                    simplified: true
                 }
             });
-        } else if (jobId && !candidateId) {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
-            if(res.status !== 200) {
-                throw new Error("Failed to fetch job offer data");
-            }
             set({
-                jobOfferDialogData: {
-                    description: res.data.offer,
-                    placeholders: res.data.placeholdersParams,
-                    templateName: "",
-                    templateId: -1,
-                },
-            });
+                jobOfferDialogTemplateList: res.data.map((template: {id: number; name: string}) => ({
+                    templateId: template.id,
+                    templateName: template.name,
+                })),
+            })
+        } catch (err) {
             
-        } else if (jobId && candidateId) {
-            let res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
-            if(res.status !== 200) {
-                throw new Error("Failed to fetch job offer data");
-            }
-            set({
-                jobOfferDialogData: {
-                    templateId: res.data.template_id,
-                    description: res.data.template_description,
-                    placeholders: res.data.placeholders_params, 
-                    templateName: res.data.template_name,
-                },
-            });
-            if (res.data.template_id) {
+        }
+    },
+    jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) => {
+        try {
+            if (templateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch template data");
+                }
                 set({
-                    jobOfferDialogSelectedTemplateId: res.data.template_id
+                    jobOfferDialogData: {
+                        ...res.data,
+                        templateName: res.data.name,
+                        templateId: templateId
+                    }
                 });
+            } else if (jobId && !candidateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch job offer data");
+                }
+                set({
+                    jobOfferDialogData: {
+                        description: res.data.offer,
+                        placeholders: res.data.placeholdersParams,
+                        templateName: "",
+                        templateId: -1,
+                    },
+                });
+                
+            } else if (jobId && candidateId) {
+                let res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
+                if(res.status !== 200) {
+                    throw new Error("Failed to fetch job offer data");
+                }
+                set({
+                    jobOfferDialogData: {
+                        templateId: res.data.template_id,
+                        description: res.data.template_description,
+                        placeholders: res.data.placeholders_params, 
+                        templateName: res.data.template_name,
+                    },
+                });
+                if (res.data.template_id) {
+                    set({
+                        jobOfferDialogSelectedTemplateId: res.data.template_id
+                    });
+                }
             }
+        } catch (err) {
+            
         }
     },
 
@@ -113,19 +120,26 @@ export const createJobOfferDialogSlice: StateCreator<
         if (!jobOfferDialogData) {
             return;
         }
-        let res = await axios.post(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`, {
-            templateId: jobOfferDialogSelectedTemplateId,
-            placeholders: jobOfferDialogData?.placeholders,
-        });
-        if(res.status === 400) {
-            set({
-                jobOfferDialogValidationErrors: res.data.validationErrors,
+        try {
+            let res = await axios.post(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`, {
+                templateId: jobOfferDialogSelectedTemplateId,
+                placeholders: jobOfferDialogData?.placeholders,
             });
-            return;
+            if(res.status === 400) {
+                set({
+                    jobOfferDialogValidationErrors: res.data.validationErrors,
+                });
+                return;
+            }
+        } catch (err) {
+            if(axios.isAxiosError(err)) {
+                if(err.response?.status === 400) {
+                    set({
+                        jobOfferDialogValidationErrors: err.response.data.validationErrors,
+                    });
+                }
+            }
         }
-        if(res.status !== 200) {
-            throw new Error("Failed to update job offer data");
-        }  
     },
 
 

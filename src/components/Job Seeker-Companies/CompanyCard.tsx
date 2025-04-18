@@ -1,4 +1,4 @@
-import { Star, ExternalLink, UserSquare2 } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CompanyCard } from "../../types/company";
 import InfoDialog from "../common/InfoDialog";
@@ -39,7 +39,15 @@ const CompanyCard = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 flex items-center justify-center">
-              {image ? <img src={image} /> : <UserSquare2 />}
+              {image ? (
+                <img src={image} />
+              ) : (
+                <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
+                  <span className="text-xl text-gray-500">
+                    {name.charAt(0)}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div>
@@ -138,8 +146,9 @@ const CompanyCard = ({
           </div>
         </div>
 
-        <p className="text-black">{overview}</p>
+        <p className="text-black break-words">{overview}</p>
       </div>
+
       <InfoDialog
         header={`${name} Industries`}
         isOpen={isIndustriesDialogOpen}

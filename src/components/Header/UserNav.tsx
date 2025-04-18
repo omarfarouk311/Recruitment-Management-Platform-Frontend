@@ -2,6 +2,7 @@ import { Home, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ReactNode } from "react";
 import useStore from "../../stores/globalStore";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 interface UserNavProps {
   children?: ReactNode;
@@ -11,6 +12,12 @@ const UserNav = ({ children }: UserNavProps) => {
   const userRole = useStore.useUserRole();
   const userImage = useStore.useUserImage();
   const userName = useStore.useUserName();
+  const urlRole =
+    userRole === UserRole.SEEKER
+      ? "seeker"
+      : userRole === UserRole.RECRUITER
+      ? "recruiter"
+      : "company";
 
   return (
     <div className="flex items-center px-6 py-4 h-20 bg-white shadow-sm border-b-2 border-gray-300 relative">
@@ -31,7 +38,7 @@ const UserNav = ({ children }: UserNavProps) => {
             )}
           </div>
 
-          <Link to={`/${userRole}/profile`}>
+          <Link to={`/${urlRole}/profile`}>
             <span
               className="font-medium hover:bg-gray-200 transition-colors rounded-full px-4 py-1"
               role="button"
@@ -43,7 +50,7 @@ const UserNav = ({ children }: UserNavProps) => {
 
         {/* Dashboard Button */}
         <Link
-          to={`/${userRole}/dashboard`}
+          to={`/${urlRole}/dashboard`}
           className="flex items-center space-x-2 hover:bg-gray-200 rounded-full px-3 py-2 transition-colors"
         >
           <LayoutDashboard className="w-6 h-6" />
@@ -57,10 +64,10 @@ const UserNav = ({ children }: UserNavProps) => {
       )}
 
       {/* Right Section (Home Button) */}
-      {userRole === "seeker" && (
+      {userRole === UserRole.SEEKER && (
         <div className="flex absolute right-10">
           <Link
-            to={`/${userRole}/home`}
+            to={`/${urlRole}/home`}
             className="flex items-center space-x-2 hover:bg-gray-200 rounded-full px-3 py-2 transition-colors"
           >
             <Home className="w-6 h-6" />

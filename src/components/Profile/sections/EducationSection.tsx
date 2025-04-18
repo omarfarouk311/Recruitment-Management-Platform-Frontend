@@ -5,6 +5,7 @@ import EducationForm from "../forms/EducationForm";
 import { Education } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function EducationSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -40,7 +41,7 @@ export default function EducationSection() {
       <div className="p-6 text-center">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Education</h2>
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Button
               variant="outline"
               className="!w-auto !h-8 !p-3"
@@ -75,9 +76,9 @@ export default function EducationSection() {
                   </div>
 
                   <div className="flex-1 text-left">
-                    <h3 className="text-lg font-medium">{edu.degree}</h3>
+                    <h3 className="text-lg font-medium">{edu.institution}</h3>
                     <p className="text-gray-600 break-words">
-                      {edu.institution} - {edu.country}, {edu.city}
+                      {edu.degree}, {edu.fieldOfStudy}
                     </p>
                     <p className="mt-2 text-gray-700 break-words whitespace-normal">
                       Grade: {edu.grade}
@@ -90,7 +91,7 @@ export default function EducationSection() {
                       {edu.startDate} - {edu.endDate}
                     </p>
 
-                    {userRole === "seeker" && (
+                    {userRole === UserRole.SEEKER && (
                       <div className="flex gap-4">
                         <button
                           className="text-gray-400 hover:text-gray-600"
@@ -125,7 +126,7 @@ export default function EducationSection() {
         )}
       </div>
 
-      {userRole === "seeker" && (
+      {userRole === UserRole.SEEKER && (
         <EducationForm
           education={editingEducation}
           onClose={() => {

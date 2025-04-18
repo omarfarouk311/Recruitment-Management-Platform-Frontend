@@ -12,9 +12,8 @@ export interface Experience {
 export interface Education {
   id?: number;
   institution: string;
+  fieldOfStudy: string;
   degree: string;
-  country: string;
-  city: string;
   startDate: string;
   endDate: string;
   grade: string;
@@ -32,13 +31,30 @@ export interface CV {
 }
 
 export interface SeekerProfileInfo {
-  image?: string;
+  image?: string | File;
   name: string;
   country: string;
   city: string;
   phone: string;
   gender: "male" | "female" | "";
-  birthdate: string;
+  birthDate: string;
+}
+
+export interface CompanyProfileInfo {
+  id: number;
+  image?: string;
+  name: string;
+  overview: string;
+  type: string;
+  foundedIn: number;
+  size: number;
+  rating: number;
+  reviewsCount: number;
+  locationsCount: number;
+  industriesCount: number;
+  jobsCount: number;
+  locations: { country: string, city: string }[];
+  industries: string[];
 }
 
 export interface UserCredentials {

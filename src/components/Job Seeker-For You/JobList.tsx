@@ -2,15 +2,37 @@ import { useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 import { Job } from "../../types/job";
 
-interface JobListProps {
+interface BaseJobListProps {
   useJobs: () => Job[];
   useHasMore: () => boolean;
   useIsLoading: () => boolean;
   useFetchJobs: () => () => Promise<void>;
   useSelectedJobId: () => number | null;
   useSetSelectedJobId: () => (id: number) => Promise<void>;
-  useRemoveRecommendation?: () => (id: number) => Promise<void>;
 }
+
+interface JobListPropsWithRemoveRecommendation extends BaseJobListProps {
+  editJob?: never;
+  useDeleteJob?: never;
+  useRemoveRecommendation: () => (id: number) => Promise<void>;
+}
+
+interface JobListPropsWithEditDelete extends BaseJobListProps {
+  editJob: () => void;
+  useDeleteJob: () => (id: number) => Promise<void>;
+  useRemoveRecommendation?: never;
+}
+
+interface JobListPropsWithNoActions extends BaseJobListProps {
+  editJob?: never;
+  useDeleteJob?: never;
+  useRemoveRecommendation?: never;
+}
+
+type JobListProps =
+  | JobListPropsWithRemoveRecommendation
+  | JobListPropsWithEditDelete
+  | JobListPropsWithNoActions;
 
 const JobList = ({
   useJobs,
@@ -20,6 +42,8 @@ const JobList = ({
   useSelectedJobId,
   useSetSelectedJobId,
   useRemoveRecommendation,
+  editJob,
+  useDeleteJob,
 }: JobListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const jobs = useJobs();
@@ -58,25 +82,51 @@ const JobList = ({
         <div className="text-center py-4 text-gray-500">No jobs found.</div>
       ) : (
         <>
-          {jobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              useSelectedJobId={useSelectedJobId}
-              useSetSelectedJobId={useSetSelectedJobId}
-              useRemoveRecommendation={useRemoveRecommendation}
-            />
-          ))}
+          {jobs.map((job) => {
+            if (editJob && useDeleteJob) {
+              return (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  useSelectedJobId={useSelectedJobId}
+                  useSetSelectedJobId={useSetSelectedJobId}
+                  useDeleteJob={useDeleteJob}
+                  editJob={editJob}
+                />
+              );
+            } else if (useRemoveRecommendation) {
+              return (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  useSelectedJobId={useSelectedJobId}
+                  useSetSelectedJobId={useSetSelectedJobId}
+                  useRemoveRecommendation={useRemoveRecommendation}
+                />
+              );
+            }
+            return (
+              <JobCard
+                key={job.id}
+                job={job}
+                useSelectedJobId={useSelectedJobId}
+                useSetSelectedJobId={useSetSelectedJobId}
+              />
+            );
+          })}
+
           {isLoading && (
             <div className="flex justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           )}
+
           {!hasMore && (
             <div className="text-center pt-4 text-gray-500">
               No more jobs to show
             </div>
           )}
+
           <div ref={observerTarget} className="h-2" />
         </>
       )}

@@ -15,14 +15,17 @@ const schema = z.object({
     name: z.string().min(1, "Name is required"),
     country: z.string().min(1, "Country is required"),
     city: z.string().min(1, "City is required"),
-    image: z.string().min(1, "Image is required"),
+    image: z.union([
+        z.string(),
+        z.instanceof(File).refine((file) => file.size > 0, "Image is required"),
+    ]),
     phone: z.string().refine((value) => isValidPhoneNumber(value), {
         message: "Invalid phone number",
     }),
     gender: z.enum(["male", "female", ""], {
         errorMap: () => ({ message: "Please select a gender" }),
     }),
-    birthdate: z.string().refine((value) => {
+    birthDate: z.string().refine((value) => {
         const date = new Date(value);
         const today = new Date();
         return date <= today;
@@ -69,7 +72,7 @@ const ProfileDialog = ({
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setValue("image", reader.result as string, {
+                setValue("image", file, {
                     shouldValidate: true,
                 });
             };
@@ -78,8 +81,16 @@ const ProfileDialog = ({
     };
 
     const onSubmit = async (data: FormData) => {
-        await updateProfile(data);
-        onClose();
+        try {
+            await updateProfile(data);
+            onClose();
+        } catch (error) {
+            if (error instanceof Error && (error as any).response?.validationErrors) {
+                console.error("Error updating profile:", (error as any).response.validationErrors);
+            } else {
+                console.error("Error updating profile:", error);
+            }
+        }
     };
 
     return (
@@ -109,9 +120,15 @@ const ProfileDialog = ({
                             {/* Profile Picture */}
                             <div className="flex flex-col items-center">
                                 <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                                    {image ?? profileInfo.image ? (
+                                    {image instanceof File ? (
                                         <img
-                                            src={image ?? profileInfo.image}
+                                            src={URL.createObjectURL(image)}
+                                            alt={profileInfo.name}
+                                            className="w-36 h-36 rounded-full object-cover"
+                                        />
+                                    ) : profileInfo.image ? (
+                                        <img
+                                            src={profileInfo.image as string}
                                             alt={profileInfo.name}
                                             className="w-36 h-36 rounded-full object-cover"
                                         />
@@ -221,15 +238,15 @@ const ProfileDialog = ({
                                 </label>
                                 <input
                                     type="date"
-                                    {...register("birthdate")}
+                                    {...register("birthDate")}
                                     max={new Date().toISOString().split("T")[0]}
                                     className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                                        errors.birthdate ? "border-red-500" : ""
+                                        errors.birthDate ? "border-red-500" : ""
                                     }`}
                                 />
-                                {errors.birthdate && (
+                                {errors.birthDate && (
                                     <p className="text-red-500 text-sm mt-1">
-                                        {errors.birthdate.message}
+                                        {errors.birthDate.message}
                                     </p>
                                 )}
                             </div>

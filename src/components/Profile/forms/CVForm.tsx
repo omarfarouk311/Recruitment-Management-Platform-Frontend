@@ -8,7 +8,7 @@ import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 
 const schema = z.object({
-  name: z.string().min(1, "CV file is required"),
+  file: z.instanceof(File).refine((file) => file.size > 0, "Image is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -30,14 +30,11 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
     trigger,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: "",
-    },
     mode: "onSubmit",
   });
 
   useEffect(() => {
-    reset({ name: "" });
+    reset({ file: undefined });
     setShowLimitMessage(false);
   }, [isOpen]);
 
@@ -48,7 +45,7 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
     const createdAt = new Date().toISOString();
 
     try {
-      await addCV({ ...data, createdAt });
+      await addCV(data.file, createdAt);
       onClose();
     } catch (err: any) {
       if (err.status === 409) {
@@ -93,17 +90,17 @@ export default function CVDialog({ isOpen, onClose }: CVDialogProps) {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        setValue("name", file.name, { shouldValidate: true });
+                        setValue("file", file, { shouldValidate: true });
                       }
                     }}
                     className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                      errors.name ? "border-red-500" : ""
+                      errors.file ? "border-red-500" : ""
                     } file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-500 hover:file:text-black hover:file:cursor-pointer`}
                   />
 
-                  {errors.name && (
+                  {errors.file && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.name.message}
+                      {errors.file.message}
                     </p>
                   )}
 

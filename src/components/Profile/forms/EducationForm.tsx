@@ -7,14 +7,12 @@ import { z } from "zod";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import type { Education } from "../../../types/profile";
-import LocationSearch from "../../common/LocationSearch";
 import { format, parse } from "date-fns";
 
 const schema = z.object({
   institution: z.string().min(1, "Institution is required"),
   degree: z.string().min(1, "Degree is required"),
-  country: z.string().min(1, "Country is required"),
-  city: z.string().min(1, "City is required"),
+  fieldOfStudy: z.string().min(1, "Field of study is required"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   grade: z.string().min(1, "Grade is required"),
@@ -50,17 +48,13 @@ export default function EducationDialog({
     defaultValues: {
       institution: "",
       degree: "",
-      country: "",
-      city: "",
+      fieldOfStudy: "",
       startDate: "",
       endDate: "",
       grade: "",
     },
     mode: "onSubmit",
   });
-
-  const selectedCountry = watch("country");
-  const selectedCity = watch("city");
 
   useEffect(() => {
     if (education) {
@@ -77,9 +71,8 @@ export default function EducationDialog({
     } else {
       reset({
         institution: "",
+        fieldOfStudy: "",
         degree: "",
-        country: "",
-        city: "",
         startDate: "",
         endDate: "",
         grade: "",
@@ -171,40 +164,24 @@ export default function EducationDialog({
                 )}
               </div>
 
-              <div className="space-y-4">
-                <div className="flex space-x-6">
-                  <LocationSearch
-                    selectedCountry={selectedCountry}
-                    onCountryChange={(value) => {
-                      setValue("country", value, {
-                        shouldValidate: true,
-                      });
-                      setValue("city", "", {
-                        shouldValidate: true,
-                      });
-                    }}
-                    selectedCity={selectedCity}
-                    onCityChange={(value) =>
-                      setValue("city", value, {
-                        shouldValidate: true,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="flex space-x-6">
-                  {errors.country && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.country.message}
-                    </p>
-                  )}
-                  {errors.city && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.city.message}
-                    </p>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Field Of Study
+                </label>
+                <input
+                  type="text"
+                  {...register("fieldOfStudy")}
+                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                    errors.fieldOfStudy ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.fieldOfStudy && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.fieldOfStudy.message}
+                  </p>
+                )}
               </div>
+
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
