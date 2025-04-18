@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { StateCreator } from "zustand";
-import { CombinedState } from "../../stores/storeTypes";
+import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
 import { CompanyCandidates, CompanyCandidateFilters } from "../../types/candidates";

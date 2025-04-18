@@ -34,3 +34,27 @@ export interface CompanyProfile {
     industriesCount: number;
     jobsCount: number
 }
+
+
+
+export interface CompanyJobsRecruiters {
+    id: number
+    name: string;
+    department: string;
+    assigned_candidates_cnt: number;
+}
+
+export interface CompanyJobsRecruitersFilters {
+    recruiterName: string;
+    department: string;
+    assignedCandidates: string;
+}
+
+
+export const CompanyJobsRecruitersSortOptions = [
+    { label: 'Ascending', value: "1" },
+    { label: 'Desecending', value: "-1" }
+]
+
+
+

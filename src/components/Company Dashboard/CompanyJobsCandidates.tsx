@@ -99,7 +99,7 @@ const CompanyJobsCandidates = () => {
 
     return (
         jobId == null ? (
-            <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-3xl border-2 border-gray-200 p-8">
+            <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-3xl border-2 border-gray-200 p-8">
                 <div className="text-center max-w-md">
                     <svg
                         className="w-16 h-16 mx-auto text-gray-400 mb-4"
@@ -127,7 +127,7 @@ const CompanyJobsCandidates = () => {
                 </div>
             </div>
     ) :   
-            <div className="h-[500px] bg-white p-4 rounded-3xl border-2 border-gray-200">
+            <div className="h-[400px] bg-white p-4 rounded-3xl border-2 border-gray-200">
                 <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Candidates</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">

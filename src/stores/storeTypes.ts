@@ -27,7 +27,8 @@ import { AssessmentDialogSlice } from "./Dialogs/assessmentDialogSlice";
 
 import { CompanyCandidatesSlice } from "./Company Dashboard Slice/CompanyJobsCandidatesSlice";
 
-import{ CompanyJobListSlice } from './Company Dashboard Slice/CompanyJobListsSlice'
+import { CompanyJobListSlice } from './Company Dashboard Slice/CompanyJobListsSlice'
+import { CompanyJobsRecruitersSlice } from './Company Dashboard Slice/CompanyJobsRecruitersSlice';
  
 export type CombinedState =
   ForYouTabSlice &
@@ -51,4 +52,5 @@ export type CombinedState =
   CompanyInvitationsSlice&
   CompanyLogsSlice &
   CompanyCandidatesSlice &
-  CompanyJobListSlice;
+  CompanyJobListSlice &
+  CompanyJobsRecruitersSlice;

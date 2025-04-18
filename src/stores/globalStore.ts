@@ -34,7 +34,7 @@ import { createAssessmentDialogSlice } from './Dialogs/assessmentDialogSlice';
 import { createCompanyCandidatesSlice } from "./Company Dashboard Slice/CompanyJobsCandidatesSlice";
 
 import { createcompanyJobsSlice } from "./Company Dashboard Slice/CompanyJobListsSlice";
-
+import { createCompanyJobsRecruitersSlice } from "./Company Dashboard Slice/CompanyJobsRecruitersSlice";
 
 
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
@@ -69,6 +69,8 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
 
             ...createCompanyCandidatesSlice(...a),
             ...createcompanyJobsSlice(...a),
+
+            ...createCompanyJobsRecruitersSlice(...a),
 
         }),
         {
