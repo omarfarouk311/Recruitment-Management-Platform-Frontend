@@ -19,6 +19,7 @@ import { Assessment } from "./Assessment/assessment";
 import { CompanyDashboardPageSlice } from "./Company Dashboard Slice/dashboardPageSlice";
 import { CompanyInvitationsSlice } from "./Company Dashboard Slice/invitationsSlice";
 import { CompanyLogsSlice } from "./Company Dashboard Slice/logsSlice";
+import { CompanyProfileSlice } from "./Profile Slices/companyProfileSlice";
 
 import { RecruiterProfileSlice } from "./Profile Slices/recruiterProfileSlices";
 import { SeekerAssessmentsSlice } from "./Seeker Dashboard Slices/assessmentSlice";
@@ -32,7 +33,7 @@ export type CombinedState =
   SeekerJobsAppliedForSlice &
   DashboardPageSlice &
   SeekerProfileSlice &
-  JobDetailsDialogSlice&SeekerAssessmentsSlice&SeekerInterviewsSlice&AssessmentDialogSlice &
+  JobDetailsDialogSlice & SeekerAssessmentsSlice & SeekerInterviewsSlice & AssessmentDialogSlice &
   SeekerJobOffersSlice &
   JobOfferDialogSlice &
   RecruiterCandidatesSlice &
@@ -42,7 +43,8 @@ export type CombinedState =
   RecruiterInterviewsSlice & RecruiterProfileSlice &
   userSlice &
   SharedEntitiesSlice &
-  Assessment&
-  CompanyDashboardPageSlice&
-  CompanyInvitationsSlice&
-  CompanyLogsSlice;
+  Assessment &
+  CompanyDashboardPageSlice &
+  CompanyInvitationsSlice &
+  CompanyLogsSlice &
+  CompanyProfileSlice;

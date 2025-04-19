@@ -22,6 +22,11 @@ const JobDetailsDialog = ({
     const useApplyToJob = useStore.useForYouTabApplyToJob;
     const useReportJob = useStore.useForYouTabReportJob;
     const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
+    const clearDetailedJobs = useStore.useForYouTabClearDetailedJobs();
+
+    useEffect(() => {
+        if(!isOpen) clearDetailedJobs();
+    },[isOpen])
 
     return (
         <Dialog open={isOpen} onClose={onClose} className="relative z-50">

@@ -1,10 +1,28 @@
 import { Star } from "lucide-react";
 import InfoDialog from "../../common/InfoDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockCompanyProfileInfo } from "../../../mock data/companyProfile";
 import useStore from "../../../stores/globalStore";
+import type { CompanyProfileInfo } from "../../../types/profile";
 
 export function CompanyProfileInfo() {
+  // const {
+  //   id,
+  //   foundedIn,
+  //   industries,
+  //   industriesCount,
+  //   jobsCount,
+  //   locations,
+  //   locationsCount,
+  //   name,
+  //   overview,
+  //   rating,
+  //   reviewsCount,
+  //   size,
+  //   type,
+  //   image,
+  // } = useStore.useCompanyProfileInfo();
+
   const {
     id,
     foundedIn,
@@ -22,16 +40,33 @@ export function CompanyProfileInfo() {
     image,
   } = mockCompanyProfileInfo;
 
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [image]);
+
+  const fetchCompanyInfo = useStore.useCompanyProfileFetchInfo();
+  const fetchCompanyIndustries = useStore.useCompanyProfileFetchIndustries();
+  const fetchCompanyLocations = useStore.useCompanyProfileFetchLocations();
+
+  useEffect(() => {
+    fetchCompanyInfo();
+    fetchCompanyIndustries();
+    fetchCompanyLocations();
+  }, []);
+
   const [isIndustriesDialogOpen, setIndustriesDialogOpen] = useState(false);
   const [isLocationsDialogOpen, setLocationsDialogOpen] = useState(false);
 
   return (
-    <div className="bg-white rounded-3xl p-6 space-y-6 border-2 border-gray">
+    <div className="bg-white rounded-3xl p-6 space-y-6 border-2 border-gray-200 shadow">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-5">
           <div className="w-11 h-11 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {!imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>
@@ -64,9 +99,7 @@ export function CompanyProfileInfo() {
               signDisplay: "never",
             }).format(jobsCount)}
           </div>
-          <div className="text-black text-center font-semibold">
-            Jobs
-          </div>
+          <div className="text-black text-center font-semibold">Jobs</div>
         </div>
 
         <div className="text-center">
@@ -79,9 +112,7 @@ export function CompanyProfileInfo() {
               signDisplay: "never",
             }).format(size)}
           </div>
-          <div className="text-black text-center font-semibold">
-            Size
-          </div>
+          <div className="text-black text-center font-semibold">Size</div>
         </div>
 
         <div className="text-center">
@@ -94,23 +125,17 @@ export function CompanyProfileInfo() {
               signDisplay: "never",
             }).format(reviewsCount)}
           </div>
-          <div className="text-black text-center font-semibold">
-            Reviews
-          </div>
+          <div className="text-black text-center font-semibold">Reviews</div>
         </div>
 
         <div className="text-center">
           <div className="text-lg font-bold text-black">{foundedIn}</div>
-          <div className="text-black text-center font-semibold">
-            Founded In
-          </div>
+          <div className="text-black text-center font-semibold">Founded In</div>
         </div>
 
         <div className="text-center">
           <div className="text-lg font-bold text-black">{type}</div>
-          <div className="text-black text-center font-semibold">
-            Type
-          </div>
+          <div className="text-black text-center font-semibold">Type</div>
         </div>
 
         <div className="text-center">
@@ -123,13 +148,10 @@ export function CompanyProfileInfo() {
                 //fetchCompanyIndustries(id);
               }}
             >
-              {industriesCount}{" "}
-              {industriesCount > 1 ? "Industries" : "Industry"}
+              {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
             </button>
           </div>
-          <div className="text-black text-center font-semibold">
-            Industries
-          </div>
+          <div className="text-black text-center font-semibold">Industries</div>
         </div>
 
         <div className="text-center">
@@ -145,24 +167,20 @@ export function CompanyProfileInfo() {
               {locationsCount} {locationsCount > 1 ? "Locations" : "Location"}
             </button>
           </div>
-          <div className="text-black text-center font-semibold">
-            Locations
-          </div>
+          <div className="text-black text-center font-semibold">Locations</div>
         </div>
       </div>
 
       <InfoDialog
         header={`${name} Industries`}
         isOpen={isIndustriesDialogOpen}
-        data={industries}
+        data={industries.map(({ name }) => name)}
         onClose={() => setIndustriesDialogOpen(false)}
       />
       <InfoDialog
         header={`${name} Locations`}
         isOpen={isLocationsDialogOpen}
-        data={locations.map(
-          ({ country, city }) => `${country}${city ? `, ${city}` : ""}`
-        )}
+        data={locations.map(({ country, city }) => `${country}${city ? `, ${city}` : ""}`)}
         onClose={() => setLocationsDialogOpen(false)}
       />
     </div>
