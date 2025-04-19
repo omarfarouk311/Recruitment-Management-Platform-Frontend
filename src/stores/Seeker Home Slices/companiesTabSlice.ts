@@ -3,6 +3,7 @@ import { CompanyCard, CompaniesTabFilters } from '../../types/company';
 import { mockCompanies, mockCompanyIndustries, mockCompanyLocations } from "../../mock data/seekerCompanies";
 import { CombinedState } from '../storeTypes';
 import config from '../../../config/config';
+import axios from "axios";
 
 const { paginationLimit } = config
 
@@ -38,30 +39,61 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
     companiesTabSearchQuery: '',
 
     companiesTabFetchCompanies: async () => {
-        const { companiesTabHasMore, companiesTabIsCompaniesLoading } = get();
+        const { companiesTabPage, 
+                companiesTabHasMore, 
+                companiesTabIsCompaniesLoading,
+                companiesTabFilters:{country, city, industry, type, size, rating},
+             } = get();
         if (!companiesTabHasMore || companiesTabIsCompaniesLoading) return;
         set({ companiesTabIsCompaniesLoading: true });
 
         // mock API call, don't forget to include the filters in the query string if they are populated
-        try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => {
-                    const startIndex = (state.companiesTabPage - 1) * paginationLimit;
-                    const endIndex = startIndex + paginationLimit;
-                    const newCompanies = mockCompanies.slice(startIndex, endIndex);
 
-                    return {
-                        companiesTabCompanies: [...state.companiesTabCompanies, ...newCompanies],
-                        companiesTabHasMore: endIndex < mockCompanies.length,
-                        companiesTabIsCompaniesLoading: false,
-                        companiesTabPage: state.companiesTabPage + 1
-                    }
-                });
-                resolve();
-            }, 500));
-        } catch (err) {
+        try {
+            let params = Object.fromEntries(
+              Object.entries({
+                page:companiesTabPage,
+                country: country || undefined,
+                city: city || undefined,
+                industry: industry || undefined,
+                type: type || undefined,
+                size: size || undefined,
+                rating: rating || undefined,
+              }).filter(([_, value]) => value !== undefined)
+            );
+            
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
+              params,
+            });
+            
+            set((state) => ({
+                companiesTabCompanies: [
+                ...state.companiesTabCompanies,
+                ...res.data.map((obj: any) => ({
+                    id: obj.id,
+                    image: obj.image || 'https://via.placeholder.com/150',
+                    name: obj.name,
+                    overview: obj.overview || 'No overview available',
+                    size: obj.size ,
+                    rating: obj.rating,
+                    reviewsCount: obj.reviewsCount ,
+                    jobsCount: obj.jobsCount ,
+                    locationsCount: obj.locationsCount,
+                    industriesCount: obj.industriesCount ,
+                    locations: [...obj.locations||[]],
+                    industries: [...obj.industries||[]],
+                })),
+              ],
+              companiesTabHasMore:  res.data.length > 0,
+              companiesTabIsCompaniesLoading: false,
+              companiesTabPage: state.companiesTabPage + 1,
+            }));
+      
+          }catch (err) {
             set({ companiesTabIsCompaniesLoading: false });
-        }
+          }
+      
+    
     },
 
     companiesTabSetFilters: async (filters) => {
@@ -99,13 +131,15 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
 
         // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/industries`);
+            const data:{id:number, name:string}[] = res.data;
+           
                 set((state) => ({
                     companiesTabCompanies: state.companiesTabCompanies.map((company) => {
                         if (company.id === id) {
                             return {
                                 ...company,
-                                industries: [...mockCompanyIndustries],
+                                industries: data.map((val)=> val.name),
                                 locations: [...company.locations]
                             }
                         }
@@ -118,8 +152,8 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                     })
                 }));
 
-                resolve();
-            }, 500));
+
+           
         }
         catch (err) {
             console.error(err);
@@ -131,14 +165,16 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
 
         // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/locations`);
+            const data:{country:string, city:string}[] = res.data;
+           
                 set((state) => ({
                     companiesTabCompanies: state.companiesTabCompanies.map((company) => {
                         if (company.id === id) {
                             return {
                                 ...company,
                                 industries: [...company.industries],
-                                locations: [...mockCompanyLocations]
+                                locations: [...data],
                             }
                         }
 
@@ -150,14 +186,13 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                     })
                 }));
 
-                resolve();
-            }, 500));
+
+           
         }
         catch (err) {
             console.error(err);
         }
     },
-
     companiesTabClear: () => {
         set({
             companiesTabCompanies: [],
