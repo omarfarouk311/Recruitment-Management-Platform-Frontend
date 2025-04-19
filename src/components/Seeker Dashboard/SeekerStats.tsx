@@ -10,6 +10,8 @@ import { mockSeekerStats } from "../../mock data/Stats";
 import SkeletonLoader from "../common/SkeletonLoader";
 import axios from "axios";
 import config from "../../../config/config";
+import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 
 function SeekerStats() {
   type StatKey = "jobsAppliedFor" | "jobOffers" | "assessments" | "interviews";
@@ -47,17 +49,30 @@ function SeekerStats() {
 
   async function loadStats() {
     setIsLoading(true);
+    let res;
     try {
-      let res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
+      try {
+        res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            authRefreshToken();
+          }
+        }
+      }
+      if (!res) {
+        res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
+      }
       setStats((prevValue) =>
         prevValue.map((stat) => ({
           ...stat,
-          value: res.data[stat.key as StatKey],
+          value: res!.data[stat.key as StatKey],
         }))
       );
       setIsLoading(false);
       setTimeout(() => setIsVisible(true), 50);
     } catch (err) {
+      showErrorToast("Error loading stats. Please try again later.");
       setIsLoading(false);
     }
   }

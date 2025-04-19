@@ -8,6 +8,7 @@ import Button from "../common/Button";
 import type { Review } from "../../types/review";
 
 const schema = z.object({
+  title: z.string().min(1, "Title is required"),
   role: z.string().min(1, "Role is required"),
   rating: z.number().min(1).max(5, "Rating must be between 1 and 5"),
   description: z.string().min(1, "Description is required"),
@@ -38,6 +39,7 @@ export default function ReviewForm({
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
+      title: review?.title || "",
       role: review?.role || "",
       rating: review?.rating || 5,
       description: review?.description || "",
@@ -47,6 +49,7 @@ export default function ReviewForm({
   useEffect(() => {
     if (review) {
       reset({
+        title: review.title,
         role: review.role,
         rating: review.rating,
         description: review.description,
@@ -87,6 +90,24 @@ export default function ReviewForm({
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  {...register("title")}
+                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                    errors.title ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.title && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.title.message}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Role

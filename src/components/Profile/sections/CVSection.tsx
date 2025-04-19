@@ -4,7 +4,7 @@ import useStore from "../../../stores/globalStore";
 import CVForm from "../forms/CVForm";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
-import { toast } from "react-toastify";
+import { showErrorToast } from "../../../util/errorHandler";
 
 export default function CVSection() {
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -26,7 +26,7 @@ export default function CVSection() {
         try {
             const response = await getCV(cvId);
             if (!response) {
-                toast.error("CV not found");
+                showErrorToast("CV not found");
                 return;
             }
             
@@ -49,7 +49,7 @@ export default function CVSection() {
             // Clean up after 1 minute
             setTimeout(() => URL.revokeObjectURL(url), 60000);
         } catch (error) {
-            toast.error("Failed to load CV");
+            showErrorToast("Failed to load CV");
             console.error('Error handling CV:', error);
         }
     };

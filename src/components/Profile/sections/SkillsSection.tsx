@@ -36,33 +36,36 @@ export default function SkillsSection() {
             </Button>
           )}
         </div>
-
-        {isLoading ? (
-          <div className="h-[120px] overflow-hidden">
-            <SkeletonLoader />
-          </div>
-        ) : skills.length ? (
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <div
-                key={skill.id}
-                className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
-              >
-                <span className="text-sm text-black">{skill.name}</span>
-                {userRole === "seeker" && (
-                  <button
-                    onClick={() => removeSkill(skill.id!)}
-                    className="ml-2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p> className="text-gray-600" No skills to show.</p>
-        )}
+        <div 
+          className={`space-y-4 overflow-hidden max-h-[200px]`}
+        >
+          {isLoading ? (
+            <div className="h-[120px] overflow-hidden">
+              <SkeletonLoader />
+            </div>
+          ) : skills.length ? (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <div
+                  key={skill.id}
+                  className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
+                >
+                  <span className="text-sm text-black">{skill.name}</span>
+                  {userRole === "seeker" && (
+                    <button
+                      onClick={() => removeSkill(skill.id!)}
+                      className="ml-2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600"> No skills to show.</p>
+          )}
+        </div>
 
         {userRole === "seeker" && (
           <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
