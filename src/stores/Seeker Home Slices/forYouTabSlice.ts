@@ -31,6 +31,7 @@ export interface ForYouTabSlice {
     forYouTabReportJob: (id: number, message: string) => Promise<void>;
     forYouTabFetchCompanyIndustries: (id: number) => Promise<void>;
     forYouTabClear: () => void;
+    forYouTabClearDetailedJobs: () => void;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -271,6 +272,13 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 remote: false
             },
             forYouTabSearchQuery: '',
+        });
+    },
+
+    forYouTabClearDetailedJobs: () => {
+        set({
+            forYouTabDetailedJobs: [],
+            forYouTabIsDetailsLoading: false,
         });
     }
 

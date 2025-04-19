@@ -50,3 +50,10 @@ export interface ForYouTabFilters {
     city: string;
     remote: boolean;
 }
+
+export interface CompanyProfileJobsFilters {
+    sortByDate: string;
+    jobId: string
+    industryId: string;
+    remote: boolean;
+}

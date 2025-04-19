@@ -14,6 +14,7 @@ import { createInvitationsSlice } from "./Recruiter Dashboard Slices/RecruiterIn
 import { createRecruiterDashboardPageSlice } from "./Recruiter Dashboard Slices/recruiterDashboardPageSlice";
 import { createRecruiterCandidatesSlice } from "./Recruiter Dashboard Slices/recruiterCandidatesSlice";
 import { createRecruiterJobOfferSlice } from "./Recruiter Dashboard Slices/recruiterJobOfferSlice";
+import { createCompanyProfileSlice } from "./Profile Slices/companyProfileSlice";
 
 import { createInterviewsSlice } from "./Recruiter Dashboard Slices/RecruiterInterviewSlice";
 import { createUserSlice, userSlice } from "./User Slices/userSlice";
@@ -28,7 +29,7 @@ import { createRecruiterProfileSlice } from "./Profile Slices/recruiterProfileSl
 import { createSeekerJobsAppliedForSlice } from './Seeker Dashboard Slices/jobAppliedForSlice';
 import { createSeekerAssessmentsSlice } from './Seeker Dashboard Slices/assessmentSlice';
 import { createSeekerInterviewsSlice } from './Seeker Dashboard Slices/interviewSlice';
-import { createAssessmentDialogSlice } from './Dialogs/assessmentDialogSlice'; 
+import { createAssessmentDialogSlice } from './Dialogs/assessmentDialogSlice';
 
 
 
@@ -56,15 +57,11 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createCompanyInvitationsSlice(...a),
             ...createCompanyLogsSlice(...a),
             ...createRecruiterProfileSlice(...a),
-
+            ...createCompanyProfileSlice(...a),
             ...createSeekerJobsAppliedForSlice(...a),
             ...createSeekerAssessmentsSlice(...a),
             ...createSeekerInterviewsSlice(...a),
-            ...createAssessmentDialogSlice(...a), 
-
-
-            
-
+            ...createAssessmentDialogSlice(...a),
         }),
         {
             name: "user-store",
