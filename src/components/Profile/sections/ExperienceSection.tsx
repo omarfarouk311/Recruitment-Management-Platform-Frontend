@@ -5,6 +5,7 @@ import ExperienceForm from "../forms/ExperienceForm";
 import { Experience } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function ExperienceSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -40,7 +41,7 @@ export default function ExperienceSection() {
       <div className="p-6 text-center">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Experiences</h2>
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Button
               variant="outline"
               className="!w-auto !h-8 !p-3"
@@ -95,7 +96,7 @@ export default function ExperienceSection() {
                       {experience.startDate} - {experience.endDate}
                     </p>
 
-                    {userRole === "seeker" && (
+                    {userRole === UserRole.SEEKER && (
                       <div className="flex gap-4">
                         <button
                           className="text-gray-400 hover:text-gray-600"
@@ -132,7 +133,7 @@ export default function ExperienceSection() {
         )}
       </div>
 
-      {userRole === "seeker" && (
+      {userRole === UserRole.SEEKER && (
         <ExperienceForm
           experience={editingExperience}
           onClose={() => {

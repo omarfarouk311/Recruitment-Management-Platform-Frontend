@@ -4,6 +4,7 @@ import useStore from "../../../stores/globalStore";
 import Button from "../../common/Button";
 import SkillForm from "../forms/SkillForm"; // Add this import
 import SkeletonLoader from "../../common/SkeletonLoader";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function SkillsSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function SkillsSection() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Skills</h2>
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Button
               variant="outline"
               onClick={() => setIsFormOpen(true)}
@@ -36,35 +37,38 @@ export default function SkillsSection() {
             </Button>
           )}
         </div>
+        <div 
+          className={`space-y-4 overflow-hidden max-h-[200px]`}
+        >
+          {isLoading ? (
+            <div className="h-[120px] overflow-hidden">
+              <SkeletonLoader />
+            </div>
+          ) : skills.length ? (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <div
+                  key={skill.id}
+                  className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
+                >
+                  <span className="text-sm text-black">{skill.name}</span>
+                  {userRole === UserRole.SEEKER && (
+                    <button
+                      onClick={() => removeSkill(skill.id!)}
+                      className="ml-2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600"> No skills to show.</p>
+          )}
+        </div>
 
-        {isLoading ? (
-          <div className="h-[120px] overflow-hidden">
-            <SkeletonLoader />
-          </div>
-        ) : skills.length ? (
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => (
-              <div
-                key={skill.id}
-                className="inline-flex items-center bg-gray-100 rounded-2xl px-4 py-1"
-              >
-                <span className="text-sm text-black">{skill.name}</span>
-                {userRole === "seeker" && (
-                  <button
-                    onClick={() => removeSkill(skill.id!)}
-                    className="ml-2 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p> className="text-gray-600" No skills to show.</p>
-        )}
-
-        {userRole === "seeker" && (
+        {userRole === UserRole.SEEKER && (
           <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
         )}
       </div>

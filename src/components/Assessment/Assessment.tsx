@@ -7,6 +7,7 @@ import { InstructionsDialog } from "./InstructionsDialog";
 import useStore from "../../stores/globalStore";
 import { Timer } from "./Timer";
 import SkeletonLoader from "../common/SkeletonLoader";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 export const Assessment = () => {
   const [activeQuestion, setActiveQuestion] = useState(1);
@@ -128,7 +129,7 @@ export const Assessment = () => {
 
   return (
     <>
-      {userRole === "company" && (
+      {userRole === UserRole.COMPANY && (
         <div className="fixed top-0 w-full z-10">
           <UserNav />
         </div>
@@ -136,7 +137,7 @@ export const Assessment = () => {
 
       <div
         className={`bg-[#fafbff] flex flex-row justify-center w-full min-h-screen ${
-          userRole === "company" ? "pt-20" : ""
+          userRole === UserRole.COMPANY ? "pt-20" : ""
         }`}
       >
         <DeleteDialog
@@ -192,7 +193,7 @@ export const Assessment = () => {
                 </div>
               ))}
 
-              {userRole === "company" && (
+              {userRole === UserRole.COMPANY && (
                 <div
                   className="flex justify-center items-center h-16 cursor-pointer hover:bg-gray-200"
                   onClick={handleAddQuestion}
@@ -206,14 +207,14 @@ export const Assessment = () => {
             {isLoading ? (
               <div
                 className={`pl-44 pr-20 ${
-                  userRole === "company" ? "pt-8" : "pt-6"
+                  userRole === UserRole.COMPANY ? "pt-8" : "pt-6"
                 } w-full max-w-screen relative`}
               >
                 <SkeletonLoader />
               </div>
             ) : (
               <div className="flex-1 pl-44 pr-20 py-8 relative">
-                {userRole === "seeker" && (
+                {userRole === UserRole.SEEKER && (
                   <Timer
                     className="mr-16"
                     initialMinutes={assessmentData?.time || 0}
@@ -226,7 +227,7 @@ export const Assessment = () => {
                   <h3 className="font-semibold text-gray-500 text-3xl">
                     Question {activeQuestion + 1}
                   </h3>
-                  {userRole === "company" && (
+                  {userRole === UserRole.COMPANY && (
                     <div className="relative group">
                       <button
                         className="text-red-500 hover:text-red-600 flex items-center relative disabled:opacity-50 disabled:cursor-not-allowed"
@@ -261,7 +262,7 @@ export const Assessment = () => {
                   className="w-full p-4 rounded-2xl border border-gray-300 shadow-md resize-none overflow-hidden 
                         whitespace-pre-wrap break-words text-2xl min-h-[60px]"
                   placeholder="Enter your question here..."
-                  disabled={userRole === "seeker"}
+                  disabled={userRole === UserRole.SEEKER}
                 />
 
                 {/* Answers Section */}
@@ -294,7 +295,7 @@ export const Assessment = () => {
                               )}
                             </div>
 
-                            {userRole === "company" ? (
+                            {userRole === UserRole.COMPANY ? (
                               <textarea
                                 value={answer}
                                 onChange={(e) =>
@@ -324,7 +325,7 @@ export const Assessment = () => {
                             )}
                           </div>
 
-                          {userRole === "company" && (
+                          {userRole === UserRole.COMPANY && (
                             <button
                               className="text-red-400 hover:text-red-500 ml-4"
                               onClick={(e) => {
@@ -344,7 +345,7 @@ export const Assessment = () => {
                   </div>
                   {/* Add Answer Button */}
                   <div className="flex !justify-end !right-4 mt-8 ">
-                    {userRole === "company" ? (
+                    {userRole === UserRole.COMPANY ? (
                       <Button
                         variant="primary"
                         className="!w-[30%]"

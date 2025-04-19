@@ -6,6 +6,8 @@ import { CombinedState } from "../storeTypes";
 import { StateCreator } from "zustand";
 import axios from "axios";
 import config from "../../../config/config";
+import { showErrorToast } from "../../util/errorHandler";
+import { authRefreshToken } from "../../util/authUtils";
 
 export interface JobOfferDialogSlice {
     jobOfferDialogTemplateList: JobOfferTemplateListType[];
@@ -40,29 +42,55 @@ export const createJobOfferDialogSlice: StateCreator<
     jobOfferDialogSetTemplateList: async () => {
         const { jobOfferDialogTemplateList } = get();
         if (jobOfferDialogTemplateList.length) return;
+        let res;
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/templates`, {
-                params: {
-                    simplified: true
+            try {
+                res = await axios.get(`${config.API_BASE_URL}/templates`, {
+                    params: {
+                        simplified: true
+                    }
+                });
+            } catch (err) {
+                if(axios.isAxiosError(err)) {
+                    if(err.response?.status === 401) {
+                        authRefreshToken();
+                    }
                 }
-            });
+            }
+            if(!res) {
+                res = await axios.get(`${config.API_BASE_URL}/templates`, {
+                    params: {
+                        simplified: true
+                    }
+                });
+            }
             set({
-                jobOfferDialogTemplateList: res.data.map((template: {id: number; name: string}) => ({
+                jobOfferDialogTemplateList: res!.data.map((template: {id: number; name: string}) => ({
                     templateId: template.id,
                     templateName: template.name,
                 })),
             })
         } catch (err) {
-            
+            showErrorToast("Failed to fetch templates");
         }
     },
     jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) => {
         try {
             if (templateId) {
-                let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
-                if(res.status !== 200) {
-                    throw new Error("Failed to fetch template data");
+                let res
+                try {
+                    res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
+                } catch (err) {
+                    if(axios.isAxiosError(err)) {
+                        if(err.response?.status === 401) {
+                            authRefreshToken();
+                        }
+                    }
                 }
+                if(!res) {
+                    res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`);
+                }
+
                 set({
                     jobOfferDialogData: {
                         ...res.data,
@@ -71,7 +99,19 @@ export const createJobOfferDialogSlice: StateCreator<
                     }
                 });
             } else if (jobId && !candidateId) {
-                let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
+                let res 
+                try {
+                    res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
+                } catch (err) {
+                    if(axios.isAxiosError(err)) {
+                        if(err.response?.status === 401) {
+                            authRefreshToken();
+                        }
+                    }
+                }
+                if(!res) {
+                    res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/${jobId}`);
+                }
                 if(res.status !== 200) {
                     throw new Error("Failed to fetch job offer data");
                 }
@@ -85,7 +125,20 @@ export const createJobOfferDialogSlice: StateCreator<
                 });
                 
             } else if (jobId && candidateId) {
-                let res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
+                let res 
+                try {
+                    res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
+                } catch (err) {
+                    if(axios.isAxiosError(err)) {
+                        if(err.response?.status === 401) {
+                            authRefreshToken();
+                        }
+                    }
+                }
+                if(!res) {
+                    res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`)
+                }
+                
                 if(res.status !== 200) {
                     throw new Error("Failed to fetch job offer data");
                 }
@@ -104,7 +157,7 @@ export const createJobOfferDialogSlice: StateCreator<
                 }
             }
         } catch (err) {
-            
+            showErrorToast("Failed to fetch job offer data");
         }
     },
 

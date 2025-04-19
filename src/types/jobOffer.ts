@@ -32,7 +32,8 @@ export interface RecruiterJobOfferInfo {
 
 export interface RecruiterJobOfferFilters{
     jobTitle: string;
-    sortBy: string;
+    sorted: string;
+    status: string;
 }
 
 export const JobOfferSortByFilterOptions = [

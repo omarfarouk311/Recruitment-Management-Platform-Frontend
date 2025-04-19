@@ -3,14 +3,13 @@ import { StateCreator } from 'zustand';
 import { Experience, Education, Skill, SeekerProfileInfo, UserCredentials } from '../../types/profile.ts';
 import { CV } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
-import { mockEducation, mockExperience, mockCVs, mockReviews, mockSkills, mockSeekerCredentials } from '../../mock data/seekerProfile.ts';
-import { mockSeekerProfileInfo } from '../../mock data/seekerProfile.ts';
+import { mockSeekerCredentials } from '../../mock data/seekerProfile.ts';
 import config from "../../../config/config.ts";
 import { formatDistanceToNow, formatDate } from 'date-fns';
 import axios from 'axios';
-import { date } from 'zod';
-import { toast } from 'react-toastify';
-const { paginationLimit } = config;
+import { UserRole } from '../User Slices/userSlice.ts';
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 let cnt = 100;
 
 export interface SeekerProfileSlice {
@@ -114,28 +113,61 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileUpdateInfo: async (profile) => {
         const { userId } = get();
         try {
-            let promises = [];
-            let res = axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
-                name: profile.name,
-                country: profile.country,
-                city: profile.city,
-                phoneNumber: profile.phone,
-                dateOfBirth: (new Date(profile.birthDate)).toISOString(),
-                gender: profile.gender === 'male'
-            });
-            promises.push(res);
-            let imageRes;
-            if(profile.image instanceof File) {
-                imageRes = axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
-                    headers: {
-                        'Content-Type': 'image/jpeg',
-                        'File-Name': profile.image.name,
-                    }
+            let res
+            try {
+                res = await axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
+                    name: profile.name,
+                    country: profile.country,
+                    city: profile.city,
+                    phoneNumber: profile.phone,
+                    dateOfBirth: (new Date(profile.birthDate)).toISOString(),
+                    gender: profile.gender === 'male'
                 });
-                promises.push(imageRes);
+            } catch (err) {
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }  
             }
 
-            await Promise.all(promises);
+            if(!res) {
+                res = await axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
+                    name: profile.name,
+                    country: profile.country,
+                    city: profile.city,
+                    phoneNumber: profile.phone,
+                    dateOfBirth: (new Date(profile.birthDate)).toISOString(),
+                    gender: profile.gender === 'male'
+                });
+            }
+            
+            let imageRes;
+            if(profile.image instanceof File) {
+                try {
+                    imageRes = await axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
+                        headers: {
+                            'Content-Type': 'image/jpeg',
+                            'File-Name': profile.image.name,
+                        }
+                    });
+                } catch (err) {
+                    if (axios.isAxiosError(err)) {
+                        if (err.response?.status === 401) {
+                            authRefreshToken();
+                        }
+                    }
+                }
+                if(!imageRes) {
+                    imageRes = await axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
+                        headers: {
+                            'Content-Type': 'image/jpeg',
+                            'File-Name': profile.image.name,
+                        }
+                    });
+                }
+            }
+
             let tmpDate = Date.now();
             set({
                 seekerProfileInfo: { ...profile, image: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${tmpDate}` },
@@ -148,7 +180,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 }
             }
@@ -187,7 +219,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 }))
             });
         } catch (err) {
-            toast.error('Failed to fetch experiences. Please try again later.');
+            showErrorToast('Failed to fetch experiences. Please try again later.');
         }
     },
 
@@ -215,14 +247,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 }
                 else {
-                    toast.error('Failed to add experience. Please try again later.');
+                    showErrorToast('Failed to add experience. Please try again later.');
                 }
             } else {
-                toast.error('Failed to add experience. Please try again later.');
+                showErrorToast('Failed to add experience. Please try again later.');
             }
             throw err;
         }
@@ -253,13 +285,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 } else {
-                    toast.error('Failed to update experience. Please try again later.');
+                    showErrorToast('Failed to update experience. Please try again later.');
                 }
             } else {
-                toast.error('Failed to update experience. Please try again later.');
+                showErrorToast('Failed to update experience. Please try again later.');
             }
             throw err;
         }
@@ -281,13 +313,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 } else {
-                    toast.error('Failed to remove experience. Please try again later.');
+                    showErrorToast('Failed to remove experience. Please try again later.');
                 }
             } else {
-                toast.error('Failed to remove experience. Please try again later.');
+                showErrorToast('Failed to remove experience. Please try again later.');
             }
             throw err;
         }
@@ -309,7 +341,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 ))
             });
         } catch (err) {
-            toast.error('Failed to fetch education. Please try again later.');
+            showErrorToast('Failed to fetch education. Please try again later.');
         }
     },
 
@@ -338,13 +370,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 } else {
-                    toast.error('Failed to add education. Please try again later.');
+                    showErrorToast('Failed to add education. Please try again later.');
                 }
             } else {
-                toast.error('Failed to add education. Please try again later.');
+                showErrorToast('Failed to add education. Please try again later.');
             }
             throw err;
         }
@@ -374,13 +406,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 if (err.response?.status === 400) {
                     const validationErrors = err.response.data.validationErrors;
                     validationErrors.forEach((error: string) => {
-                        toast.error(error);
+                        showErrorToast(error);
                     });
                 } else {
-                    toast.error('Failed to update education. Please try again later.');
+                    showErrorToast('Failed to update education. Please try again later.');
                 }
             } else {
-                toast.error('Failed to update education. Please try again later.');
+                showErrorToast('Failed to update education. Please try again later.');
             }
             throw err;
         }
@@ -393,7 +425,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
             }));
         } catch (err) { 
-            toast.error('Failed to remove education. Please try again later.');
+            showErrorToast('Failed to remove education. Please try again later.');
             throw err;
         }
     },
@@ -403,7 +435,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`);
             set({ seekerProfileSkills: res.data.map((skill: {skillid: number; skillname: string}) => ({id: skill.skillid, name: skill.skillname})) });
         } catch (err) {
-            toast.error('Failed to fetch skills. Please try again later.');
+            showErrorToast('Failed to fetch skills. Please try again later.');
         }
     },
 
@@ -420,17 +452,17 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     const validationErrors = err.response.data.validationErrors;
                     if(validationErrors.length !== 0) {
                         validationErrors.forEach((error: string) => {
-                            toast.error(error);
+                            showErrorToast(error);
                         });
                     }
                     else {
-                        toast.error('Skill already exists.');
+                        showErrorToast('Skill already exists.');
                     }
                 } else {
-                    toast.error('Failed to add skill. Please try again later.');
+                    showErrorToast('Failed to add skill. Please try again later.');
                 }
             } else {
-                toast.error('Failed to add skill. Please try again later.');
+                showErrorToast('Failed to add skill. Please try again later.');
             }
             throw err;
         }
@@ -443,7 +475,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
             }))
         } catch (err) {
-            toast.error('Failed to remove skill. Please try again later.');
+            showErrorToast('Failed to remove skill. Please try again later.');
             throw err;
         }
     },
@@ -456,7 +488,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchCVs: async () => {
         const { userRole, seekerProfileSelectedSeekerData } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, { params: userRole === 'seeker' ? {}: { 
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, {
+                params: userRole === UserRole.SEEKER ? {}: { 
                 ...seekerProfileSelectedSeekerData
             }});
             set({
@@ -467,14 +500,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             });
         } catch(err) {
             if (axios.isAxiosError(err)) {
-                if (err.response?.status === 404) {
-                    set({ seekerProfileCVs: [] });
-                    toast.info('No CVs found.');
-                } else {
-                    toast.error(`Failed to fetch CVs: ${err.response?.statusText || 'Network error'}`);
-                }
+                showErrorToast(`Failed to fetch CVs: ${err.response?.statusText || 'Network error'}`);
             } else {
-                toast.error('Failed to fetch CVs: Unexpected error');
+                showErrorToast('Failed to fetch CVs: Unexpected error');
             }
         }
     },
@@ -482,7 +510,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileAddCV: async (cv, createdAt) => {
         const { seekerProfileCVs } = get();
         if (seekerProfileCVs.length === 5) {
-            toast.error('You can only have 5 CVs');
+            showErrorToast('You can only have 5 CVs');
             return;
         }
         try {
@@ -506,14 +534,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         } catch(err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 409) {
-                    toast.error('CVs limit reached. Please remove an existing CV before adding a new one.');
+                    showErrorToast('CVs limit reached. Please remove an existing CV before adding a new one.');
                 } else if (err.response?.status === 400) {
-                    toast.error('Invalid CV format. Please upload a valid file.');
+                    showErrorToast('Invalid CV format. Please upload a valid file.');
                 } else {
-                    toast.error(`Failed to add CV: ${err.response?.statusText || 'Network error'}`);
+                    showErrorToast(`Failed to add CV: ${err.response?.statusText || 'Network error'}`);
                 }
             } else {
-                toast.error('Failed to add CV: Unexpected error');
+                showErrorToast('Failed to add CV: Unexpected error');
             }
             throw err;
         }
@@ -528,18 +556,18 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         } catch(err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status && err.response.status >= 400 && err.response.status < 600) {
-                    toast.error(`Failed to remove CV: ${err.response.statusText || 'Unknown error'}`);
+                    showErrorToast(`Failed to remove CV: ${err.response.statusText || 'Unknown error'}`);
                 } else {
-                    toast.error('Failed to remove CV: Network error');
+                    showErrorToast('Failed to remove CV: Network error');
                 }
             } else {
-                toast.error('Failed to remove CV: Unexpected error');
+                showErrorToast('Failed to remove CV: Unexpected error');
             }
             throw err;
         }
     },
 
-    // will be implemented to request the CV file from the API
+    
     seekerProfileGetCV: async (id) => {
         try {
             const res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/${id}`, {
@@ -552,54 +580,130 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchReviews: async () => {
-        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading } = get();
+        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading, seekerProfileReviewsPage } = get();
         if (!seekerProfileReviewsHasMore || seekerProfileReviewsIsLoading) return;
 
         set({ seekerProfileReviewsIsLoading: true });
+        try {
+            let res;
+            try {
+                res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
+                    params: {
+                        page: seekerProfileReviewsPage
+                    }
+                })
+            } catch (err) {
+                if(axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }
+                throw err;
+            }
 
-        // mock API call
-        await new Promise<void>((resolve) => setTimeout(() => {
+            if(!res) {
+                res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
+                    params: {
+                        page: seekerProfileReviewsPage
+                    }
+                })
+            }
+
             set((state) => {
-                const startIndex = (state.seekerProfileReviewsPage - 1) * paginationLimit;
-                const endIndex = startIndex + paginationLimit;
-                const newReviews = mockReviews.slice(startIndex, endIndex).map((review) => ({
+                const newReviews = res.data.map((review: Review & {companyId: number; companyName: string}) => ({
                     ...review,
-                    createdAt: formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })
+                    createdAt: formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }),
+                    companyData: {
+                        id: review.companyId,
+                        name: review.companyName
+                    }
                 }));
-
+    
                 return {
                     seekerProfileReviews: [...state.seekerProfileReviews, ...newReviews],
-                    seekerProfileReviewsHasMore: endIndex < mockReviews.length,
+                    seekerProfileReviewsHasMore: res.data.length > 0,
                     seekerProfileReviewsPage: state.seekerProfileReviewsPage + 1,
                     seekerProfileReviewsIsLoading: false
                 }
             });
-            resolve();
-        }, 1000));
+        } catch(err) {
+            if (axios.isAxiosError(err)) {
+                showErrorToast(`Failed to fetch reviews: ${err.response?.statusText || 'Network error'}`);
+            } else {
+                showErrorToast('Failed to fetch reviews: Unexpected error');
+            }
+            set({ seekerProfileReviewsIsLoading: false });
+        }
     },
 
     seekerProfileUpdateReview: async (review) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileReviews: state.seekerProfileReviews.map((rev) => rev.id === review.id ?
-                        { ...rev, ...review } : { ...rev }
-                    )
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            let res;
+            try {
+                res = await axios.put(`${config.API_BASE_URL}/reviews/${review.id}`, {
+                    ...review
+                });
+            } catch (err) {
+                if(axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }
+                throw err;
+            }
+            if(!res) {
+                res = await axios.put(`${config.API_BASE_URL}/reviews/${review.id}`, {
+                   ...review
+                });
+            }
+            set((state) => ({
+                seekerProfileReviews: state.seekerProfileReviews.map((rev) => rev.id === review.id ?
+                    { ...rev, ...review } : { ...rev }
+                )
+            }));
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        showErrorToast(error);
+                    }); 
+                } 
+                else {
+                    showErrorToast('Failed to update review. Please try again later.');
+                }
+            }
+            else {
+                showErrorToast('Failed to update review. Please try again later.');
+            }
+            throw err;
+        }
     },
 
     seekerProfileRemoveReview: async (id) => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set((state) => ({
-                    seekerProfileReviews: state.seekerProfileReviews.filter((rev) => rev.id !== id)
-                }));
-                resolve();
-            }, 1000);
-        });
+        try {
+            let res;
+            try {
+                res = await axios.delete(`${config.API_BASE_URL}/reviews/${id}`);
+            } catch (err) {
+                if(axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }
+                throw err;
+            }
+            if(!res) {
+                await axios.delete(`${config.API_BASE_URL}/reviews/${id}`); 
+            }
+            set((state) => ({
+                seekerProfileReviews: state.seekerProfileReviews.filter((rev) => rev.id !== id)
+            }));
+        }
+        catch (err) {
+            showErrorToast('Failed to remove review. Please try again later.');
+            throw err; 
+        }
     },
 
     seekerProfileClear: () => {

@@ -5,6 +5,7 @@ import EducationForm from "../forms/EducationForm";
 import { Education } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function EducationSection() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -40,7 +41,7 @@ export default function EducationSection() {
       <div className="p-6 text-center">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Education</h2>
-          {userRole === "seeker" && (
+          {userRole === UserRole.SEEKER && (
             <Button
               variant="outline"
               className="!w-auto !h-8 !p-3"
@@ -90,7 +91,7 @@ export default function EducationSection() {
                       {edu.startDate} - {edu.endDate}
                     </p>
 
-                    {userRole === "seeker" && (
+                    {userRole === UserRole.SEEKER && (
                       <div className="flex gap-4">
                         <button
                           className="text-gray-400 hover:text-gray-600"
@@ -125,7 +126,7 @@ export default function EducationSection() {
         )}
       </div>
 
-      {userRole === "seeker" && (
+      {userRole === UserRole.SEEKER && (
         <EducationForm
           education={editingEducation}
           onClose={() => {

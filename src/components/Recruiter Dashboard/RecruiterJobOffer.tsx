@@ -4,24 +4,22 @@ import useStore from "../../stores/globalStore";
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
-import { CandidateSortOptions } from "../../types/candidates";
 import JobDetailsDialog from "../common/JobDetailsDialog";
-import { RecruiterJobOfferInfo } from "../../types/jobOffer";
+import { JobOfferSortByFilterOptions, RecruiterJobOfferInfo } from "../../types/jobOffer";
 import JobOfferDialog from "../common/JobOfferDialog";
 import { Pencil } from "lucide-react";
+import { DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
 
 const RecruiterJobOffer = () => {
     // State hooks
     const filters = useStore.useRecruiterJobOfferFilters();
     const positionTitles = useStore.useRecruiterJobOfferPositionTitles();
 
-    const useSetJobDetailsDialogIsOpen =
-        useStore.useJobDetailsDialogSetIsOpen();
+    const useSetJobDetailsDialogIsOpen =useStore.useJobDetailsDialogSetIsOpen();
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
-    const useSetSeekerJobOfferDialogIsOpen =
-        useStore.useSeekerJobOfferDialogSetIsOpen();
-    const useSeekerJobOfferDialogSetJobIdAndCandidateId =
-        useStore.useSeekerJobOfferDialogSetJobIdAndCandidateId();
+    const useSetSeekerJobOfferDialogIsOpen =useStore.useSeekerJobOfferDialogSetIsOpen();
+    const useSeekerJobOfferDialogSetJobIdAndCandidateId =useStore.useSeekerJobOfferDialogSetJobIdAndCandidateId();
+    const ResetRecruiterJobOffer = useStore.useResetRecruiterJobOffer();
 
     // Action hooks
     const setFilters = useStore.useRecruiterJobOfferSetFilters();
@@ -29,6 +27,7 @@ const RecruiterJobOffer = () => {
     const setPositionTitles = useStore.useRecruiterJobOfferSetPositionTitles();
 
     useEffect(() => {
+        ResetRecruiterJobOffer();
         setPositionTitles();
         fetchCandidates();
     }, []);
@@ -129,14 +128,22 @@ const RecruiterJobOffer = () => {
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ jobTitle: value })}
                     />
+                    
+                    {/* <FilterDropdown
+                        key="status_filter"
+                        label="Status"
+                        options={DashboardStatusFilterOptions}
+                        selectedValue={filters.status}
+                        onSelect={(value) => setFilters({ status: value })}
+                    /> */}
 
-                    <FilterDropdown
+                        <FilterDropdown
                         label="Sort By"
-                        options={CandidateSortOptions}
-                        selectedValue={filters.sortBy}
+                        options={JobOfferSortByFilterOptions}
+                        selectedValue={filters.sorted}
                         onSelect={(value) =>
                             setFilters({
-                                sortBy: value as typeof filters.sortBy,
+                                sorted: value as typeof filters.sorted,
                             })
                         }
                     />

@@ -5,6 +5,7 @@ import ProfileDialog from "../../common/EditProfileDialog";
 import CredentialsDialog from "../../common/AccountSettingDialog";
 import Button from "../../common/Button";
 import SkeletonLoader from "../../common/SkeletonLoader";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function ProfileInfo() {
     const profileInfo = useStore.useSeekerProfileInfo();
@@ -38,7 +39,7 @@ export default function ProfileInfo() {
             ) : (
                 <div
                     className={`flex items-center ${
-                        userRole === "seeker"
+                        userRole === UserRole.SEEKER
                             ? "justify-between"
                             : "justify-center mr-12"
                     } px-6 py-14 h-full`}
@@ -69,7 +70,7 @@ export default function ProfileInfo() {
                         </div>
                     </div>
 
-                    {userRole === "seeker" && (
+                    {userRole === UserRole.SEEKER && (
                         <>
                             {/* Vertical line divider */}
                             <div className="self-stretch w-px bg-black mx-6" />
@@ -102,7 +103,7 @@ export default function ProfileInfo() {
                 </div>
             )}
 
-            {userRole === "seeker" && (
+            {userRole === UserRole.SEEKER && (
                 <>
                     {/* Profile Dialog */}
                     <ProfileDialog

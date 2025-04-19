@@ -40,6 +40,23 @@ export interface SeekerProfileInfo {
   birthDate: string;
 }
 
+export interface CompanyProfileInfo {
+  id: number;
+  image?: string;
+  name: string;
+  overview: string;
+  type: string;
+  foundedIn: number;
+  size: number;
+  rating: number;
+  reviewsCount: number;
+  locationsCount: number;
+  industriesCount: number;
+  jobsCount: number;
+  locations: { country: string, city: string }[];
+  industries: string[];
+}
+
 export interface UserCredentials {
   email: string;
   password: string;

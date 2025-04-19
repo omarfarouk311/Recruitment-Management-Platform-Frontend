@@ -1,14 +1,19 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 
+export enum UserRole {
+  SEEKER = 0,
+  COMPANY = 1,
+  RECRUITER = 3
+}
 export interface userSlice {
   userId: number | null;
   userName: string | null;
-  userRole: "seeker" | "recruiter" | "company" | null;
+  userRole: UserRole | null;
   userImage: string | null;
   userSetId: (id: number) => void;
   userSetName: (name: string) => void;
-  userSetRole: (role: "seeker" | "recruiter" | "company") => void;
+  userSetRole: (role: UserRole) => void;
   userSetImage: (image: string) => void;
 }
 

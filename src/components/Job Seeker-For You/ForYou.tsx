@@ -5,7 +5,6 @@ import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { dateOptions, ratingOptions } from "../../data/filterOptions";
-import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
@@ -21,11 +20,7 @@ const ForYou = () => {
   const useSetSelectedJobId = useStore.useForYouTabSetSelectedJobId;
   const usePushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs;
   const usePopFromDetailedJobs = useStore.useForYouTabPopFromDetailedJobs;
-  const activeTab = useStore.useHomePageActiveTab();
-  const useRemoveRecommendation =
-    activeTab === HomePageTabs.ForYou
-      ? useStore.useForYouTabRemoveRecommendation
-      : undefined;
+  const useRemoveRecommendation = useStore.useForYouTabRemoveRecommendation;
   const useApplyToJob = useStore.useForYouTabApplyToJob;
   const useReportJob = useStore.useForYouTabReportJob;
   const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
