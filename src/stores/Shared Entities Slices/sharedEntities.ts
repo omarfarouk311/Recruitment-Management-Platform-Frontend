@@ -1,6 +1,8 @@
 import { StateCreator } from 'zustand';
 import { mockIndustries } from '../../mock data/seekerForYou';
 import { CombinedState } from '../storeTypes';
+import axios from "axios";
+import config from "../../../config/config.ts";
 
 export interface SharedEntitiesSlice {
     sharedEntitiesIndustryOptions: { value: string, label: string }[];
@@ -12,14 +14,27 @@ export const createSharedEntitiesSlice: StateCreator<CombinedState, [], [], Shar
 
     sharedEntitiesSetIndustryOptions: async () => {
         // mock API call
-        await new Promise<void>((resolve) => setTimeout(() => {
-            const newIndustries = [...mockIndustries];
-            set({
-                sharedEntitiesIndustryOptions: newIndustries.map(({ id, label }) => ({ value: id.toString(), label }))
-            });
 
-            resolve();
-        }, 500));
+        try {
+            
+      
+            let res = await axios.get(`${config.API_BASE_URL}/industries/`);
+            
+            set((state) => ({
+                sharedEntitiesIndustryOptions: [
+                ...state.sharedEntitiesIndustryOptions,
+                ...res.data.map((obj: any) => ({
+                    value: obj.id.toString(),
+                    label: obj.name,
+                })),
+              ],
+             
+            }));
+      
+          }catch (err) {
+            console.error(err);
+          }
+      
     }
 
 });

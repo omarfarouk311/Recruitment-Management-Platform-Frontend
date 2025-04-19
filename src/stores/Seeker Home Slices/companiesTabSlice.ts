@@ -42,25 +42,31 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         const { companiesTabPage, 
                 companiesTabHasMore, 
                 companiesTabIsCompaniesLoading,
+                companiesTabSearchQuery,
                 companiesTabFilters:{country, city, industry, type, size, rating},
              } = get();
         if (!companiesTabHasMore || companiesTabIsCompaniesLoading) return;
         set({ companiesTabIsCompaniesLoading: true });
 
         // mock API call, don't forget to include the filters in the query string if they are populated
-
+        
         try {
             let params = Object.fromEntries(
               Object.entries({
                 page:companiesTabPage,
-                country: country || undefined,
-                city: city || undefined,
-                industry: industry || undefined,
-                type: type || undefined,
+                companyCountry: country || undefined,
+                companyCity: city || undefined,
+                companyIndustry: industry || undefined,
+                companyType: type || undefined,
                 size: size || undefined,
-                rating: rating || undefined,
+                companyRating: rating || undefined,
+                companyName: companiesTabSearchQuery || undefined,
               }).filter(([_, value]) => value !== undefined)
             );
+
+            params.companyMinSize= size ? size.split('-')[0]: undefined;
+            params.companyMaxSize= size ? size.split('-')[1]: undefined;
+            delete params.size;
             
             let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
               params,
@@ -85,7 +91,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                     industries: [...obj.industries||[]],
                 })),
               ],
-              companiesTabHasMore:  res.data.length > 0,
+              companiesTabHasMore:  res.data.length ===config.paginationLimit,
               companiesTabIsCompaniesLoading: false,
               companiesTabPage: state.companiesTabPage + 1,
             }));
