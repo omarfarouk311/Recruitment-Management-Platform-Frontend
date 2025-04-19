@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Review } from "../../types/review";
-import { Star, Edit, Trash2 } from "lucide-react";
+import { Star, Edit, Trash2, Dot } from "lucide-react";
 import ReviewForm from "./ReviewForm";
 import { useState } from "react";
 
@@ -11,7 +11,7 @@ interface ReviewCardProps {
 }
 
 const ReviewCard = ({
-  review: { id, role, createdAt, rating, description, companyData },
+  review: { id, role, createdAt, rating, description, companyData, title },
   removeReview,
   updateReview,
 }: ReviewCardProps) => {
@@ -20,16 +20,22 @@ const ReviewCard = ({
   return (
     <div className="bg-gray-100 p-4 rounded-2xl">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="font-medium">
-          {role}
-          {companyData ? " - " : ""}
+        <h4 className="font-medium flex items-center space-x-2">
+          {title}
           {companyData && (
-            <Link
+            <div className="flex items-center space-x-1">
+              <Dot className="inline mx-1" />
+              <Link
               to={"/company/profile"}
               className="hover:underline hover:underline-offset-2 text-blue-600"
-            >
+              >
               {companyData.name}
-            </Link>
+              </Link>
+              <Dot className="inline mx-1" />
+              {[...Array(Math.floor(rating))].map((_, i) => (
+              <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
+              ))}
+            </div>
           )}
         </h4>
 
@@ -56,10 +62,9 @@ const ReviewCard = ({
         </div>
       </div>
 
-      <div className="flex items-center space-x-1 mb-2">
-        {[...Array(Math.floor(rating))].map((_, i) => (
-          <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
-        ))}
+      <div className="flex items-center space-x-1 -mt-2 mb-2">
+        {role}
+        
       </div>
 
       <p className="text-gray-800 break-words">{description}</p>
@@ -68,7 +73,7 @@ const ReviewCard = ({
         <ReviewForm
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
-          review={{ id, role, rating, description, createdAt }}
+          review={{ id, role, rating, description, createdAt, title }}
           updateReview={updateReview}
         />
       )}

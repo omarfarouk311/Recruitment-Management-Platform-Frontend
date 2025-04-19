@@ -1,5 +1,6 @@
 export interface Review {
     id: number;
+    title: string;
     role: string;
     createdAt: string;
     rating: number;
