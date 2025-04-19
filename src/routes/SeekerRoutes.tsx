@@ -5,6 +5,7 @@ import SeekerDashboard from "../pages/SeekerDashboard";
 import NotFound from "../pages/NotFound";
 import JobSeekerProfile from "../pages/JobSeekerProfile";
 import { Assessment } from "../components/Assessment/Assessment";
+import CompanyProfile from "../pages/CompanyProfile";
 
 function SeekerRoutes() {
   return (
@@ -14,6 +15,7 @@ function SeekerRoutes() {
       <Route path="/dashboard" element={<SeekerDashboard />} />
       <Route path="/profile" element={<JobSeekerProfile />} />
       <Route path="/assessment" element={<Assessment />} />
+      <Route path="/company-profile" element={<CompanyProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
