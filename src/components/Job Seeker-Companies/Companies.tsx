@@ -14,6 +14,7 @@ const Companies = () => {
     useStore.useCompaniesTabFetchCompanyIndustries;
   const useFetchCompanyLocations =
     useStore.useCompaniesTabFetchCompanyLocations;
+    
 
   return (
     <div className="grid grid-cols-[1fr_2.2fr] gap-8">

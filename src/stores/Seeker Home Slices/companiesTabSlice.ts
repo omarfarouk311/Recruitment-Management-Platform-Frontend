@@ -65,13 +65,14 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
             let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
               params,
             });
+           
             
             set((state) => ({
                 companiesTabCompanies: [
                 ...state.companiesTabCompanies,
                 ...res.data.map((obj: any) => ({
                     id: obj.id,
-                    image: obj.image || 'https://via.placeholder.com/150',
+                    image: `${config.API_BASE_URL}/companies/${obj.id}/image`|| 'https://via.placeholder.com/150',
                     name: obj.name,
                     overview: obj.overview || 'No overview available',
                     size: obj.size ,
