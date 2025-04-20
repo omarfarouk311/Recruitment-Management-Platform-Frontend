@@ -92,7 +92,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
                 gender: res.data.gender ? 'male' : 'female',
                 image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
-            }});
+            },
+            userImage: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+        });
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if(err.response?.status === 404) {
@@ -480,9 +482,28 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         }
     },
 
-    // TODO: Skills for the user to select from 
+    
     seekerProfileFetchSkillsFormData: async () => {
+        try {
+            let res;
+            try {
+                res = await axios.get(`${config.API_BASE_URL}/skills`);
+            } catch (err) {
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }
+            }
+            if (!res) {
+                res = await axios.get(`${config.API_BASE_URL}/skills`);
+            }
+            set({
+               seekerProfileSkillsFormData: [{name: "Select Skill", id: ""}, ...res.data]
+            })
+        } catch (err) {
 
+        }
     },
 
     seekerProfileFetchCVs: async () => {

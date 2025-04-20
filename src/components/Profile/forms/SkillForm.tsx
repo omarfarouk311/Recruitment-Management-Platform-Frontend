@@ -6,9 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
+import { Listbox } from '@headlessui/react';
 
 const schema = z.object({
-  name: z.string().min(1, "Skill name is required"),
+  id: z.preprocess((val) => parseInt(val as string), z.number({message: 'Skill not selected.'}).min(1, "Skill not selected."))
 });
 
 type FormData = z.infer<typeof schema>;
@@ -20,9 +21,12 @@ interface SkillDialogProps {
 }
 
 export default function SkillDialog({ isOpen, onClose, addSkill }: SkillDialogProps) {
-  
+  const skillOptions = useStore.useSeekerProfileSkillsFormData();
+  const fetchOptions = useStore.useSeekerProfileFetchSkillsFormData();
 
   const {
+    watch,
+    setValue,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -31,20 +35,22 @@ export default function SkillDialog({ isOpen, onClose, addSkill }: SkillDialogPr
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
+      id: undefined,
     },
     mode: "onSubmit",
   });
 
   useEffect(() => {
-    reset({ name: "" });
+    reset({ id: undefined });
+    if(isOpen)
+      fetchOptions();
   }, [isOpen]);
 
-  const onSubmit = async (data: FormData, event?: React.BaseSyntheticEvent) => {
+  const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
     if (!isValid) return;
     if(data)
-      await addSkill(parseInt(data.name));
+      await addSkill(data.id);
     onClose();
   };
 
@@ -70,17 +76,33 @@ export default function SkillDialog({ isOpen, onClose, addSkill }: SkillDialogPr
                 <label className="text-sm font-medium text-gray-700">
                   Skill Name
                 </label>
-                <input
-                  type="text"
-                  {...register("name")}
-                  className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                    errors.name ? "border-red-500" : ""
-                  }`}
-                  placeholder="Enter skill name"
-                />
-                {errors.name && (
+                <Listbox
+                  value={watch('id')}
+                  onChange={(value) => setValue('id', value)}
+                >
+                  <div className="relative">
+                    <Listbox.Button className="w-full p-3 text-left border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                      {watch('id') ? skillOptions.find(o => o.id === watch('id'))?.name : 'Select a skill'}
+                    </Listbox.Button>
+                    
+                    <Listbox.Options className="absolute w-full mt-1 max-h-48 overflow-auto rounded-xl bg-white shadow-lg border border-gray-200 z-10">
+                      {skillOptions.map((skill) => (
+                        <Listbox.Option
+                          key={skill.id}
+                          value={skill.id}
+                          className={({ active }) => `p-3 cursor-pointer ${
+                            active ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
+                          }`}
+                        >
+                          {skill.name}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
+                </Listbox>
+                {errors.id && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.name.message}
+                  {errors.id.message}
                   </p>
                 )}
               </div>

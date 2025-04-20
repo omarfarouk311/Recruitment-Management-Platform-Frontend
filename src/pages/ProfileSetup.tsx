@@ -20,7 +20,6 @@ const ProfileSetup = () => {
     const [loading, setLoading] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
     const allSkills = useStore.useSeekerProfileSkillsFormData();
-    const fetchAllSkills = useStore.useSeekerProfileFetchSkillsFormData();
     const [experiences, setExperiences] = useState<Experience[]>([]);
     const [progress, setProgress] = useState(0);
     const [gender, setGender] = useState<"male" | "female" | "">("");
@@ -63,19 +62,18 @@ const ProfileSetup = () => {
         phoneNumber,
     ]);
 
-    useEffect(() => {
-        fetchAllSkills();
-    }, []);
-
     const handleAddSkill = (skillId: number) => {
         let skill = allSkills.find((skill: Skill) => skill.id === skillId);
-        skill = {id: 5, name: 'nodejs'}
+        const duplicate = selectedSkills.find((skill: Skill) => skill.id === skillId);
         if (
             skillId &&
-            !selectedSkills.find((skill: Skill) => skill.id === skillId) &&
+            !duplicate &&
             skill
         ) {
             setSelectedSkills((prev) => [...prev, skill]);
+        }
+        else if(duplicate) {
+            showErrorToast('Skill already exists.')
         }
     };
 
