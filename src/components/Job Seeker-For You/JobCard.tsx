@@ -72,19 +72,19 @@ const JobCard = ({
   const removeRecommendation = useRemoveRecommendation?.();
   const [removing, setRemoving] = useState(false);
   const deleteJob = useDeleteJob?.();
-  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
 
   return (
     <div
-      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
-        isSelected ? "border-black" : ""
-      }`}
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${isSelected ? "border-black" : ""
+        }`}
       onClick={() =>
         setSelectedJobId
           ? setSelectedJobId(id)
           : pushToJobDetails
-          ? pushToJobDetails(id)
-          : null
+            ? pushToJobDetails(id)
+            : null
       }
       role="button"
     >
@@ -105,42 +105,49 @@ const JobCard = ({
         )}
       </div>
 
-      <div className="relative">
-        {editJob && (
-          <button
-            className="absolute right-1 hover:text-blue-500"
-            onClick={(e) => {
-              e.stopPropagation();
-              editJob();
-            }}
-            title="Edit job"
-          >
-            <Edit3 />
-          </button>
-        )}
-        {deleteJob && (
-          <button
-            className="absolute right-1 mt-12 hover:text-red-500"
-            onClick={async (e) => {
-              e.stopPropagation();
-              setDeleting(true);
-              await deleteJob(id);
-              setTimeout(() => setDeleting(false), 500);
-            }}
-            title="Delete job"
-          >
-            <Trash2 />
-          </button>
-        )}
-      </div>
+      {!deleted &&
+        <div className="relative">
+          {editJob && (
+            <button
+              className="absolute right-1 hover:text-blue-500"
+              onClick={(e) => {
+                e.stopPropagation();
+                editJob();
+              }}
+              title="Edit job"
+            >
+              <Edit3 />
+            </button>
+          )}
+          {deleteJob && (
+            <button
+              className="absolute right-1 mt-12 hover:text-red-500"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await deleteJob(id);
+                setDeleted(true);
+              }}
+              title="Delete job"
+            >
+              <Trash2 />
+            </button>
+          )}
+        </div>
+      }
+      {deleted && (
+        <div className="relative">
+        <div className="absolute right-1 hover:text-blue-500"
+>
+          <p className="text-red-600 font-medium">Closed</p>
+          </div>
+          </div>
+      )}
 
       {removing ? (
         <p className="text-red-500 text-md font-semibold">
           Job Recommendation removed
         </p>
-      ) : deleting ? (
-        <p className="text-red-500 text-md font-semibold">Job Deleted</p>
-      ) : (
+      ) :  (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
             {image ? (

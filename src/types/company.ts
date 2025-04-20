@@ -21,3 +21,33 @@ export interface CompaniesTabFilters {
     rating: string;
     type: string;
 }
+
+
+
+export interface CompanyJobsRecruiters {
+    id: number
+    name: string;
+    department: string;
+    assigned_candidates_cnt: number;
+}
+
+export interface CompanyJobsRecruitersFilters {
+    recruiterName: string;
+    department: string;
+    assignedCandidates: string;
+}
+
+
+export const CompanyJobsRecruitersSortOptions = [
+    { label: 'Ascending', value: "1" },
+    { label: 'Desecending', value: "-1" }
+]
+
+export const DashboardStatusFilterOptions = [
+    { value: "1", label: "Pending" },
+    { value: "3", label: "Rejected" },
+    { value: "2", label: "Accepted" },
+]
+
+
+

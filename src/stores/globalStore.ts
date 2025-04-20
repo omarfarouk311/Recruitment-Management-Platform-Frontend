@@ -32,6 +32,11 @@ import { createSeekerInterviewsSlice } from './Seeker Dashboard Slices/interview
 import { createAssessmentDialogSlice } from './Dialogs/assessmentDialogSlice';
 
 
+import { createCompanyCandidatesSlice } from "./Company Dashboard Slice/CompanyJobsCandidatesSlice";
+
+import { createcompanyJobsSlice } from "./Company Dashboard Slice/CompanyJobListsSlice";
+import { createCompanyJobsRecruitersSlice } from "./Company Dashboard Slice/CompanyJobsRecruitersSlice";
+
 
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
@@ -61,7 +66,13 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createSeekerJobsAppliedForSlice(...a),
             ...createSeekerAssessmentsSlice(...a),
             ...createSeekerInterviewsSlice(...a),
-            ...createAssessmentDialogSlice(...a),
+            ...createAssessmentDialogSlice(...a), 
+
+            ...createCompanyCandidatesSlice(...a),
+            ...createcompanyJobsSlice(...a),
+
+            ...createCompanyJobsRecruitersSlice(...a),
+
         }),
         {
             name: "user-store",

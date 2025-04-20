@@ -5,10 +5,10 @@ import { Interviews } from "../../types/recruiterDashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link } from "react-router-dom";
 import { DashboardSortByFilterOptions } from "../../types/recruiterDashboard";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Import the default CSS for the date picker
+import "react-datepicker/dist/react-datepicker.css";
 
 const RecruiterInterviews = () => {
     const filters = useStore.useRecruiterInterviewsFilters();
@@ -17,11 +17,10 @@ const RecruiterInterviews = () => {
     const useHasMore = useStore.useRecruiterInterviewsHasMore;
     const useIsLoading = useStore.useRecruiterInterviewsIsLoading;
     const useFetchData = useStore.useRecruiterInterviewsFetchData;
-    const useUpdateDate = useStore.useRecruiterInterviewsSetUpateDate(); // Add this to your store
+    const useUpdateInterview = useStore.useRecruiterInterviewsSetUpdateInterview();
     const fetchData = useFetchData();
 
     const jobTitles = useStore.useRecruiterJobTitles();
-
     const resetData = useStore.useResetAllData();
 
     useEffect(() => {
@@ -29,27 +28,32 @@ const RecruiterInterviews = () => {
         fetchData();
     }, []);
 
-    // Function to handle date update
-    const handleUpdateDate = async (jobId: number, seekerId: number, newDate: string) => {
+    const handleUpdateInterview = async (jobId: number, candidateId: number, date: string, link: string) => {
         try {
-            await useUpdateDate({ jobId, seekerId, date: newDate }); // Call the store function to update the date
+            await useUpdateInterview(jobId, candidateId, date, link);
         } catch (error) {
-            console.error("Failed to update date:", error);
+            console.error("Failed to update interview:", error);
         }
     };
 
-
-    // State for the date picker
+    // State for the modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [meetingLink, setMeetingLink] = useState("");
     const [currentJobId, setCurrentJobId] = useState<number | null>(null);
     const [currentSeekerId, setCurrentSeekerId] = useState<number | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
-    // Function to handle date selection
-    const handleDateConfirm = () => {
-        if (selectedDate && currentJobId && currentSeekerId) {
-            // Convert the selected local time to UTC
-            const utcDate = new Date(
+    const openEditModal = (row: Interviews) => {
+        setCurrentJobId(row.jobId);
+        setCurrentSeekerId(row.userId);
+        setSelectedDate(row.date ? new Date(row.date) : null);
+        setMeetingLink(row.meetingLink || "");
+        setIsModalOpen(true);
+    };
+
+    const handleSubmit = () => {
+        if (currentJobId && currentSeekerId) {
+            const utcDate = selectedDate ? new Date(
                 Date.UTC(
                     selectedDate.getFullYear(),
                     selectedDate.getMonth(),
@@ -58,15 +62,19 @@ const RecruiterInterviews = () => {
                     selectedDate.getMinutes(),
                     selectedDate.getSeconds()
                 )
-            );
+            ).toISOString() : "";
 
-            const formattedDate = utcDate.toISOString(); // Format the date as needed
-            handleUpdateDate(currentJobId, currentSeekerId, formattedDate); // Call the update function
-            setSelectedDate(null); // Reset the selected date
-            setCurrentJobId(null); // Reset the job ID
-            setIsModalOpen(false); // Close the modal
-            setCurrentSeekerId(null); // Reset the seeker ID
+            handleUpdateInterview(currentJobId, currentSeekerId, utcDate, meetingLink);
+            setIsModalOpen(false);
+            resetModal();
         }
+    };
+
+    const resetModal = () => {
+        setSelectedDate(null);
+        setMeetingLink("");
+        setCurrentJobId(null);
+        setCurrentSeekerId(null);
     };
 
     const columns: ColumnDef<Interviews>[] = [
@@ -75,7 +83,7 @@ const RecruiterInterviews = () => {
             header: "User Name",
             render: (row) => (
                 <Link
-                    to={`/seeker/${row.userId}`} // Route with userId
+                    to={`/seeker/${row.userId}`}
                     className="text-blue-600 hover:underline"
                 >
                     {row.userName}
@@ -87,7 +95,7 @@ const RecruiterInterviews = () => {
             header: "Job Title",
             render: (row) => (
                 <Link
-                    to={`/job/${row.jobId}`} // Route with jobId
+                    to={`/job/${row.jobId}`}
                     className="text-blue-600 hover:underline"
                 >
                     {row.jobTitle}
@@ -98,9 +106,9 @@ const RecruiterInterviews = () => {
             key: "date",
             header: "Date (GMT)",
             render: (row) => {
-                const date = new Date(row.date);
+                if (!row.date) return <span className="text-gray-400">Not scheduled</span>;
 
-                // Format date (e.g., "Jan 15, 2023")
+                const date = new Date(row.date);
                 const formattedDate = date.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
@@ -108,20 +116,18 @@ const RecruiterInterviews = () => {
                     timeZone: 'GMT'
                 });
 
-                // Format time with AM/PM (e.g., "02:30:45 PM")
                 const formattedTime = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
-                    timeZone: 'GMT',
-                    hour12: false  // This enables AM/PM display
+                    hour12: false
                 });
 
                 return (
                     <div className="flex flex-col">
                         <span>{formattedDate}</span>
                         <span className="text-xs text-gray-500">
-                            {formattedTime} GMT
+                            {formattedTime}
                         </span>
                     </div>
                 );
@@ -129,28 +135,40 @@ const RecruiterInterviews = () => {
         },
         {
             key: "location",
-            header: "Location",
-            render: (row) => <span>{row.location}</span>,
+            header: "Job Location",
+            render: (row) => (
+                <span className="text-gray-600">
+                    {row.jobCountry},{row.jobCity}
+                </span>
+            ),
         },
         {
             key: "candidateLocation",
             header: "Candidate Location",
-            render: (row) => <span>{row.candidateLocation}</span>,
+            render: (row) => (
+                <span className="text-gray-600">
+                    {row.candidateCountry}, {row.candidateCity}
+                </span>
+            ),
         },
         {
             key: "actions",
             header: "Actions",
             render: (row) => (
-                <div>
+                <div className="flex space-x-2">
                     <Button
-                        onClick={() => {
-                            setCurrentJobId(row.jobId); // Set the job ID for the current row
-                            setCurrentSeekerId(row.userId);
-                            setSelectedDate(row.date ? new Date(row.date) : null); // Set the current date if available
-                            setIsModalOpen(true); // Open the modal
-                        }}
+                        onClick={() => openEditModal(row)}
+                        className="px-4 py-1 rounded-full bg-black text-white hover:bg-white hover:text-black border border-black transition-colors duration-200"
                     >
-                        Update Date
+                        Edit
+                    </Button>
+                    <Button
+                        onClick={() => window.open(row.meetingLink, '_blank')}
+                        className={`px-4 py-1 rounded-full bg-black text-white hover:bg-white hover:text-black border border-black transition-colors duration-200 ${!row.meetingLink ? 'opacity-50 pointer-events-none' : ''
+                            }`}
+                        disabled={!row.meetingLink}
+                    >
+                        Join Interview
                     </Button>
                 </div>
             ),
@@ -193,27 +211,58 @@ const RecruiterInterviews = () => {
                 />
             </div>
 
-            {/* Modal for Date Picker */}
+            {/* Edit Interview Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={setSelectedDate}
-                            showTimeSelect
-                            timeFormat="h:mm aa"  // AM/PM format
-                            timeIntervals={15}
-                            dateFormat="MMMM d, yyyy h:mm aa" // "June 5, 2023 2:30 PM"
-                            timeCaption="Time"
-                            className="border rounded p-2 w-full"
-                        />
-                        <div className="flex justify-end space-x-4 mt-4">
-                            <Button onClick={handleDateConfirm}>Confirm</Button>
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">Edit Interview Details</h2>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Interview Date & Time
+                            </label>
+                            <DatePicker
+                                selected={selectedDate}
+                                onChange={setSelectedDate}
+                                showTimeSelect
+                                timeFormat="h:mm aa"
+                                timeIntervals={15}
+                                dateFormat="MMMM d, yyyy h:mm aa"
+                                timeCaption="Time"
+                                className="border rounded p-2 w-full"
+                                placeholderText="Select date and time"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Meeting Link
+                            </label>
+                            <input
+                                type="text"
+                                value={meetingLink}
+                                onChange={(e) => setMeetingLink(e.target.value)}
+                                placeholder="Enter meeting link (e.g., https://meet.google.com/abc-xyz)"
+                                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                            />
+                        </div>
+
+                        <div className="flex justify-end space-x-4 mt-6">
                             <Button
                                 variant="outline"
-                                onClick={() => setIsModalOpen(false)} // Close the modal
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    resetModal();
+                                }}
+                                className="px-4 py-2"
                             >
                                 Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSubmit}
+                                className="px-4 py-2"
+                            >
+                                Save Changes
                             </Button>
                         </div>
                     </div>

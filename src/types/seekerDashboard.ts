@@ -35,6 +35,7 @@ export interface interview  {
     city: string;
     date: string;
     recruiter: string;
+    meetingLink: string
 }
 
 export interface JobsAppliedForFilters extends DashboardFilters {

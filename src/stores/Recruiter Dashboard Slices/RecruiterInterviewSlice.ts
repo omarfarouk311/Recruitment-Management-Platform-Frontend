@@ -3,6 +3,7 @@ import { CombinedState } from "../storeTypes";
 import { Interviews, DashboardInterviewsFilters, updateInterviewDate } from "../../types/recruiterDashboard";
 import axios from 'axios';
 import config from '../../../config/config.ts';
+import RecruiterInterviews from "../../components/Recruiter Dashboard/RecruiterInterviews.tsx";
 const API_BASE_URL = config.API_BASE_URL;
 
 export interface RecruiterInterviewsSlice {
@@ -17,6 +18,7 @@ export interface RecruiterInterviewsSlice {
     recruiterInterviewsFetchData: () => Promise<void>;
     recruiterInterviewsSetFilters: (filters: Partial<RecruiterInterviewsSlice['recruiterInterviewsFilters']>) => void;
     resetAllData: () => void;
+    recruiterInterviewsSetUpdateInterview: (jobId: number, candidateId: number, date: string, link: string) => Promise<void>;
 }
 
 
@@ -53,7 +55,7 @@ export const createInterviewsSlice: StateCreator<
             }
         });
     },
-    recruiterInterviewsSetUpateDate: async ({ jobId, seekerId, date }) => {
+    recruiterInterviewsSetUpateDate: async ({ jobId, seekerId, date}) => {
         try {
             set({ recruiterInvitationsIsLoading: true});
 
@@ -131,6 +133,49 @@ export const createInterviewsSlice: StateCreator<
 
         // Fetch new data after updating filters
         get().recruiterInterviewsFetchData();
-    },
+        },
+        recruiterInterviewsSetUpdateInterview: async ( jobId, seekerId, date, meetingLink ) => {
+            try {
+                set({ recruiterInterviewsIsLoading: true });
+                const { recruiterInterviewsData } = get();
+
+                // Find the current interview to compare values
+                const currentInterview = recruiterInterviewsData.find(
+                    interview => interview.jobId === jobId && interview.userId === seekerId
+                );
+
+                // Only make API call if either date or meetingLink has changed
+                const dateChanged = currentInterview?.date !== date;
+                const linkChanged = currentInterview?.meetingLink !== meetingLink;
+
+                if (dateChanged || linkChanged) {
+                    await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
+                        timestamp: date,
+                        interviewLink: meetingLink
+                    });
+
+                    // Update state only if the API call was successful
+                    set((state) => ({
+                        recruiterInterviewsData: state.recruiterInterviewsData.map(interview =>
+                            interview.jobId === jobId && interview.userId === seekerId
+                                ? {
+                                    ...interview,
+                                    date: dateChanged ? date : interview.date,
+                                    meetingLink: linkChanged ? meetingLink : interview.meetingLink
+                                }
+                                : interview
+                        ),
+                        recruiterInterviewsIsLoading: false,
+                    }));
+                } else {
+                    // No changes needed, just set loading to false
+                    set({ recruiterInterviewsIsLoading: false });
+                }
+            } catch (error) {
+                console.error("Failed to update interview:", error);
+                set({ recruiterInterviewsIsLoading: false });
+            }
+        }
+
 
 });
