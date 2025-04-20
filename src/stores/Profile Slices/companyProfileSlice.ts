@@ -142,7 +142,6 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         
         const {  companyProfileJobsHasMore, userId,companyProfileSelectedId } = get();
         if (!companyProfileJobsHasMore || !userId) return;
-        
 
         try{
 
@@ -330,46 +329,33 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         await get().companyProfileFetchJobs();
       },
 
-      //needs to be revised
-      companyProfileFetchJobTitlesFilter: async () => {
-        const{ companyProfileJobsHasMore, userId,companyProfileSelectedId,companyProfileJobsFilters,companyProfileJobsPage } = get();
-        if (!companyProfileJobsHasMore || !userId) return;
-        try{
+    //needs to be revised
+    companyProfileFetchJobTitlesFilter: async () => {
+      const { companyProfileJobsHasMore, userId, companyProfileSelectedId,companyProfileJobsPage } = get();
+      if (!companyProfileJobsHasMore || !userId) return;
 
-            const params = {
+      try {
+        const rest = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/jobs`, {
+            params: { 
                 page: companyProfileJobsPage,
-                sortByDate: companyProfileJobsFilters.sortByDate || undefined,
-                industry: companyProfileJobsFilters.industryId || undefined,
-                jobId: companyProfileJobsFilters.jobId || undefined,
-                remote: companyProfileJobsFilters.remote || undefined, // Send true/false directly
-                filterBar:true,
-              };
-            
-              // Delete undefined keys
-              for (const key in params) {
-                if (params[key as keyof typeof params] === undefined) {
-                  delete params[key as keyof typeof params];
-                }
-              }
-            const response = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/jobs`,{params});
-            const jobTitlesData = response.data;
-            
-            const jobTitles = jobTitlesData.map((jobTitle: { id: number, title: string }) => ({
-                id: jobTitle.id,
-                title: jobTitle.title
-            }));
-            
-            set(state => ({
-                companyProfileJobTitlesFilter: jobTitles
-                
-            }));
-        }
-        catch(err){
-            console.error('Error fetching company job titles:', err);
-            toast.error('Failed to fetch company job titles');
-            
-        }
-      },
+                filterBar: true }
+        });
+        const jobTitlesData = rest.data;
+        
+        const jobTitles = jobTitlesData.map((jobTitle: { id: number, title: string }) => ({
+            id: jobTitle.id,
+            title: jobTitle.title
+        }));
+        
+        set(state => ({
+            companyProfileJobTitlesFilter: jobTitles
+        }));
+      }
+      catch(err) {
+        console.error('Error fetching company job titles:', err);
+        toast.error('Failed to fetch company job titles');
+      }
+    },
 
     companyProfileSetJobDetailsDialogOpen: (isOpen) => {
         set({ companyProfileIsJobDetailsDialogOpen: isOpen });
