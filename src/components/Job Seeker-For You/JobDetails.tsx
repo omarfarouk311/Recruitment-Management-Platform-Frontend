@@ -18,7 +18,7 @@ interface JobDetailsProps {
   usePopFromDetailedJobs: () => () => void;
   useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
   useReportJob: () => (id: number, message: string) => Promise<void>;
-  useFetchCompanyIndustries: () => (id: number) => Promise<void>;
+  useFetchCompanyIndustries: () => (companyId: number, jobId: number) => Promise<void>;
 }
 
 const JobDetails = ({
@@ -236,7 +236,7 @@ const JobDetails = ({
               title="View industries"
               onClick={() => {
                 setIsOpen(true);
-                fetchCompanyIndustries(id);
+                fetchCompanyIndustries(companyId, id);
               }}
             >
               {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}

@@ -30,9 +30,78 @@ export interface ForYouTabSlice {
     forYouTabRemoveRecommendation: (id: number) => Promise<void>;
     forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
     forYouTabReportJob: (id: number, message: string) => Promise<void>;
-    forYouTabFetchCompanyIndustries: (id: number) => Promise<void>;
+    forYouTabFetchCompanyIndustries: (companyId: number, jobId: number) => Promise<void>;
     forYouTabClear: () => void;
     forYouTabClearDetailedJobs: () => void;
+}
+
+async function fetchJobDetails(id: number): Promise<JobDetails> {
+    const [resDetails, resSimilar] = await Promise.all([
+        axios.get(`${API_BASE_URL}/jobs/${id}`),
+        axios.get(`${API_BASE_URL}/jobs/${id}/similar`)
+    ]);
+
+    const response = resDetails.data;
+    const similarJobs = resSimilar.data;
+
+    const transformedDetails: JobDetails = {
+        // Job Data
+        id,
+        title: response.jobData.title,
+        description: response.jobData.description,
+        country: response.jobData.country,
+        city: response.jobData.city,
+        datePosted: formatDistanceToNow(new Date(response.jobData.created_at), { addSuffix: true }),
+        applicantsCount: response.jobData.applied_cnt,
+        matchingSkillsCount: response.skillMatches,
+        jobSkillsCount: response.jobData.skills_cnt,
+        remote: response.jobData.remote,
+        applied: response.hasApplied,
+        reported: response.hasReported,
+
+        // Company Data
+        companyData: {
+            id: response.companyData.id,
+            name: response.companyData.name,
+            rating: response.companyData.rating,
+            size: response.companyData.size,
+            foundedIn: response.companyData.founded_in,
+            type: response.companyData.type ? 'Public' : 'Private',
+            industriesCount: response.companyData.industriesCount,
+            industries: [],
+            image: `${API_BASE_URL}/companies/${response.companyData.id}/image`
+        },
+
+        // Company Reviews
+        companyReviews: response.reviews.map((review: any) => ({
+            id: review.id,
+            title: review.title,
+            rating: review.rating,
+            description: review.description,
+            createdAt: formatDistanceToNow(new Date(review.created_at), { addSuffix: true }),
+            role: review.role,
+            companyData: {
+                id: response.companyData.id,
+                name: response.companyData.name
+            }
+        })),
+
+        similarJobs: similarJobs.map((similarJob: any) => ({
+            id: similarJob.id,
+            title: similarJob.title,
+            country: similarJob.country,
+            city: similarJob.city,
+            datePosted: formatDistanceToNow(new Date(similarJob.createdAt), { addSuffix: true }),
+            companyData: {
+                id: similarJob.companyId,
+                name: similarJob.companyName,
+                rating: similarJob.companyRating,
+                image: `${API_BASE_URL}/companies/${similarJob.companyId}/image`
+            }
+        }))
+    };
+
+    return transformedDetails;
 }
 
 export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTabSlice> = (set, get) => ({
@@ -186,63 +255,13 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         set({ forYouTabIsDetailsLoading: true, forYouTabSelectedJobId: id });
 
         try {
-            const res = await axios.get(`${API_BASE_URL}/jobs/${id}`);
-            const response = res.data;
-
-            const transformedDetails: JobDetails = {
-                // Job Data
-                id: response.jobData.id,
-                title: response.jobData.title,
-                description: response.jobData.description,
-                country: response.jobData.country,
-                city: response.jobData.city,
-                datePosted: formatDistanceToNow(new Date(response.jobData.created_at), { addSuffix: true }),
-                applicantsCount: response.jobData.applied_cnt,
-                matchingSkillsCount: response.skillMatches,
-                jobSkillsCount: response.jobData.skills_cnt,
-                remote: response.jobData.remote,
-                applied: response.hasApplied,
-                reported: response.hasReported,
-
-                // Company Data
-                companyData: {
-                    id: response.companyData.id,
-                    name: response.companyData.name,
-                    rating: response.companyData.rating,
-                    size: response.companyData.size,
-                    foundedIn: response.companyData.founded_in,
-                    type: response.companyData.type ? 'Public' : 'Private',
-                    industriesCount: response.companyData.industriesCount,
-                    industries: [],
-                    image: `${API_BASE_URL}/companies/${response.companyData.id}/image`
-                },
-
-                // Company Reviews
-                companyReviews: response.reviews.map((review: any) => ({
-                    id: review.id,
-                    title: review.title,
-                    rating: review.rating,
-                    description: review.description,
-                    createdAt: formatDistanceToNow(new Date(review.created_at), { addSuffix: true }),
-                    role: review.role,
-                    companyData: {
-                        id: response.companyData.id,
-                        name: response.companyData.name
-                    }
-                })),
-
-                similarJobs: []
-            };
-
-            console.log(transformedDetails);
-
+            const transformedDetails = await fetchJobDetails(id);
             set({
                 forYouTabDetailedJobs: [transformedDetails],
                 forYouTabIsDetailsLoading: false
             });
         }
         catch (err) {
-            console.error(err);
             set({ forYouTabIsDetailsLoading: false });
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 404) {
@@ -250,6 +269,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 } else if (err.response?.status === 500) {
                     showErrorToast('Something went wrong');
                 }
+            }
+            else {
+                showErrorToast('Something went wrong');
             }
         }
     },
@@ -295,25 +317,27 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         set({ forYouTabIsDetailsLoading: true });
         // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                const detailedJob = { ...mockDetailedJobs[id] };
-                detailedJob.datePosted = formatDistanceToNow(new Date(detailedJob.datePosted), { addSuffix: true });
-                detailedJob.similarJobs = detailedJob.similarJobs.map((job) => ({
-                    ...job, datePosted: formatDistanceToNow(new Date(job.datePosted), { addSuffix: true })
-                }));
-
-                set((state) => ({
-                    forYouTabDetailedJobs: [
-                        detailedJob,
-                        ...state.forYouTabDetailedJobs
-                    ],
-                    forYouTabIsDetailsLoading: false
-                }));
-                resolve();
-            }, 500));
+            const transformedDetails = await fetchJobDetails(id);
+            set((state) => ({
+                forYouTabDetailedJobs: [
+                    transformedDetails,
+                    ...state.forYouTabDetailedJobs
+                ],
+                forYouTabIsDetailsLoading: false
+            }));
         }
         catch (err) {
             set({ forYouTabIsDetailsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 404) {
+                    showErrorToast('Job not found');
+                } else if (err.response?.status === 500) {
+                    showErrorToast('Something went wrong');
+                }
+            }
+            else {
+                showErrorToast('Something went wrong');
+            }
         }
     },
 
@@ -329,17 +353,14 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabRemoveRecommendation: async (id: number) => {
-        // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => ({
-                    forYouTabJobs: state.forYouTabJobs.filter((job) => job.id !== id)
-                }));
-                resolve();
-            }, 500));
+            await axios.delete(`${API_BASE_URL}/seekers/jobs/recommended/${id}`);
+            set((state) => ({
+                forYouTabJobs: state.forYouTabJobs.filter((job) => job.id !== id)
+            }));
         }
         catch (err) {
-            console.error(err);
+            showErrorToast('Something went wrong');
         }
     },
 
@@ -373,34 +394,22 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         }
     },
 
-    forYouTabFetchCompanyIndustries: async (id) => {
-        if (get().forYouTabDetailedJobs.find((job) => job.id === id)?.companyData.industries.length) return;
+    forYouTabFetchCompanyIndustries: async (companyId, jobId) => {
+        if (get().forYouTabDetailedJobs.find((job) => job.id === jobId)?.companyData.industries.length) return;
 
-        // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => ({
-                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ?
-                        {
-                            ...job,
-                            companyData: { ...job.companyData, industries: [...mockCompanyIndustries] },
-                            companyReviews: [...job.companyReviews],
-                            similarJobs: [...job.similarJobs.map((job) => ({ ...job, companyData: { ...job.companyData } }))]
-                        }
-                        :
-                        {
-                            ...job,
-                            companyData: { ...job.companyData, industries: [...job.companyData.industries] },
-                            companyReviews: [...job.companyReviews],
-                            similarJobs: [...job.similarJobs.map((job) => ({ ...job, companyData: { ...job.companyData } }))],
-                        }
-                    )
-                }));
-                resolve();
-            }, 500));
+            const res = await axios.get(`${API_BASE_URL}/companies/${companyId}/industries`);
+            const industries = res.data.map((industry: any) => industry.name);
+
+            set((state) => {
+                return {
+                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === jobId ?
+                        { ...job, companyData: { ...job.companyData, industries: industries } } : job)
+                }
+            });
         }
         catch (err) {
-            console.error(err);
+            showErrorToast('Something went wrong');
         }
     },
 
