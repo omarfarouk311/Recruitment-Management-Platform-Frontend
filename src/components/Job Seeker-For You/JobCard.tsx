@@ -82,8 +82,9 @@ const JobCard = ({
 
   return (
     <div
-      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${isSelected ? "border-black" : ""
-        }`}
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
+        isSelected ? "border-black" : ""
+      }`}
       onClick={() =>
         setSelectedJobId ? setSelectedJobId(id) : pushToJobDetails ? pushToJobDetails(id) : null
       }
@@ -96,8 +97,10 @@ const JobCard = ({
             onClick={async (e) => {
               e.stopPropagation();
               setRemoving(true);
-              await removeRecommendation(id);
-              setTimeout(() => setRemoving(false), 500);
+              setTimeout(async () => {
+                await removeRecommendation(id);
+                setRemoving(false);
+              }, 500);
             }}
             title="Remove recommendation"
           >
@@ -106,7 +109,7 @@ const JobCard = ({
         )}
       </div>
 
-      {!deleted &&
+      {!deleted && (
         <div className="relative">
           {editJob && (
             <button
@@ -134,21 +137,18 @@ const JobCard = ({
             </button>
           )}
         </div>
-      }
+      )}
       {deleted && (
         <div className="relative">
-        <div className="absolute right-1 hover:text-blue-500"
->
-          <p className="text-red-600 font-medium">Closed</p>
+          <div className="absolute right-1 hover:text-blue-500">
+            <p className="text-red-600 font-medium">Closed</p>
           </div>
-          </div>
+        </div>
       )}
 
       {removing ? (
-        <p className="text-red-500 text-md font-semibold">
-          Job Recommendation removed
-        </p>
-      ) :  (
+        <p className="text-red-500 text-md font-semibold">Job Recommendation removed</p>
+      ) : (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
             {image && !imageError ? (
