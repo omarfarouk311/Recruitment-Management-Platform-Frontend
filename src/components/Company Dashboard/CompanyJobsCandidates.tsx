@@ -7,8 +7,10 @@ import { ColumnDef } from "../common/Dashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import { CompanyCandidates } from "../../types/candidates";
-import { DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
+import { DashboardStatusFilterOptions } from "../../types/company";
 import { CompanyCandidateSortByFilters } from "../../types/candidates";
+import Button from "../common/Button";
+
 
 
 const CompanyJobsCandidates = () => {
@@ -23,6 +25,12 @@ const CompanyJobsCandidates = () => {
 
     const jobId = useStore.useCompanyTabSelectJobId();
 
+    const selectedCandidates = useStore.useSelectedCandidates();
+    const setSelectedCandidates = useStore.useSetSelectedCandidates();
+
+    const toggleCandidateSelection = (seekerId: number) => {
+        setSelectedCandidates(seekerId)
+    };
 
     useEffect(() => {
         resetCompanyCandidates();
@@ -32,8 +40,43 @@ const CompanyJobsCandidates = () => {
         }
     }, [jobId]);
 
+    // Action handlers
+    const unassignCandidates = useStore.useCompanyCandidateUnAssign();
+    const makeDecision = useStore.useCompanyCandidatesMakeDecision();
+
 
     const columns: ColumnDef<CompanyCandidates>[] = [
+        {
+            key: "select",
+            header: "",
+            render: (row) => (
+                <button
+                    onClick={() => toggleCandidateSelection(row.seekerId)}
+                    className={`w-5 h-5 flex items-center justify-center border-2 rounded-sm transition-colors
+                ${selectedCandidates.includes(row.seekerId)
+                            ? 'bg-gray-800 border-gray-800 text-white'
+                            : 'border-gray-400 hover:border-gray-600'}`}
+                    aria-label={selectedCandidates.includes(row.seekerId)
+                        ? "Deselect candidate"
+                        : "Select candidate"}
+                >
+                    {selectedCandidates.includes(row.seekerId) && (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="w-3 h-3"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                    )}
+                </button>
+            ),
+        },
         {
             key: "rank",
             header: "Rank"
@@ -74,15 +117,22 @@ const CompanyJobsCandidates = () => {
             }
         },
         {
-            key: "candidateCountry",
-            header: "Candidate Location"
+            key: "candidateLocation",
+            header: "Candidate Location",
+            render: (row) => (
+                <span className="text-gray-600">
+                    {row.candidateCountry}, {row.candidateCity}
+                </span>
+            ),
         },
         {
             key: "phase_name",
             header: "Phase",
             render: (row) => {
                 return (
-                    <span className="text-gray-600">{row.phase || ""}</span>
+                    <>
+                        <span className="text-gray-600">{row.phase || ""}</span>
+                    </>
                 );
             },
         },
@@ -126,63 +176,87 @@ const CompanyJobsCandidates = () => {
                     </div>
                 </div>
             </div>
-    ) :   
-            <div className="h-[400px] bg-white p-4 rounded-3xl border-2 border-gray-200">
-                <div className="flex justify-between items-center mb-8">
-                <h1 className="px-6 py-2 text-3xl font-bold">Candidates</h1>
-                <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
-                    <LocationSearch
-                        selectedCountry={filters.candidateCountry}
-                        selectedCity={filters.candidateCity}
-                        onCountryChange={(value) =>
-                            setFilters({ candidateCountry: value })
-                        }
-                        onCityChange={(value) =>
-                            setFilters({ candidateCity: value })
-                        }
-                    />
+        ) :
+            <div className="h-[400px] bg-white p-4 rounded-3xl border-2 border-gray-200 flex flex-col">
+                {/* Fixed header */}
+                <div className="flex justify-between items-center mb-4"> {/* Reduced mb-8 to mb-4 */}
+                    <h1 className="px-6 py-2 text-3xl font-bold">Candidates</h1>
+                    <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
+                        <LocationSearch
+                            selectedCountry={filters.candidateCountry}
+                            selectedCity={filters.candidateCity}
+                            onCountryChange={(value) =>
+                                setFilters({ candidateCountry: value })
+                            }
+                            onCityChange={(value) =>
+                                setFilters({ candidateCity: value })
+                            }
+                        />
 
-                    <FilterDropdown
-                        label="Phase Type"
-                        options={phaseTypes}
-                        selectedValue={filters.phaseType}
-                        onSelect={(value) =>
-                            setFilters({ phaseType: value })
-                        }
-                    />
-                    <FilterDropdown
-                        key="status_filter"
-                        label="Status"
-                        options={DashboardStatusFilterOptions}
-                        selectedValue={filters.status}
-                        onSelect={(value) => setFilters({ ...filters, status: value })}
-                    />
-                    <FilterDropdown
-                        key="date_filter"
-                        label="Sort by: Recommendation"
-                        options={CompanyCandidateSortByFilters.filter(
-                            (option) => option.value === "1" || option.value === "-1"
-                        )}
-                        selectedValue={filters.sortBy}
-                        onSelect={(value) => setFilters({ ...filters, sortBy: value })}
-                    />
+                        <FilterDropdown
+                            label="Phase Type"
+                            options={phaseTypes}
+                            selectedValue={filters.phaseType}
+                            onSelect={(value) =>
+                                setFilters({ phaseType: value })
+                            }
+                        />
+                        <FilterDropdown
+                            key="status_filter"
+                            label="Status"
+                            options={DashboardStatusFilterOptions}
+                            selectedValue={filters.status}
+                            onSelect={(value) => setFilters({ ...filters, status: value })}
+                        />
+                        <FilterDropdown
+                            key="date_filter"
+                            label="Sort by"
+                            options={CompanyCandidateSortByFilters.filter(
+                                (option) => option.value === "1" || option.value === "-1"
+                            )}
+                            selectedValue={filters.sortBy}
+                            onSelect={(value) => setFilters({ ...filters, sortBy: value })}
+                        />
 
+                    </div>
                 </div>
+                <div className="overflow-y-auto h-[580px] px-4">
+                    <Dashboard
+                        columns={columns}
+                        useData={useStore.useCompanycandidates}
+                        useHasMore={useStore.useCompanyCandidatesHasMore}
+                        useIsLoading={useStore.useCompanyCandidatesIsLoading}
+                        useFetchData={
+                            useStore.useCompanyCandidatesFetchCandidates
+                        }
+                    />
+                </div>
+                {(
+                    <div className="flex justify-end space-x-2 p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+                        <button
+                            onClick={() => makeDecision(selectedCandidates, true, jobId)}
+                             className="px-7 py-1.5 rounded-full bg-green-600 text-white border-2 border-green-600 hover:bg-white hover:text-green-600 hover:border-green-600 transition-colors duration-200 font-medium"
+                        >
+                            Next Phase
+                        </button>
+                        <button
+                            onClick={() => makeDecision(selectedCandidates, false, jobId)}
+                            className="px-7 py-1.5 rounded-full border-red-600 bg-red-600 bg-black text-white border-2 border-black hover:bg-white hover:text-black hover:border-red-600 transition-colors duration-200 font-medium"
+                      >
+                            Reject
+                        </button>
+                        <button
+                            onClick={() => unassignCandidates(jobId, selectedCandidates)}
+                            className="px-7 py-1.5 rounded-full bg-black text-white hover:bg-white hover:text-black border border-black transition-colors duration-200 text-medium font-medium"                        >
+                            Unassign
+                        </button>
+                    </div>
+                )}
             </div>
-            <div className="overflow-y-auto h-[580px] px-4">
-                <Dashboard
-                    columns={columns}
-                    useData={useStore.useCompanycandidates}
-                    useHasMore={useStore.useCompanyCandidatesHasMore}
-                    useIsLoading={useStore.useCompanyCandidatesIsLoading}
-                    useFetchData={
-                        useStore.useCompanyCandidatesFetchCandidates
-                    }
-                />
-            </div>
-        </div>
     );
 
 }
 
 export default CompanyJobsCandidates;
+
+

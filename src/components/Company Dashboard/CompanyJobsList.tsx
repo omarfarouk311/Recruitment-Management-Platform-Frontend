@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import useStore from "../../stores/globalStore";
-import JobList from '../CompanyJobs/ComponyJobList'
+import JobList from '../Job Seeker-For You/JobList'
 
 
 const CompanyJobsList = () => {
@@ -14,6 +14,11 @@ const CompanyJobsList = () => {
     const useSelectedJobId = useStore.useCompanyTabSelectJobId;
     const useSetSelectedJobId = useStore.useCompanyTabSetSelectedJobId;
     const resetCompanyJobs = useStore.useJobListClear();
+    const deleteJob = useStore.useCompanyDeleteJobs;
+    const updateJob = useStore.useCompanyUpdateJobs;
+
+
+
   
     useEffect(() => {
         console.log("in company jobs list");
@@ -29,6 +34,8 @@ const CompanyJobsList = () => {
             useJobs={useJobs}
             useSelectedJobId={useSelectedJobId}
             useSetSelectedJobId={useSetSelectedJobId}
+            useDeleteJob={deleteJob}
+            editJob={updateJob}
         />
     );
 

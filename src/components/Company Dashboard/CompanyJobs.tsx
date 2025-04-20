@@ -8,8 +8,8 @@ const CompanyJobs = () => {
 
     return (
 
-        <div className="grid grid-cols-[1fr_2.4fr] gap-5">
-            <div className="h-[718px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200">
+        <div className="grid grid-cols-[1fr_2.8fr] gap-5">
+            <div className="h-[770px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200">
                 <JobList />
             </div>
 

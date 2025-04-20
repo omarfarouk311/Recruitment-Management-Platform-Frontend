@@ -1,4 +1,4 @@
-import { StateCreator } from "zustand";
+import { StateCreator, useStore } from "zustand";
 import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
@@ -23,7 +23,9 @@ export interface CompanyJobsRecruitersSlice {
     CompanyJobsRecruitersFetchDepartments: () => Promise<void>;
 
     CompanyJobsRecruitersClear: () => void;
-    CompanyJobsRecruitersAssign: (recruiterId: number, jobId:(number | null), candidates: number[]) => Promise<void>;
+    CompanyJobsRecruitersAssign: (recruiterId: number, recruiterName: string, jobId: (number | null), candidates: number[]) => Promise<void>;
+    CompanyJobsRecruitersUnAssign: (jobId: (number | null), candidates: number[]) => Promise<void>;
+
 }
 
 export const createCompanyJobsRecruitersSlice: StateCreator<
@@ -147,18 +149,81 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
             CompanyJobsRecruitersDepartments: [],
         });
     },
-    CompanyJobsRecruitersAssign: async (recruiterId, jobId, candidates) => {
-        const res = await axios.post(
-            `${config.API_BASE_URL}/candidates/assign-candidates`,
-            {
-                recruiterId,
-                jobId,
-                candidates,
+    CompanyJobsRecruitersAssign: async (recruiterId, recruiterName, jobId, candidates) => {
+        set({ CompanyJobsRecruitersIsLoading: true });
+        console.log("assigning recruiters")
+        try {
+            const res = await axios.patch(
+                `${config.API_BASE_URL}/candidates/assign-candidates`,
+                {
+                    recruiterId: recruiterId,
+                    jobId: jobId,
+                    candidates: candidates,
+                }
+            );
+
+            if (res.status !== 200) {
+                throw new Error("Error in assigning candidates");
             }
-        );
-        if (res.status !== 200) {
-            throw Error("Error in making decision");
+            // Optional: Refresh the data from server
+            const { assignedCandidatesCnt: newCount, invalidCandidates = [] } = res.data;
+            set((state) => {
+                // Filter out invalid candidates from the selection
+                const validCandidates = candidates.filter(
+                    candidateId => !invalidCandidates.includes(candidateId)
+                );
+
+                return {
+                    CompanyJobsRecruiters: state.CompanyJobsRecruiters.map(recruiter =>
+                        recruiter.id === recruiterId
+                            ? {
+                                ...recruiter,
+                                assigned_candidates_cnt: newCount,
+                            }
+                            : recruiter
+                    ),
+                    // Update Companycandidates with recruiter name for valid candidates
+                    Companycandidates: state.Companycandidates.map(candidate =>
+                        validCandidates.includes(candidate.seekerId)
+                            ? {
+                                ...candidate,
+                                recruiterName: recruiterName
+                            }
+                            : candidate
+                    ),
+                    // Clear selected candidates that were successfully assigned
+                    selectedCandidates: state.selectedCandidates.filter(
+                        id => !validCandidates.includes(id)
+                    ),
+                    CompanyJobsRecruitersIsLoading: false
+                };
+            });
+
+        } catch (error) {
+            set({ CompanyJobsRecruitersIsLoading: false });
+            throw error;
         }
-        await get().CompanyJobsRecruitersFetchRecruiters();
     },
+    CompanyJobsRecruitersUnAssign: async (jobId, candidates) => {
+        set({ CompanyJobsRecruitersIsLoading: true });
+
+        try {
+            const res = await axios.patch(
+                `${config.API_BASE_URL}/candidates/unassign-candidates`,
+                {
+                    jobId: jobId,
+                    candidates: candidates,
+                }
+            );  
+            if (res.status!== 200) {
+                throw new Error("Error in unassigning candidates"); 
+            }
+            set({companiesTabIsCompaniesLoading: false})
+            await get().CompanyJobsRecruitersFetchRecruiters();
+
+        } catch (err) {
+
+            throw err;
+        }
+    }
 });

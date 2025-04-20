@@ -15,8 +15,11 @@ export interface Interviews {
     jobTitle: string;
     jobId: number;
     date: string;
-    location: string;
-    candidateLocation: string;
+    meetingLink: string;
+    jobCountry: string;
+    jobCity: string;
+    candidateCountry: string;
+    candidateCity: string;
     isRemote: boolean;
 }
 

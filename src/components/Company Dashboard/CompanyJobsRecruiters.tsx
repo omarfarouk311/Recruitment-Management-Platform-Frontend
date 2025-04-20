@@ -26,6 +26,8 @@ const CompanyJobsRecruiters = () => {
     const clear = useStore.useCompanyJobsRecruitersClear();
     const useSelectedJobId = useStore.useCompanyTabSelectJobId();
     const assignCandidatestoRecruiter = useStore.useCompanyJobsRecruitersAssign();
+    const unassignCandidatesFromRecruiter = useStore.useCompanyJobsRecruitersUnAssign();
+    const selectedCandidates = useStore.useSelectedCandidates();
 
     const useHasMore = useStore.useCompanyJobsRecruitersHasMore;
 
@@ -37,6 +39,7 @@ const CompanyJobsRecruiters = () => {
         fetchDepartments();
         fetchRecruitersData();
     }, []);
+
 
     const columns: ColumnDef<recruiterColumns>[] = [
         {
@@ -55,10 +58,10 @@ const CompanyJobsRecruiters = () => {
             key: "actions",
             header: "Actions",
             render: (row) => (
-                <div>
+                <div className="flex space-x-2">
                     <Button
                         onClick={() => {
-                            assignCandidatestoRecruiter(row.id, useSelectedJobId, []);   // pass the candidates ids
+                            assignCandidatestoRecruiter(row.id, row.name, useSelectedJobId, selectedCandidates);
                         }}
                     >
                         Assign
@@ -69,7 +72,7 @@ const CompanyJobsRecruiters = () => {
     ];
 
     return (
-        <div className="h-[300px] bg-white p-4 rounded-3xl border-2 border-gray-200 flex flex-col">
+        <div className="h-[350px] bg-white p-4 rounded-3xl border-2 border-gray-200 flex flex-col">
             {/* Non-scrollable header */}
             <div className="flex justify-between items-center mb-4 shrink-0">
                 <h1 className="px-6 py-2 text-3xl font-bold">Recruiters</h1>

@@ -43,5 +43,11 @@ export const CompanyJobsRecruitersSortOptions = [
     { label: 'Desecending', value: "-1" }
 ]
 
+export const DashboardStatusFilterOptions = [
+    { value: "1", label: "Pending" },
+    { value: "3", label: "Rejected" },
+    { value: "2", label: "Accepted" },
+]
+
 
 
