@@ -1,7 +1,7 @@
 export const dateOptions = [
     { value: "today", label: "Today" },
-    { value: "last week", label: "Last Week" },
-    { value: "last month", label: "Last Month" }
+    { value: "this week", label: "This Week" },
+    { value: "this month", label: "This Month" }
 ];
 
 export const ratingOptions = [

@@ -1,11 +1,8 @@
 import { StateCreator } from 'zustand';
 import { CompanyCard, CompaniesTabFilters } from '../../types/company';
-import { mockCompanies, mockCompanyIndustries, mockCompanyLocations } from "../../mock data/seekerCompanies";
 import { CombinedState } from '../storeTypes';
 import config from '../../../config/config';
 import axios from "axios";
-
-const { paginationLimit } = config
 
 export interface CompaniesTabSlice {
     companiesTabCompanies: CompanyCard[];
@@ -64,21 +61,22 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
               }).filter(([_, value]) => value !== undefined)
             );
 
-            params.companyMinSize= size ? size.split('-')[0]: undefined;
-            params.companyMaxSize= size ? size.split('-')[1]: undefined;
-            delete params.size;
+            if(params.size) {
+              params.companyMinSize = size.split('-')[0];
+              params.companyMaxSize = size.split('-')[1];
+              delete params.size;
+            }
             
             let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
               params,
             });
-           
             
             set((state) => ({
                 companiesTabCompanies: [
                 ...state.companiesTabCompanies,
                 ...res.data.map((obj: any) => ({
                     id: obj.id,
-                    image: `${config.API_BASE_URL}/companies/${obj.id}/image`|| 'https://via.placeholder.com/150',
+                    image: `${config.API_BASE_URL}/companies/${obj.id}/image`,
                     name: obj.name,
                     overview: obj.overview || 'No overview available',
                     size: obj.size ,
@@ -96,11 +94,10 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
               companiesTabPage: state.companiesTabPage + 1,
             }));
       
-          }catch (err) {
+          }
+          catch (err) {
             set({ companiesTabIsCompaniesLoading: false });
           }
-      
-    
     },
 
     companiesTabSetFilters: async (filters) => {

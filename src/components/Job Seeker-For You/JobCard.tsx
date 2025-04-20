@@ -1,7 +1,7 @@
 import { Star, Dot, Edit3, Trash2 } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BaseJobCardProps {
   job: Job;
@@ -73,6 +73,12 @@ const JobCard = ({
   const [removing, setRemoving] = useState(false);
   const deleteJob = useDeleteJob?.();
   const [deleting, setDeleting] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [image]);
 
   return (
     <div
@@ -80,11 +86,7 @@ const JobCard = ({
         isSelected ? "border-black" : ""
       }`}
       onClick={() =>
-        setSelectedJobId
-          ? setSelectedJobId(id)
-          : pushToJobDetails
-          ? pushToJobDetails(id)
-          : null
+        setSelectedJobId ? setSelectedJobId(id) : pushToJobDetails ? pushToJobDetails(id) : null
       }
       role="button"
     >
@@ -135,16 +137,14 @@ const JobCard = ({
       </div>
 
       {removing ? (
-        <p className="text-red-500 text-md font-semibold">
-          Job Recommendation removed
-        </p>
+        <p className="text-red-500 text-md font-semibold">Job Recommendation removed</p>
       ) : deleting ? (
         <p className="text-red-500 text-md font-semibold">Job Deleted</p>
       ) : (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {image && !imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>
