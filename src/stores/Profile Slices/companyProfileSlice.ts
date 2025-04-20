@@ -99,6 +99,39 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
 
     companyProfileFetchInfo: async () => {
         // Add logic to fetch company profile info
+        
+        const { companyProfileJobsHasMore, userId ,companyProfileSelectedId} = get();
+        if (!companyProfileJobsHasMore || !userId) return;
+        
+
+        try {
+            const response = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}`);
+            const companyData = response.data;
+
+            set({
+                companyProfileInfo: {
+                    id: companyData.id,
+                    name: companyData.name,
+                    image: `${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/image`,
+                    overview: companyData.overview,
+                    type: companyData.type,
+                    foundedIn: companyData.foundedIn,
+                    size: companyData.size,
+                    rating: companyData.rating,
+                    reviewsCount: companyData.reviewsCount,
+                    locationsCount: companyData.locationsCount,
+                    industriesCount: companyData.industriesCount,
+                    jobsCount: companyData.jobsCount,
+                    locations: [], // not present in backend
+                    industries: [], // not present in backend
+                },
+                
+            });
+        } catch (error) {
+            console.error('Error fetching company profile:', error);
+            toast.error('Failed to fetch company profile');
+        }
+
     },
 
     companyProfileSetSelectedId: async (id) => {
@@ -106,47 +139,237 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     },
 
     companyProfileFetchIndustries: async () => {
-        // Add logic to fetch industries
+        
+        const {  companyProfileJobsHasMore, userId,companyProfileSelectedId } = get();
+        if (!companyProfileJobsHasMore || !userId) return;
+        
+
+        try{
+
+            const rest = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/industries`);
+            const industriesData = rest.data;
+            
+            const industries = industriesData.map((industry: { id: number, name: string }) => ({
+                id: industry.id,
+                name: industry.name
+            }));
+            
+            set(state => ({
+                companyProfileInfo: {
+                    ...state.companyProfileInfo,
+                    industries: industries
+                },
+                
+            }));
+        }
+        catch(err){
+            console.error('Error fetching company industries:', err);
+            toast.error('Failed to fetch company industries');
+            
+        }
     },
 
     companyProfileFetchLocations: async () => {
-        // Add logic to fetch locations
+       const {  companyProfileJobsHasMore, userId,companyProfileSelectedId } = get();
+       if (!companyProfileJobsHasMore ||  !userId) return;
+         
+
+        try{
+            const rest = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/locations`);
+            const locationsData = rest.data;
+            
+            const locations = locationsData.map((location: { country: string, city: string }) => ({
+                country: location.country,
+                city: location.city
+            }));
+            
+            set(state => ({
+                companyProfileInfo: {
+                    ...state.companyProfileInfo,
+                    locations: locations
+                },
+                
+            }));
+        }
+        catch(err){
+            console.error('Error fetching company locations:', err);
+            toast.error('Failed to fetch company locations');
+            
+        }
+
     },
 
+    //TODO: Need endpoint for fetching email
     companyProfileFetchEmail: async () => {
         // Add logic to fetch email
     },
 
+    //TODO: Need endpoint for updating credentials
     companyProfileUpdateCredentials: async (credentials) => {
         set({ companyCredentials: credentials });
     },
 
     companyProfileFetchReviews: async () => {
-        // Add logic to fetch reviews
+        const { companyProfileReviewsIsLoading, companyProfileReviewsHasMore, companyProfileReviewsPage,companyProfileReviewsFilters ,userId,companyProfileSelectedId } = get();
+        if (!companyProfileReviewsHasMore || companyProfileReviewsIsLoading || !userId) return;
+        set({ companyProfileReviewsIsLoading: true });
+
+        const params={
+            page: companyProfileReviewsPage || undefined,
+            limit: paginationLimit || undefined, 
+            sortByDate: companyProfileReviewsFilters.sortByDate || undefined,
+            rating: companyProfileReviewsFilters.rating || undefined,
+        }
+
+        for (const key in params) {
+            if (params[key as keyof typeof params] === undefined) {
+                delete params[key as keyof typeof params];
+            }
+        }
+
+        try{
+            const response = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/reviews`, {params});
+
+
+            const reviewsData = response.data;
+            const reviews = reviewsData.map((review: Review) => ({
+                id: review.id ?? 0,
+                title: review.title ?? '',
+                role: review.role ?? '',
+                createdAt: review.createdAt ? formatDistanceToNow(new Date(review.createdAt), { addSuffix: true }) : '',
+                rating: review.rating ?? 0,
+                description: review.description ?? '',
+                date: review.createdAt ? formatDate(new Date(review.createdAt), 'dd/MM/yyyy') : ''
+            }));
+
+            set((state) => ({
+                companyProfileReviews: [...state.companyProfileReviews, ...reviews],
+                companyProfileReviewsHasMore: reviews.length === paginationLimit,
+                companyProfileReviewsPage: state.companyProfileReviewsPage + 1,
+                companyProfileReviewsIsLoading: false
+            }));
+        }
+        catch(err){
+            console.error('Error fetching company reviews:', err);
+            toast.error('Failed to fetch company reviews');
+            set({ companyProfileReviewsIsLoading: false });
+        }
     },
 
     companyProfileSetReviewsFilters: async (filters) => {
-
+        set((state) => ({
+            companyProfileReviewsFilters: { ...state.companyProfileReviewsFilters, ...filters },
+        }));        
     },
 
     companyProfileFetchJobs: async () => {
-        // Add logic to fetch jobs
-    },
+        const { companyProfileIsJobsLoading, companyProfileJobsHasMore, companyProfileJobsPage, companyProfileJobsFilters, userId,companyProfileSelectedId } = get();
+        if (!companyProfileJobsHasMore || companyProfileIsJobsLoading || !userId) return;
+    
+        set({ companyProfileIsJobsLoading: true });
+      
+        const params = {
+          page: companyProfileJobsPage,
+          sortByDate: companyProfileJobsFilters.sortByDate || undefined,
+          industry: companyProfileJobsFilters.industryId || undefined,
+          jobId: companyProfileJobsFilters.jobId || undefined,
+          remote: companyProfileJobsFilters.remote || undefined, // Send true/false directly
+        };
+      
+        // Delete undefined keys
+        for (const key in params) {
+          if (params[key as keyof typeof params] === undefined) {
+            delete params[key as keyof typeof params];
+          }
+        }
+      
+        try {
+          const response = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/jobs`, { params });
+          const jobsData = response.data; 
+          const jobs = jobsData.map((job: Job) => ({
+            id: job.id ?? 0,
+            title: job.title ?? '',
+            // Map to correct fields from Job interface
+            country: job.country ?? '',       
+            city: job.city ?? '',             
+            datePosted: job.datePosted ? formatDistanceToNow(new Date(job.datePosted), { addSuffix: true }) : '',
+            companyData: {
+                id: job.companyData?.id ?? 0,          
+                name: job.companyData?.name ?? '',
+                rating: job.companyData?.rating ?? 0,
+                image: job.companyData?.image ?? ''
+              }
+          }));
+      
+          set((state) => ({
+            companyProfileJobs: [...state.companyProfileJobs, ...jobs],
+            companyProfileJobsHasMore: jobs.length === paginationLimit,
+            companyProfileJobsPage: state.companyProfileJobsPage + 1,
+            companyProfileIsJobsLoading: false,
+          }));
+        } catch (err) {
+          console.error('Error fetching company jobs:', err);
+          toast.error('Failed to fetch jobs');
+          set({ companyProfileIsJobsLoading: false });
+        }
+      },
 
     companyProfileSetSelectedJobId: async (id) => {
         set({ companyProfileIsJobDetailsDialogOpen: true });
         get().forYouTabSetSelectedJobId(id);
     },
 
+    //needs to be revised
     companyProfileSetJobsFilters: async (filters) => {
         set((state) => ({
             companyProfileJobsFilters: { ...state.companyProfileJobsFilters, ...filters },
+            companyProfileJobsPage: 1,
+            companyProfileJobs: [],
+            companyProfileJobsHasMore: true,
         }));
-    },
+        await get().companyProfileFetchJobs();
+      },
 
-    companyProfileFetchJobTitlesFilter: async () => {
-        // Add logic to fetch job titles filter
-    },
+      //needs to be revised
+      companyProfileFetchJobTitlesFilter: async () => {
+        const{ companyProfileJobsHasMore, userId,companyProfileSelectedId,companyProfileJobsFilters,companyProfileJobsPage } = get();
+        if (!companyProfileJobsHasMore || !userId) return;
+        try{
+
+            const params = {
+                page: companyProfileJobsPage,
+                sortByDate: companyProfileJobsFilters.sortByDate || undefined,
+                industry: companyProfileJobsFilters.industryId || undefined,
+                jobId: companyProfileJobsFilters.jobId || undefined,
+                remote: companyProfileJobsFilters.remote || undefined, // Send true/false directly
+                filterBar:true,
+              };
+            
+              // Delete undefined keys
+              for (const key in params) {
+                if (params[key as keyof typeof params] === undefined) {
+                  delete params[key as keyof typeof params];
+                }
+              }
+            const response = await axios.get(`${config.API_BASE_URL}/companies/${companyProfileSelectedId||userId}/jobs`,{params});
+            const jobTitlesData = response.data;
+            
+            const jobTitles = jobTitlesData.map((jobTitle: { id: number, title: string }) => ({
+                id: jobTitle.id,
+                title: jobTitle.title
+            }));
+            
+            set(state => ({
+                companyProfileJobTitlesFilter: jobTitles
+                
+            }));
+        }
+        catch(err){
+            console.error('Error fetching company job titles:', err);
+            toast.error('Failed to fetch company job titles');
+            
+        }
+      },
 
     companyProfileSetJobDetailsDialogOpen: (isOpen) => {
         set({ companyProfileIsJobDetailsDialogOpen: isOpen });

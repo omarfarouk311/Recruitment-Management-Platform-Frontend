@@ -8,11 +8,9 @@ import FilterDropdown from "../components/Filters/FilterDropdown";
 import Button from "../components/common/Button";
 import { sortByDateOptions } from "../data/filterOptions";
 import { useEffect } from "react";
-import { mockJobs } from "../mock data/seekerForYou";
 
 export default function CompanyProfile() {
-  // const useJobs = useStore.useCompanyProfileJobs;
-  const useJobs = () => mockJobs;
+  const useJobs = useStore.useCompanyProfileJobs;
   const useJobsHasMore = useStore.useCompanyProfileJobsHasMore;
   const useJobsIsLoading = useStore.useCompanyProfileIsJobsLoading;
   const useSelectedJobId = useStore.useForYouTabSelectedJobId;
@@ -27,7 +25,10 @@ export default function CompanyProfile() {
   const jobTitlesFilter = useStore.useCompanyProfileJobTitlesFilter();
   const clearProfile = useStore.useCompanyProfileClear();
 
+  const fetchJobs = useFetchJobs();
+
   useEffect(() => {
+    fetchJobs();
     fetchJobTitlesFilter();
     return () => {
       clearProfile();

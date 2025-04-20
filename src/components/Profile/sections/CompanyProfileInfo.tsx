@@ -6,23 +6,6 @@ import useStore from "../../../stores/globalStore";
 import type { CompanyProfileInfo } from "../../../types/profile";
 
 export function CompanyProfileInfo() {
-  // const {
-  //   id,
-  //   foundedIn,
-  //   industries,
-  //   industriesCount,
-  //   jobsCount,
-  //   locations,
-  //   locationsCount,
-  //   name,
-  //   overview,
-  //   rating,
-  //   reviewsCount,
-  //   size,
-  //   type,
-  //   image,
-  // } = useStore.useCompanyProfileInfo();
-
   const {
     id,
     foundedIn,
@@ -38,7 +21,24 @@ export function CompanyProfileInfo() {
     size,
     type,
     image,
-  } = mockCompanyProfileInfo;
+  } = useStore.useCompanyProfileInfo();
+
+  // const {
+  //   id,
+  //   foundedIn,
+  //   industries,
+  //   industriesCount,
+  //   jobsCount,
+  //   locations,
+  //   locationsCount,
+  //   name,
+  //   overview,
+  //   rating,
+  //   reviewsCount,
+  //   size,
+  //   type,
+  //   image,
+  // } = mockCompanyProfileInfo;
 
   const [imageError, setImageError] = useState(false);
 
@@ -145,7 +145,7 @@ export function CompanyProfileInfo() {
               title="View industries"
               onClick={() => {
                 setIndustriesDialogOpen(true);
-                //fetchCompanyIndustries(id);
+                fetchCompanyIndustries();
               }}
             >
               {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
@@ -161,7 +161,7 @@ export function CompanyProfileInfo() {
               title="View locations"
               onClick={() => {
                 setLocationsDialogOpen(true);
-                //fetchCompanyLocations(id);
+                fetchCompanyLocations();
               }}
             >
               {locationsCount} {locationsCount > 1 ? "Locations" : "Location"}

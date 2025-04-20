@@ -6,8 +6,7 @@ import { sortByDateOptions, reviewsRatingOptions } from "../../../data/filterOpt
 import { mockReviews } from "../../../mock data/seekerProfile";
 
 export default function ReviewsSection() {
-  const reviews = mockReviews;
-  // const reviews = useStore.useCompanyProfileReviews();
+  const reviews = useStore.useCompanyProfileReviews();
   const hasMore = useStore.useCompanyProfileReviewsHasMore();
   const isLoading = useStore.useCompanyProfileReviewsIsLoading();
   const fetchReviews = useStore.useCompanyProfileFetchReviews();
