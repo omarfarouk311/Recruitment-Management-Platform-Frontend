@@ -8,6 +8,8 @@ import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 import ReviewCard from "../Review/ReviewCard";
 import InfoDialog from "../common/InfoDialog";
+import useStore from "../../stores/globalStore";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 interface JobDetailsProps {
   useDetailedjobs: () => JobDetails[];
@@ -28,6 +30,10 @@ const JobDetails = ({
   useReportJob,
   useFetchCompanyIndustries,
 }: JobDetailsProps) => {
+  const [imageError, setImageError] = useState(false);
+  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const jobs = useDetailedjobs();
   const job = jobs[0];
   const isDetailsLoading = useIsDetailsLoading();
@@ -35,10 +41,15 @@ const JobDetails = ({
   const applyToJob = useApplyToJob();
   const reportJob = useReportJob();
   const fetchCompanyIndustries = useFetchCompanyIndustries();
-  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const userRole = useStore.useUserRole();
+  const setSelectedCompanyId = useStore.useCompanyProfileSetSelectedId();
 
+  // Reset image error when image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [job?.companyData.image]); // Use optional chaining
+
+  // Scroll effect
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
@@ -67,6 +78,7 @@ const JobDetails = ({
   const {
     id,
     title,
+    description,
     city,
     country,
     applicantsCount,
@@ -83,7 +95,6 @@ const JobDetails = ({
       foundedIn,
       industriesCount,
       name,
-      overview,
       rating,
       size,
       industries,
@@ -112,8 +123,8 @@ const JobDetails = ({
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {!imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>
@@ -124,7 +135,10 @@ const JobDetails = ({
             <div className="flex items-center space-x-2">
               <h2 className="text-xl font-bold">{name}</h2>
               <Link to="/seeker/company-profile" className="px-2">
-                <ExternalLink className="w-5 h-6 cursor-pointer text-blue-600" />
+                <ExternalLink
+                  className="w-5 h-6 cursor-pointer text-blue-600"
+                  onClick={() => setSelectedCompanyId(companyId)}
+                />
               </Link>
             </div>
             <div className="flex items-center space-x-2">
@@ -158,39 +172,33 @@ const JobDetails = ({
           </div>
         </div>
 
-        <div className="space-y-4 w-40">
-          {applied ? (
-            <Button className="h-8" disabled={true} variant="outline">
-              Already Applied
-            </Button>
-          ) : (
-            <Button className="h-8" onClick={() => setDialogType("apply")}>
-              Apply
-            </Button>
-          )}
-          {reported ? (
-            <Button variant="outline" className="h-8" disabled={true}>
-              Already Reported
-            </Button>
-          ) : (
-            <Button
-              variant="report"
-              className="h-8"
-              onClick={() => setDialogType("report")}
-            >
-              Report
-            </Button>
-          )}
-        </div>
+        {userRole === UserRole.SEEKER && (
+          <div className="space-y-4 w-40">
+            {applied ? (
+              <Button className="h-8" disabled={true} variant="outline">
+                Already Applied
+              </Button>
+            ) : (
+              <Button className="h-8" onClick={() => setDialogType("apply")}>
+                Apply
+              </Button>
+            )}
+            {reported ? (
+              <Button variant="outline" className="h-8" disabled={true}>
+                Already Reported
+              </Button>
+            ) : (
+              <Button variant="report" className="h-8" onClick={() => setDialogType("report")}>
+                Report
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
-      {overview && (
-        <div className="mb-6">
-          <p className="text-black whitespace-pre-line break-words">
-            {overview}
-          </p>
-        </div>
-      )}
+      <div className="mb-6">
+        <p className="text-black whitespace-pre-line break-words">{description}</p>
+      </div>
 
       <div className="mb-6 pt-4 relative">
         {/* Full-width border line */}
@@ -231,8 +239,7 @@ const JobDetails = ({
                 fetchCompanyIndustries(id);
               }}
             >
-              {industriesCount}{" "}
-              {industriesCount > 1 ? "Industries" : "Industry"}
+              {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
             </button>
           </div>
         </div>
@@ -269,11 +276,7 @@ const JobDetails = ({
 
           <div className="space-y-4 !w-[500px] mx-auto">
             {similarJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                usePushToJobDetails={usePushToDetailedJobs}
-              />
+              <JobCard key={job.id} job={job} usePushToJobDetails={usePushToDetailedJobs} />
             ))}
           </div>
         </div>

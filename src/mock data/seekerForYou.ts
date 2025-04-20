@@ -21,6 +21,7 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
     .map((_, index) => ({
         id: index,
         title: "Software Engineer II",
+        description: "Are you ready to shape the digital future of the cloud? Join the Microsoft Azure Network Manager team and be at the forefront of innovation in the world of cloud technology. As a Software Engineer II on this team, you'll have the unique opportunity to architect, build, and deliver a seamless, reliable, and high-performance cloud infrastructure.",
         country: "Egypt",
         city: "Cairo",
         datePosted: "2025-03-05T15:27:06.997Z",
@@ -35,7 +36,6 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             name: `Microsoft ${index + 1}`,
             size: 1100,
             foundedIn: 1980,
-            overview: "Are you ready to shape the digital future of the cloud? Join the Microsoft Azure Network Manager team and be at the forefront of innovation in the world of cloud technology. As a Software Engineer II on this team, you'll have the unique opportunity to architect, build, and deliver a seamless, reliable, and high-performance cloud infrastructure.",
             rating: 4.5,
             type: 'Public',
             industriesCount: 5,
@@ -46,7 +46,12 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             {
                 id: 1,
                 role: "Current software engineer",
+                title: "Software Engineer II",
                 createdAt: "Dec 2, 2024",
+                companyData: {
+                    id: 1,
+                    name: `Microsoft ${index + 1}`,
+                },
                 rating: 4,
                 description:
                     "Top-notch perks, including comprehensive health insurance, a competitive 401(k) retirement plan with matching contributions, generous paid time off, wellness programs, professional development opportunities, and additional benefits  such as childcare support, commuter allowances, and employee discounts.",
@@ -54,6 +59,11 @@ export const mockDetailedJobs: JobDetails[] = Array(20)
             {
                 id: 2,
                 role: "Former team lead",
+                title: "Software Engineer II",
+                companyData: {
+                    id: 2,
+                    name: `Microsoft ${index + 1}`,
+                },
                 createdAt: "Nov 15, 2024",
                 rating: 4.5,
                 description: "Excellent growth opportunities and supportive management...",

@@ -3,6 +3,8 @@ import { Review } from "../../types/review";
 import { Star, Edit, Trash2, Dot } from "lucide-react";
 import ReviewForm from "./ReviewForm";
 import { useState } from "react";
+import useStore from "../../stores/globalStore";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 interface ReviewCardProps {
   review: Review;
@@ -16,6 +18,13 @@ const ReviewCard = ({
   updateReview,
 }: ReviewCardProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const userRole = useStore.useUserRole();
+  const redirect =
+    userRole === UserRole.COMPANY
+      ? "/company/profile"
+      : userRole === UserRole.SEEKER
+      ? "/seeker/company-profile"
+      : "/recruiter/company-profile";
 
   return (
     <div className="bg-gray-100 p-4 rounded-2xl">
@@ -26,14 +35,14 @@ const ReviewCard = ({
             <div className="flex items-center space-x-1">
               <Dot className="inline mx-1" />
               <Link
-              to={"/company/profile"}
-              className="hover:underline hover:underline-offset-2 text-blue-600"
+                to={redirect}
+                className="hover:underline hover:underline-offset-2 text-blue-600"
               >
-              {companyData.name}
+                {companyData.name}
               </Link>
               <Dot className="inline mx-1" />
               {[...Array(Math.floor(rating))].map((_, i) => (
-              <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
+                <Star key={i} className="w-4 h-4 fill-current text-yellow-400" />
               ))}
             </div>
           )}
@@ -51,10 +60,7 @@ const ReviewCard = ({
               >
                 <Edit className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => removeReview(id)}
-                className="text-red-400 hover:text-red-600"
-              >
+              <button onClick={() => removeReview(id)} className="text-red-400 hover:text-red-600">
                 <Trash2 className="h-5 w-5" />
               </button>
             </div>
@@ -62,10 +68,7 @@ const ReviewCard = ({
         </div>
       </div>
 
-      <div className="flex items-center space-x-1 -mt-2 mb-2">
-        {role}
-        
-      </div>
+      <div className="flex items-center space-x-1 -mt-2 mb-2">{role}</div>
 
       <p className="text-gray-800 break-words">{description}</p>
 

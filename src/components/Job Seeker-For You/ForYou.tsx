@@ -66,7 +66,7 @@ const ForYou = () => {
       </div>
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">
-        <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200">
+        <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200 shadow">
           <JobList
             useFetchJobs={useFetchJobs}
             useHasMore={useHasMore}

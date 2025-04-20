@@ -1,7 +1,7 @@
 import { Star, Dot, Edit3, Trash2 } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BaseJobCardProps {
   job: Job;
@@ -73,18 +73,19 @@ const JobCard = ({
   const [removing, setRemoving] = useState(false);
   const deleteJob = useDeleteJob?.();
   const [deleted, setDeleted] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [image]);
 
   return (
     <div
       className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${isSelected ? "border-black" : ""
         }`}
       onClick={() =>
-        setSelectedJobId
-          ? setSelectedJobId(id)
-          : pushToJobDetails
-            ? pushToJobDetails(id)
-            : null
+        setSelectedJobId ? setSelectedJobId(id) : pushToJobDetails ? pushToJobDetails(id) : null
       }
       role="button"
     >
@@ -150,8 +151,8 @@ const JobCard = ({
       ) :  (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {image && !imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>
