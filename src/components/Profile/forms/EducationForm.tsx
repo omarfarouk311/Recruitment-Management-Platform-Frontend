@@ -24,15 +24,17 @@ interface EducationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   education?: Education;
+  addEducation: (education: Education) => Promise<void> | void;
+  updateEducation: (education: Education) => Promise<void> | void;
 }
 
 export default function EducationDialog({
   isOpen,
   onClose,
   education,
+  addEducation,
+  updateEducation,
 }: EducationDialogProps) {
-  const addEducation = useStore.useSeekerProfileAddEducation();
-  const updateEducation = useStore.useSeekerProfileUpdateEducation();
 
   const {
     register,

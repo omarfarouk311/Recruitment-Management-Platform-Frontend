@@ -12,6 +12,8 @@ import { UserRole } from "../stores/User Slices/userSlice";
 function JobSeekerProfile() {
   const clearProfile = useStore.useSeekerProfileClear();
   const userRole = useStore.useUserRole();
+  const removeSkill = useStore.useSeekerProfileRemoveSkill();
+  const fetchSkills = useStore.useSeekerProfileFetchSkills();
 
   useEffect(() => {
     return () => {
@@ -33,9 +35,26 @@ function JobSeekerProfile() {
         </div>
         <div className="grid grid-cols-4 lg:grid-cols-2 gap-6 mt-6">
           <div className="lg:col-span-2 space-y-10">
-            <ExperienceSection />
-            <EducationSection />
-            <SkillsSection />
+            <ExperienceSection
+              removeExperience = {useStore.useSeekerProfileRemoveExperience()}
+              fetchExperience = {useStore.useSeekerProfileFetchExperience()}
+              useExperiences = {useStore.useSeekerProfileExperience}
+              updateExperience= {useStore.useSeekerProfileUpdateExperience()}
+              addExperience = {useStore.useSeekerProfileAddExperience()}
+            />
+            <EducationSection 
+              removeEducation = {useStore.useSeekerProfileRemoveEducation()}
+              fetchEducation = {useStore.useSeekerProfileFetchEducation()}
+              useEducation={useStore.useSeekerProfileEducation}
+              updateEducation={useStore.useSeekerProfileUpdateEducation()}
+              addEducation={useStore.useSeekerProfileAddEducation()}
+            />
+            <SkillsSection 
+              removeSkill={removeSkill}
+              fetchSkills={fetchSkills}
+              useSkills={useStore.useSeekerProfileSkills}
+              addSkill={useStore.useSeekerProfileAddSkill()}
+            />
             {userRole === UserRole.SEEKER && <ReviewsSection />}
           </div>
         </div>

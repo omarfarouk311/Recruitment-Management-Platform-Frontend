@@ -142,7 +142,6 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
     forYouTabPushToDetailedJobs: async (id: number) => {
         set({ forYouTabIsDetailsLoading: true });
-
         // mock API call
         try {
             await new Promise<void>((resolve) => setTimeout(() => {

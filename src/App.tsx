@@ -18,7 +18,7 @@ function App() {
   // change according to the type you need to test
   setRole(UserRole.COMPANY);
   setName("John Doe");
-  setUserId(1);
+  setUserId(7);
   ///////////////////////
 
   const userRole = useStore.useUserRole();

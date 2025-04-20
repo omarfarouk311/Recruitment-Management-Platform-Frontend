@@ -16,10 +16,11 @@ type FormData = z.infer<typeof schema>;
 interface SkillDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  addSkill: (skillId: number) => Promise<void> | void;
 }
 
-export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
-  const addSkill = useStore.useSeekerProfileAddSkill();
+export default function SkillDialog({ isOpen, onClose, addSkill }: SkillDialogProps) {
+  
 
   const {
     register,
@@ -39,7 +40,7 @@ export default function SkillDialog({ isOpen, onClose }: SkillDialogProps) {
     reset({ name: "" });
   }, [isOpen]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormData, event?: React.BaseSyntheticEvent) => {
     const isValid = await trigger();
     if (!isValid) return;
     if(data)
