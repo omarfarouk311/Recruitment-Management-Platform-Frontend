@@ -3,7 +3,6 @@ import { Star, ExternalLink, Dot, MoveLeft } from "lucide-react";
 import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
-import { mockCVs } from "../../mock data/CVs";
 import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 import ReviewCard from "../Review/ReviewCard";
@@ -22,7 +21,7 @@ interface JobDetailsProps {
   usePushToDetailedJobs: () => (id: number) => Promise<void>;
   usePopFromDetailedJobs: () => () => void;
   useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
-  useReportJob: () => (id: number, message: string) => Promise<void>;
+  useReportJob: () => (id: number, title: string, message: string) => Promise<void>;
   useFetchCompanyIndustries: () => (companyId: number, jobId: number) => Promise<void>;
 }
 
@@ -81,8 +80,6 @@ const JobDetails = ({
     );
   }
 
-  
-
   const {
     id,
     title,
@@ -112,29 +109,25 @@ const JobDetails = ({
   } = job;
 
   const handleApply = async () => {
-    if (!job) return;
     try {
       let res;
       try {
         res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${id}`);
       } catch (err) {
-        if(axios.isAxiosError(err) && err.response?.status === 401) {
-          await authRefreshToken(); 
-        }
-        else {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          await authRefreshToken();
+          res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${job.id}`);
+        } else {
           throw err;
         }
       }
-      if(!res) {
-        res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${job.id}`);
-      }
+
       useSetCvs([...res.data.cvs]);
-      console.log(res.data.cvs);
-      setDialogType('apply'); 
-    } catch(err) {
-      showErrorToast('Something went wrong!');
+      setDialogType("apply");
+    } catch (err) {
+      showErrorToast("Something went wrong!");
     }
-  }
+  };
 
   return (
     <div
@@ -320,7 +313,7 @@ const JobDetails = ({
         cvs={cvs}
         onClose={() => setDialogType(null)}
         onApplySubmit={(cvId) => applyToJob(id, cvId)}
-        onReportSubmit={(message) => reportJob(companyId, message)}
+        onReportSubmit={(title, message) => reportJob(id, title, message)}
       />
 
       <InfoDialog

@@ -1,7 +1,5 @@
 import { StateCreator } from 'zustand';
 import { Job, ForYouTabFilters, JobDetails } from '../../types/job';
-import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
-import { mockCompanyIndustries } from '../../mock data/seekerCompanies';
 import { CombinedState } from '../storeTypes';
 import config from "../../../config/config";
 import { HomePageTabs } from './homePageSlice';
@@ -30,7 +28,7 @@ export interface ForYouTabSlice {
     forYouTabPopFromDetailedJobs: () => void;
     forYouTabRemoveRecommendation: (id: number) => Promise<void>;
     forYouTabApplyToJob: (id: number, cvId: number) => Promise<void>;
-    forYouTabReportJob: (id: number, message: string) => Promise<void>;
+    forYouTabReportJob: (id: number, title: string, message: string) => Promise<void>;
     forYouTabFetchCompanyIndustries: (companyId: number, jobId: number) => Promise<void>;
     forYouTabClear: () => void;
     forYouTabClearDetailedJobs: () => void;
@@ -373,27 +371,23 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                     jobId: id,
                     cvId: cvId
                 });
-            } catch(err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                   await authRefreshToken();
-                }
-                else {
-                    throw err;
-                }
             }
-
-            if(!res) {
-                res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
-                    jobId: id,
-                    cvId: cvId
-                })
+            catch (err) {
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                    await authRefreshToken();
+                    res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                        jobId: id,
+                        cvId: cvId
+                    })
+                }
+                else throw err;
             }
             set((state) => ({
                 forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, applied: true } : job)
             }))
         }
         catch (err) {
-            if(axios.isAxiosError(err) && err.response?.status === 400) {
+            if (axios.isAxiosError(err) && err.response?.status === 400) {
                 err.response?.data.validationErrors.map((validationError: any) => {
                     showErrorToast(validationError.message);
                 });
@@ -401,42 +395,39 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             else {
                 showErrorToast('Something went wrong!')
             }
+            throw err;
         }
     },
 
-    forYouTabReportJob: async (id, message) => {
+    forYouTabReportJob: async (id, title, message) => {
         try {
             let res;
             try {
-                console.log(message)
                 res = await axios.post(`${config.API_BASE_URL}/reports`, {
                     jobId: id,
-                    message: message,
-                    title: "Very bad!"
+                    title,
+                    description: message
                 });
-            } catch (err) {
-                if(axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                }
-                else {
-                    throw err;
-                }
             }
-            if(!res) {
-                res = await axios.post(`${config.API_BASE_URL}/reports`, {
-                    jobId: id,
-                    message: message
-                });
+            catch (err) {
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                    await authRefreshToken();
+                    res = await axios.post(`${config.API_BASE_URL}/reports`, {
+                        jobId: id,
+                        message: message
+                    });
+                }
+                else throw err;
             }
             set((state) => ({
                 forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, reported: true } : job)
             }));
         }
         catch (err) {
-            if(axios.isAxiosError(err) && err.response?.status === 400) {
+            if (axios.isAxiosError(err) && err.response?.status === 400) {
                 err.response?.data.validationErrors.map((validationError: any) => {
                     showErrorToast(validationError.message);
-                }); 
+                });
             }
             else {
                 showErrorToast('Something went wrong!');

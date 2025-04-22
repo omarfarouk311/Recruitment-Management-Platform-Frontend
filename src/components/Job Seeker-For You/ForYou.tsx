@@ -5,6 +5,7 @@ import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { dateOptions, ratingOptions } from "../../data/filterOptions";
+import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
@@ -24,6 +25,7 @@ const ForYou = () => {
   const useApplyToJob = useStore.useForYouTabApplyToJob;
   const useReportJob = useStore.useForYouTabReportJob;
   const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
+  const activeTab = useStore.useHomePageActiveTab();
 
   return (
     <>
@@ -67,15 +69,26 @@ const ForYou = () => {
 
       <div className="grid grid-cols-[1fr_1.7fr] gap-8">
         <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200 shadow">
-          <JobList
-            useFetchJobs={useFetchJobs}
-            useHasMore={useHasMore}
-            useIsLoading={useIsLoading}
-            useJobs={useJobs}
-            useSelectedJobId={useSelectedJobId}
-            useSetSelectedJobId={useSetSelectedJobId}
-            useRemoveRecommendation={useRemoveRecommendation}
-          />
+          {activeTab === HomePageTabs.ForYou ? (
+            <JobList
+              useFetchJobs={useFetchJobs}
+              useHasMore={useHasMore}
+              useIsLoading={useIsLoading}
+              useJobs={useJobs}
+              useSelectedJobId={useSelectedJobId}
+              useSetSelectedJobId={useSetSelectedJobId}
+              useRemoveRecommendation={useRemoveRecommendation}
+            />
+          ) : (
+            <JobList
+              useFetchJobs={useFetchJobs}
+              useHasMore={useHasMore}
+              useIsLoading={useIsLoading}
+              useJobs={useJobs}
+              useSelectedJobId={useSelectedJobId}
+              useSetSelectedJobId={useSetSelectedJobId}
+            />
+          )}
         </div>
         <JobDetails
           useDetailedjobs={useDetailedjobs}

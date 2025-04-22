@@ -10,27 +10,25 @@ interface JobDialogProps {
   type: DialogType | null;
   cvs: CV[];
   onClose: () => void;
-  onApplySubmit: (cvId: number) => void;
-  onReportSubmit: (message: string) => void;
+  onApplySubmit: (cvId: number) => Promise<void>;
+  onReportSubmit: (title: string, message: string) => Promise<void>;
 }
 
-const JobDialog = ({
-  type,
-  cvs,
-  onClose,
-  onApplySubmit,
-  onReportSubmit,
-}: JobDialogProps) => {
+const JobDialog = ({ type, cvs, onClose, onApplySubmit, onReportSubmit }: JobDialogProps) => {
   const [selectedCVId, setSelectedCVId] = useState<number | null>(null);
+  const [reportTitle, setReportTitle] = useState("");
   const [reportMessage, setReportMessage] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setIsValid(
-      type === "apply" ? !!selectedCVId : reportMessage.trim().length >= 10
+      type === "apply"
+        ? !!selectedCVId
+        : reportTitle.trim().length >= 3 && reportMessage.trim().length >= 10
     );
-  }, [selectedCVId, reportMessage, type]);
+  }, [selectedCVId, reportTitle, reportMessage, type]);
 
   useEffect(() => {
     if (isSubmitted) {
@@ -41,25 +39,38 @@ const JobDialog = ({
 
   useEffect(() => {
     setIsSubmitted(false);
+    // Reset form fields when dialog type changes
+    if (type === "report") {
+      setReportTitle("");
+      setReportMessage("");
+    } else if (type === "apply") {
+      setSelectedCVId(null);
+    }
   }, [type]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!type || !isValid) return;
-    if (type === "apply") onApplySubmit(selectedCVId!);
-    else onReportSubmit(reportMessage);
-    setIsSubmitted(true);
-    setReportMessage("");
-    setSelectedCVId(null);
+    setIsLoading(true);
+
+    try {
+      if (type === "apply") await onApplySubmit(selectedCVId!);
+      else await onReportSubmit(reportTitle, reportMessage);
+
+      setIsSubmitted(true);
+      setReportTitle("");
+      setReportMessage("");
+      setSelectedCVId(null);
+      setIsLoading(false);
+    } catch (err) {
+      setIsLoading(false);
+    }
   };
 
   if (!type) return null;
 
   return (
     <Dialog open={!!type} onClose={onClose} className="relative z-50">
-      <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div
@@ -73,9 +84,7 @@ const JobDialog = ({
               <div className="text-center py-8 min-h-[200px] flex flex-col justify-center">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">
-                  {type === "apply"
-                    ? "Application Submitted!"
-                    : "Report Submitted!"}
+                  {type === "apply" ? "Application Submitted!" : "Report Submitted!"}
                 </h3>
                 <p className="text-gray-600">
                   {type === "apply"
@@ -92,14 +101,18 @@ const JobDialog = ({
                   <button
                     onClick={onClose}
                     className="hover:bg-gray-200 rounded-full p-2 transition-colors"
+                    aria-label="Close dialog"
                   >
-                    <XCircle className="w-4 h-4" />
+                    <XCircle className="w-5 h-5" />
                   </button>
                 </div>
 
                 {type === "apply" ? (
                   <div className="space-y-4">
                     <p className="text-gray-600 mb-4">Select a CV to apply:</p>
+                    <div className="bg-blue-50 text-blue-800 px-4 py-2 rounded-lg text-sm">
+                      ℹ️ CVs are ordered from most to least suitable for this position
+                    </div>
                     <div className="grid gap-3">
                       {cvs.slice(0, 5).map((cv) => (
                         <label
@@ -121,18 +134,33 @@ const JobDialog = ({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <p className="text-gray-600 mb-4">
-                      Please describe the issue:
-                    </p>
-                    <textarea
-                      value={reportMessage}
-                      onChange={(e) => setReportMessage(e.target.value)}
-                      className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      placeholder="Please provide detailed information about the issue..."
-                      rows={6}
-                    />
+                    <p className="text-gray-600 mb-4">Please describe the issue:</p>
+                    <div className="space-y-2">
+                      <label>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">Title</span>
+                        <input
+                          type="text"
+                          value={reportTitle}
+                          onChange={(e) => setReportTitle(e.target.value)}
+                          className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                          placeholder="Enter a title for your report"
+                        />
+                      </label>
+                      <label>
+                        <span className="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                        </span>
+                        <textarea
+                          value={reportMessage}
+                          onChange={(e) => setReportMessage(e.target.value)}
+                          className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                          placeholder="Please provide detailed information about the issue..."
+                          rows={4}
+                        />
+                      </label>
+                    </div>
                     <p className="text-sm text-gray-500">
-                      Minimum 10 characters required
+                      Minimum 3 characters for title and 10 for description
                     </p>
                   </div>
                 )}
@@ -141,14 +169,9 @@ const JobDialog = ({
                   <Button
                     onClick={handleSubmit}
                     disabled={!isValid}
-                    variant={
-                      isValid
-                        ? type === "apply"
-                          ? "primary"
-                          : "report"
-                        : "outline"
-                    }
-                    className={"!w-auto"}
+                    variant={isValid ? (type === "apply" ? "primary" : "report") : "outline"}
+                    className="!w-[30%]"
+                    loading={isLoading}
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}
                   </Button>
