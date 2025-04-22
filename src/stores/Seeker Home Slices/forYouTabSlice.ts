@@ -8,6 +8,7 @@ import { HomePageTabs } from './homePageSlice';
 import { formatDistanceToNow } from 'date-fns';
 import axios from 'axios';
 import { showErrorToast } from '../../util/errorHandler';
+import { authRefreshToken } from '../../util/authUtils';
 const { paginationLimit, API_BASE_URL } = config;
 
 export interface ForYouTabSlice {
@@ -365,32 +366,82 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabApplyToJob: async (id, cvId) => {
-        // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => ({
-                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, applied: true } : job)
-                }))
-                resolve();
-            }, 500));
+            let res;
+            try {
+                res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                    jobId: id,
+                    cvId: cvId
+                });
+            } catch(err) {
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                   await authRefreshToken();
+                }
+                else {
+                    throw err;
+                }
+            }
+
+            if(!res) {
+                res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                    jobId: id,
+                    cvId: cvId
+                })
+            }
+            set((state) => ({
+                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, applied: true } : job)
+            }))
         }
         catch (err) {
-            console.error(err);
+            if(axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response?.data.validationErrors.map((validationError: any) => {
+                    showErrorToast(validationError.message);
+                });
+            }
+            else {
+                showErrorToast('Something went wrong!')
+            }
         }
     },
 
     forYouTabReportJob: async (id, message) => {
-        // mock API call
         try {
-            await new Promise<void>((resolve) => setTimeout(() => {
-                set((state) => ({
-                    forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, reported: true } : job)
-                }));
-                resolve();
-            }, 500));
+            let res;
+            try {
+                console.log(message)
+                res = await axios.post(`${config.API_BASE_URL}/reports`, {
+                    jobId: id,
+                    message: message,
+                    title: "Very bad!"
+                });
+            } catch (err) {
+                if(axios.isAxiosError(err) && err.response?.status === 401) {
+                    await authRefreshToken();
+                }
+                else {
+                    throw err;
+                }
+            }
+            if(!res) {
+                res = await axios.post(`${config.API_BASE_URL}/reports`, {
+                    jobId: id,
+                    message: message
+                });
+            }
+            set((state) => ({
+                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, reported: true } : job)
+            }));
         }
         catch (err) {
-            console.error(err);
+            if(axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response?.data.validationErrors.map((validationError: any) => {
+                    showErrorToast(validationError.message);
+                }); 
+            }
+            else {
+                showErrorToast('Something went wrong!');
+            }
+            throw err;
         }
     },
 

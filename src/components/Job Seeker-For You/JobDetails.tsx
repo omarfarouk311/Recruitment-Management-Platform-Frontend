@@ -10,6 +10,11 @@ import ReviewCard from "../Review/ReviewCard";
 import InfoDialog from "../common/InfoDialog";
 import useStore from "../../stores/globalStore";
 import { UserRole } from "../../stores/User Slices/userSlice";
+import { CV } from "../../types/CV";
+import config from "../../../config/config";
+import axios from "axios";
+import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 
 interface JobDetailsProps {
   useDetailedjobs: () => JobDetails[];
@@ -43,6 +48,7 @@ const JobDetails = ({
   const fetchCompanyIndustries = useFetchCompanyIndustries();
   const userRole = useStore.useUserRole();
   const setSelectedCompanyId = useStore.useCompanyProfileSetSelectedId();
+  const [cvs, useSetCvs] = useState<CV[]>([]);
 
   // Reset image error when image changes
   useEffect(() => {
@@ -75,6 +81,8 @@ const JobDetails = ({
     );
   }
 
+  
+
   const {
     id,
     title,
@@ -102,6 +110,31 @@ const JobDetails = ({
     companyReviews,
     similarJobs,
   } = job;
+
+  const handleApply = async () => {
+    if (!job) return;
+    try {
+      let res;
+      try {
+        res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${id}`);
+      } catch (err) {
+        if(axios.isAxiosError(err) && err.response?.status === 401) {
+          await authRefreshToken(); 
+        }
+        else {
+          throw err;
+        }
+      }
+      if(!res) {
+        res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${job.id}`);
+      }
+      useSetCvs([...res.data.cvs]);
+      console.log(res.data.cvs);
+      setDialogType('apply'); 
+    } catch(err) {
+      showErrorToast('Something went wrong!');
+    }
+  }
 
   return (
     <div
@@ -179,7 +212,7 @@ const JobDetails = ({
                 Already Applied
               </Button>
             ) : (
-              <Button className="h-8" onClick={() => setDialogType("apply")}>
+              <Button className="h-8" onClick={handleApply}>
                 Apply
               </Button>
             )}
@@ -284,10 +317,10 @@ const JobDetails = ({
 
       <JobDialog
         type={dialogType}
-        cvs={mockCVs}
+        cvs={cvs}
         onClose={() => setDialogType(null)}
         onApplySubmit={(cvId) => applyToJob(id, cvId)}
-        onReportSubmit={(message) => reportJob(id, message)}
+        onReportSubmit={(message) => reportJob(companyId, message)}
       />
 
       <InfoDialog
