@@ -279,7 +279,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         set((state) => ({
             forYouTabFilters: { ...state.forYouTabFilters, ...filters },
             forYouTabJobs: [],
-            forYouTabDetailedJob: null,
+            forYouTabDetailedJobs: [],
             forYouTabPage: 1,
             forYouTabSelectedJobId: null,
             forYouTabIsJobsLoading: false,
@@ -364,8 +364,8 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabApplyToJob: async (id, cvId) => {
+        let res;
         try {
-            let res;
             try {
                 res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
                     jobId: id,
@@ -400,8 +400,8 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabReportJob: async (id, title, message) => {
+        let res;
         try {
-            let res;
             try {
                 res = await axios.post(`${config.API_BASE_URL}/reports`, {
                     jobId: id,

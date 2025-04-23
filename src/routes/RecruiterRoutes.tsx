@@ -9,8 +9,8 @@ function RecruiterRoutes() {
         <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/seeker-profile" element={<JobSeekerProfile />} />
-            <Route path="/company-profile" element={<CompanyProfile />} />
+            <Route path="/seekers/:id" element={<JobSeekerProfile />} />
+            <Route path="/companies/:id" element={<CompanyProfile />} />
         </Routes>
     );
 }

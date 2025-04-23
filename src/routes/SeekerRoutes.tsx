@@ -15,7 +15,7 @@ function SeekerRoutes() {
       <Route path="/dashboard" element={<SeekerDashboard />} />
       <Route path="/profile" element={<JobSeekerProfile />} />
       <Route path="/assessment" element={<Assessment />} />
-      <Route path="/company-profile" element={<CompanyProfile />} />
+      <Route path="/companies/:id" element={<CompanyProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
