@@ -2,6 +2,7 @@ import Button from "../common/Button";
 import Input from "../common/Input";
 import useStore from "../../stores/globalStore";
 import { UserRole } from "../../stores/User Slices/userSlice";
+import { useNavigate } from "react-router-dom";
 
 type InstructionsModalProps = {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const InstructionsDialog = ({
   const assessmentData = useStore.useSelectedAssessment();
   const saveAssessment = useStore.useAssessmentSaveData();
   const updateAssessmentData = useStore.useAssessmentUpdateData();
+  const navigate = useNavigate();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
@@ -70,7 +72,15 @@ export const InstructionsDialog = ({
           <Button variant="report" onClick={onClose}>
             Close
           </Button>
-          {UserRole.COMPANY && <Button onClick={saveAssessment}>Submit</Button>}
+          {UserRole.COMPANY === userRole && <Button onClick={() => {
+            try {
+              saveAssessment();
+              onClose();
+              navigate("/company/dashboard");
+            } catch (err) {
+              console.error("An error occurred:", err);
+            }
+          }}>Submit</Button>}
         </div>
       </div>
     </div>

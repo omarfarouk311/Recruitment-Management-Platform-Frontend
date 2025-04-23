@@ -91,7 +91,7 @@ const ProfileSetup = () => {
     };
 
     const handleEditExperience = (experience: Experience) => {
-        if (experience.position && experience.companyName && experience.id) {
+        if (experience.position && experience.companyName && experience.id !== undefined) {
             setExperiences((prev) => {
                 return prev.map((exp) => {
                     if (exp.id === experience.id) {
@@ -100,6 +100,10 @@ const ProfileSetup = () => {
                     return exp;
                 });
             });
+        }
+        else {
+            showErrorToast("Please fill in all fields before saving.");
+            throw new Error("Please fill in all fields before saving.");
         }
     };
 
@@ -167,8 +171,8 @@ const ProfileSetup = () => {
                 if (res.data.education) {
                     setEducations((edus) => [
                         ...edus,
-                        ...res.data.education.map((edu: any) => ({
-                            id: edus.length,
+                        ...res.data.education.map((edu: any, index: number) => ({
+                            id: edus.length + index,
                             institution: edu.university,
                             degree: edu.degree,
                             fieldOfStudy: edu.faculty,
@@ -195,8 +199,8 @@ const ProfileSetup = () => {
                 if (res.data.workExperience) {
                     setExperiences((exps) => [
                         ...exps,
-                        ...res.data.workExperience.map((exp: any) => ({
-                            id: exps.length,
+                        ...res.data.workExperience.map((exp: any, index: number) => ({
+                            id: exps.length + index,
                             companyName: exp.company,
                             position: exp.title,
                             startDate: exp["start date"]
@@ -236,19 +240,6 @@ const ProfileSetup = () => {
                 if (res.data.contactInformation.phone) {
                     setPhoneNumber(res.data.contactInformation.phone);
                 }
-                // set country and city
-                if (res.data.contactInformationcountry) {
-                    setSelectedCountry({
-                        label: res.data.contactInformation.country,
-                        value: res.data.contactInformation.country,
-                    });
-                }
-                if (res.data.contactInformation.city) {
-                    setSelectedCity({
-                        label: res.data.contactInformation.city,
-                        value: res.data.contactInformation.city,
-                    });
-                }
                 setParsingIsLoading(false);
             } catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 400) {
@@ -276,6 +267,7 @@ const ProfileSetup = () => {
         setLoading(true);
         // Add profile setup logic here
         try {
+            console.log(experiences)
             const data = {
                 name,
                 city: selectedCity?.value,
@@ -293,6 +285,8 @@ const ProfileSetup = () => {
                         ? new Date(exp.endDate).toISOString()
                         : undefined,
                     description: exp.description,
+                    city: exp.city,
+                    country: exp.country,
                 })),
                 skills: selectedSkills.map((skill: Skill) => skill.id),
                 educations: educations.map((edu) => ({
@@ -311,7 +305,7 @@ const ProfileSetup = () => {
             const form = new FormData();
             form.append(
                 "data",
-                new Blob([JSON.stringify(data)], { type: "application/json" }),  
+                JSON.stringify(data) 
             );
             if (profilePhoto) {
                 form.append("profilePhoto", profilePhoto);

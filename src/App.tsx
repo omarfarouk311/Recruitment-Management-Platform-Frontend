@@ -17,8 +17,8 @@ function App() {
   const setUserId = useStore.useUserSetId();
   // change according to the type you need to test
   setRole(UserRole.SEEKER);
-  setName("John Doe");
-  setUserId(3);
+  // setName("John Doe");
+  setUserId(7);
   ///////////////////////
 
   const userRole = useStore.useUserRole();
