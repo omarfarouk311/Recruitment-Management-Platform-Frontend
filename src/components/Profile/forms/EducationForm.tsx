@@ -62,7 +62,11 @@ export default function EducationDialog({
     if (education) {
       // Convert stored dates from MMM yyyy to yyyy-MM format
       const formatForInput = (dateString: string) => {
-        return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        try {
+          return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        } catch {
+          return "";
+        }
       };
 
       reset({

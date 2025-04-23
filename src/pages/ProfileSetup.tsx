@@ -11,9 +11,10 @@ import { Education, Experience, Skill } from "../types/profile";
 import useStore from "../stores/globalStore";
 import LocationSearch from "../components/common/LocationSearch";
 import config from "../../config/config";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { authRefreshToken } from "../util/authUtils";
 import { showErrorToast } from "../util/errorHandler";
+import { format } from "date-fns";
 
 const ProfileSetup = () => {
     const navigate = useNavigate();
@@ -37,7 +38,9 @@ const ProfileSetup = () => {
     const [phoneNumber, setPhoneNumber] = useState<Value>();
     const [birthDate, setBirthDate] = useState<Date | null>(null);
     const name = useStore.useUserName();
+    const setName = useStore.useUserSetName();
     const userId = useStore.useUserId();
+    const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
 
     // Calculate progress based on filled sections
     useEffect(() => {
@@ -64,16 +67,13 @@ const ProfileSetup = () => {
 
     const handleAddSkill = (skillId: number) => {
         let skill = allSkills.find((skill: Skill) => skill.id === skillId);
-        const duplicate = selectedSkills.find((skill: Skill) => skill.id === skillId);
-        if (
-            skillId &&
-            !duplicate &&
-            skill
-        ) {
+        const duplicate = selectedSkills.find(
+            (skill: Skill) => skill.id === skillId
+        );
+        if (skillId && !duplicate && skill) {
             setSelectedSkills((prev) => [...prev, skill]);
-        }
-        else if(duplicate) {
-            showErrorToast('Skill already exists.')
+        } else if (duplicate) {
+            showErrorToast("Skill already exists.");
         }
     };
 
@@ -129,9 +129,137 @@ const ProfileSetup = () => {
         );
     };
 
-    const handleCvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files[0]) {
+    const handleCvUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        if (event.target.files && event.target.files[0] && !parsingIsLoading) {
             setCvFile(event.target.files[0]);
+            setParsingIsLoading(true);
+            let res: AxiosResponse<any, any>;
+            try {
+                try {
+                    res = await axios.post(
+                        `${config.API_BASE_URL}/cvs`,
+                        event.target.files[0],
+                        {
+                            headers: {
+                                "File-Name": event.target.files[0].name,
+                                "Content-Type": event.target.files[0].type,
+                            },
+                        }
+                    );
+                    console.log(res.data);
+                } catch (err) {
+                    if (
+                        axios.isAxiosError(err) &&
+                        err.response?.status === 401
+                    ) {
+                        await authRefreshToken();
+                        res = await axios.post(
+                            `${config.API_BASE_URL}/cvs`,
+                            cvFile
+                        );
+                    } else {
+                        throw err;
+                    }
+                }
+                // set education
+                if (res.data.education) {
+                    setEducations((edus) => [
+                        ...edus,
+                        ...res.data.education.map((edu: any) => ({
+                            id: edus.length,
+                            institution: edu.university,
+                            degree: edu.degree,
+                            fieldOfStudy: edu.faculty,
+                            grade: edu.grade,
+                            startDate: edu["start Year"]
+                                ? format(
+                                      new Date(edu["start Year"]),
+                                      "MMM yyyy"
+                                  )
+                                : undefined,
+                            endDate:
+                                edu["End Year"] == "present"
+                                    ? undefined
+                                    : edu["End Year"]
+                                    ? format(
+                                          new Date(edu["End Year"]),
+                                          "MMM yyyy"
+                                      )
+                                    : undefined,
+                        })),
+                    ]);
+                }
+                // set experience
+                if (res.data.workExperience) {
+                    setExperiences((exps) => [
+                        ...exps,
+                        ...res.data.workExperience.map((exp: any) => ({
+                            id: exps.length,
+                            companyName: exp.company,
+                            position: exp.title,
+                            startDate: exp["start date"]
+                                ? format(
+                                      new Date(exp["start date"]),
+                                      "MMM yyyy"
+                                  )
+                                : undefined,
+                            endDate:
+                                exp["end date"] === "present"
+                                    ? undefined
+                                    : exp["end date"]
+                                    ? format(
+                                          new Date(exp["end date"]),
+                                          "MMM yyyy"
+                                      )
+                                    : undefined,
+                            description: "",
+                        })),
+                    ]);
+                }
+                // set skills
+                if (res.data.skills) {
+                    setSelectedSkills((skills) => [
+                        ...skills,
+                        ...res.data.skills.map((skill: any) => ({
+                            id: skill.id,
+                            name: skill.name,
+                        })),
+                    ]);
+                }
+                // set name
+                if (res.data.contactInformation.name) {
+                    setName(res.data.contactInformation.name);
+                }
+                // set phoneNumber
+                if (res.data.contactInformation.phone) {
+                    setPhoneNumber(res.data.contactInformation.phone);
+                }
+                // set country and city
+                if (res.data.contactInformationcountry) {
+                    setSelectedCountry({
+                        label: res.data.contactInformation.country,
+                        value: res.data.contactInformation.country,
+                    });
+                }
+                if (res.data.contactInformation.city) {
+                    setSelectedCity({
+                        label: res.data.contactInformation.city,
+                        value: res.data.contactInformation.city,
+                    });
+                }
+                setParsingIsLoading(false);
+            } catch (err) {
+                if (axios.isAxiosError(err) && err.response?.status === 400) {
+                    err.response?.data.validationErrors.forEach(
+                        (value: string) =>
+                            showErrorToast(`Validation Error: ${value}`)
+                    );
+                }
+            }
+        } else if (parsingIsLoading) {
+            showErrorToast("Parsing is already in progress. Please wait.");
         }
     };
 
@@ -143,310 +271,89 @@ const ProfileSetup = () => {
         }
     };
 
-    const sendBasicInfo = async () => {
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        // Add profile setup logic here
         try {
-            let res;
-            const body = {
+            const data = {
                 name,
                 city: selectedCity?.value,
                 country: selectedCountry?.value,
                 gender: gender == "male",
                 phoneNumber: phoneNumber?.toString(),
                 dateOfBirth: birthDate?.toISOString(),
-            };
-            console.log(body);
-            try {
-                res = await axios.post(
-                    `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
-                    body
-                );
-            } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }
-            }
-            if (!res) {
-                res = await axios.post(
-                    `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
-                    body
-                );
-            }
-        } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.forEach((value: string) =>
-                    showErrorToast(`Validation Error: ${value}`)
-                );
-            } else {
-                showErrorToast(`Something went wrong!`);
-            }
-            throw err;
-        }
-    };
-
-    const sendProfilePhoto = async () => {
-        try {
-            let imageRes;
-            if (profilePhoto instanceof File) {
-                try {
-                    imageRes = await axios.post(
-                        `${config.API_BASE_URL}/seekers/profiles/${userId}/image`,
-                        profilePhoto,
-                        {
-                            headers: {
-                                "Content-Type": "image/jpeg",
-                                "File-Name": profilePhoto.name,
-                            },
-                        }
-                    );
-                } catch (err) {
-                    if (axios.isAxiosError(err)) {
-                        if (err.response?.status === 401) {
-                            authRefreshToken();
-                        } else {
-                            throw err;
-                        }
-                    } else {
-                        throw err;
-                    }
-                }
-                if (!imageRes) {
-                    imageRes = await axios.post(
-                        `${config.API_BASE_URL}/seekers/profiles/${userId}/image`,
-                        profilePhoto,
-                        {
-                            headers: {
-                                "Content-Type": "image/jpeg",
-                                "File-Name": profilePhoto.name,
-                            },
-                        }
-                    );
-                }
-            }
-        } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.forEach((value: string) =>
-                    showErrorToast(`Validation Error: ${value}`)
-                );
-            } else {
-                showErrorToast(`Something went wrong!`);
-            }
-            throw err;
-        }
-    };
-
-    const sendCV = async () => {
-        try {
-            if (cvFile) {
-                let res;
-                try {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/cvs`,
-                        cvFile,
-                        {
-                            headers: {
-                                "File-Name": cvFile.name,
-                                "Content-Type": cvFile.type,
-                            },
-                        }
-                    );
-                } catch (err) {
-                    if (axios.isAxiosError(err)) {
-                        if (err.response?.status === 401) {
-                            await authRefreshToken();
-                        } else {
-                            throw err;
-                        }
-                    } else {
-                        throw err;
-                    }
-                }
-                if (!res) {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/cvs`,
-                        cvFile,
-                        {
-                            headers: {
-                                "File-Name": cvFile.name,
-                                "Content-Type": cvFile.type,
-                            },
-                        }
-                    );
-                }
-            }
-        } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.forEach((value: string) =>
-                    showErrorToast(`Validation Error: ${value}`)
-                );
-            } else {
-                showErrorToast(`Something went wrong!`);
-            }
-            throw err;
-        }
-    };
-
-    const sendSkills = async () => {
-        try {
-            let res;
-            let body = {
-                skills: selectedSkills.map((skill: Skill) => ({
-                    skillId: skill.id,
+                experiences: experiences.map((exp) => ({
+                    companyName: exp.companyName,
+                    jobTitle: exp.position,
+                    startDate: exp.startDate
+                        ? new Date(exp.startDate).toISOString()
+                        : undefined,
+                    endDate: exp.endDate
+                        ? new Date(exp.endDate).toISOString()
+                        : undefined,
+                    description: exp.description,
+                })),
+                skills: selectedSkills.map((skill: Skill) => skill.id),
+                educations: educations.map((edu) => ({
+                    schoolName: edu.institution,
+                    degree: edu.degree,
+                    field: edu.fieldOfStudy,
+                    grade: edu.grade,
+                    startDate: edu.startDate
+                        ? new Date(edu.startDate).toISOString()
+                        : undefined,
+                    endDate: edu.endDate
+                        ? new Date(edu.endDate).toISOString()
+                        : undefined,
                 })),
             };
+            const form = new FormData();
+            form.append(
+                "data",
+                new Blob([JSON.stringify(data)], { type: "application/json" }),  
+            );
+            if (profilePhoto) {
+                form.append("profilePhoto", profilePhoto);
+            }
+            if (cvFile) {
+                form.append("cvFile", cvFile);
+            }
             try {
-                res = await axios.post(
-                    `${config.API_BASE_URL}/seekers/skills`,
-                    body
+                await axios.post(
+                    `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
+                    form,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
                 );
             } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    } else {
-                        throw err;
-                    }
-                } else {
-                    throw err;
-                }
-            }
-            if (!res) {
-                res = await axios.post(
-                    `${config.API_BASE_URL}/seekers/skills`,
-                    body
-                );
-            }
-        } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.forEach((value: string) =>
-                    showErrorToast(`Validation Error: ${value}`)
-                );
-            } else {
-                showErrorToast(`Something went wrong!`);
-            }
-            throw err;
-        }
-    };
-
-    const sendExperiences = async () => {
-        experiences.forEach(async (exp: Experience) => {
-            let body = {
-                companyName: exp.companyName,
-                jobTitle: exp.position,
-                startDate: exp.startDate
-                    ? new Date(exp.startDate).toISOString()
-                    : undefined,
-                endDate: exp.endDate
-                    ? new Date(exp.endDate).toISOString()
-                    : undefined,
-                description: exp.description,
-            };
-            try {
-                let res;
-                try {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/experiences`,
-                        body
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                    await authRefreshToken();
+                    await axios.post(
+                        `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
+                        form,
+                        {
+                            headers: {
+                                "Content-Type": "multipart/form-data",
+                            },
+                        }
                     );
-                } catch (err) {
-                    if (
-                        axios.isAxiosError(err) &&
-                        err.response?.status === 401
-                    ) {
-                        await authRefreshToken();
-                    } else {
-                        throw err;
-                    }
-                }
-                if (!res)
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/experiences`,
-                        body
-                    );
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 400) {
+                } else if (axios.isAxiosError(err) && err.response?.status === 400) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
                             showErrorToast(`Validation Error: ${value}`)
                     );
-                } else {
-                    showErrorToast(`Something went wrong!`);
                 }
                 throw err;
             }
-        });
-    };
-
-    const sendEducations = async () => {
-        educations.forEach(async (edu: Education) => {
-            let body = {
-                school_name: edu.institution,
-                degree: edu.degree,
-                field: edu.fieldOfStudy,
-                grade: edu.grade,
-                start_date: edu.startDate
-                    ? new Date(edu.startDate).toISOString()
-                    : undefined,
-                end_date: edu.endDate
-                    ? new Date(edu.endDate).toISOString()
-                    : undefined,
-            };
-            try {
-                let res;
-                try {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/educations/add`,
-                        body
-                    );
-                } catch (err) {
-                    if (
-                        axios.isAxiosError(err) &&
-                        err.response?.status === 401
-                    ) {
-                        await authRefreshToken();
-                    } else {
-                        throw err;
-                    }
-                }
-                if (!res)
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/seekers/educations/add`,
-                        body
-                    );
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 400) {
-                    err.response?.data.validationErrors.forEach(
-                        (value: string) =>
-                            showErrorToast(`Validation Error: ${value}`)
-                    );
-                } else {
-                    showErrorToast(`Something went wrong!`);
-                }
-                throw err;
-            }
-        });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        // Add profile setup logic here
-        try {
-            // send base info
-            await sendBasicInfo();
-            // send experience, edu, skills, photo and cv
-            let promises = [
-                sendExperiences(),
-                sendProfilePhoto(),
-                sendCV(),
-                sendSkills(),
-                sendEducations(),
-            ];
-            await Promise.all(promises);
             setLoading(false);
             navigate("/seeker/home");
-        } catch {
+        } catch (err) {
+            console.log(err);
+            showErrorToast(`Something went wrong!`);
             setLoading(false);
         }
     };
@@ -550,7 +457,7 @@ const ProfileSetup = () => {
                                             className="hidden"
                                             id="cvUpload"
                                             onChange={handleCvUpload}
-                                            accept=".pdf,.doc,.docx"
+                                            accept=".pdf"
                                         />
                                         <label
                                             htmlFor="cvUpload"
@@ -704,7 +611,11 @@ const ProfileSetup = () => {
 
                         {/* Submit Button */}
                         <div className="pt-6 border-t">
-                            <Button type="button" onClick={handleSubmit} loading={loading}>
+                            <Button
+                                type="button"
+                                onClick={handleSubmit}
+                                loading={loading}
+                            >
                                 Complete Profile
                             </Button>
                         </div>
