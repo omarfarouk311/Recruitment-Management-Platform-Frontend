@@ -1,9 +1,9 @@
 import { Star } from "lucide-react";
 import InfoDialog from "../../common/InfoDialog";
 import { useState, useEffect } from "react";
-import { mockCompanyProfileInfo } from "../../../mock data/companyProfile";
 import useStore from "../../../stores/globalStore";
 import type { CompanyProfileInfo } from "../../../types/profile";
+import { useParams } from "react-router-dom";
 
 export function CompanyProfileInfo() {
   const {
@@ -23,23 +23,6 @@ export function CompanyProfileInfo() {
     image,
   } = useStore.useCompanyProfileInfo();
 
-  // const {
-  //   id,
-  //   foundedIn,
-  //   industries,
-  //   industriesCount,
-  //   jobsCount,
-  //   locations,
-  //   locationsCount,
-  //   name,
-  //   overview,
-  //   rating,
-  //   reviewsCount,
-  //   size,
-  //   type,
-  //   image,
-  // } = mockCompanyProfileInfo;
-
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -47,14 +30,16 @@ export function CompanyProfileInfo() {
     setImageError(false);
   }, [image]);
 
+  const { id: companyId } = useParams();
+
   const fetchCompanyInfo = useStore.useCompanyProfileFetchInfo();
   const fetchCompanyIndustries = useStore.useCompanyProfileFetchIndustries();
   const fetchCompanyLocations = useStore.useCompanyProfileFetchLocations();
 
   useEffect(() => {
-    fetchCompanyInfo();
-    fetchCompanyIndustries();
-    fetchCompanyLocations();
+    fetchCompanyInfo(companyId);
+    fetchCompanyIndustries(companyId);
+    fetchCompanyLocations(companyId);
   }, []);
 
   const [isIndustriesDialogOpen, setIndustriesDialogOpen] = useState(false);
@@ -145,7 +130,6 @@ export function CompanyProfileInfo() {
               title="View industries"
               onClick={() => {
                 setIndustriesDialogOpen(true);
-                fetchCompanyIndustries();
               }}
             >
               {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
@@ -161,7 +145,6 @@ export function CompanyProfileInfo() {
               title="View locations"
               onClick={() => {
                 setLocationsDialogOpen(true);
-                fetchCompanyLocations();
               }}
             >
               {locationsCount} {locationsCount > 1 ? "Locations" : "Location"}

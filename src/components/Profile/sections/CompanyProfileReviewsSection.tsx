@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import ReviewList from "../../Review/ReviewList";
 import FilterDropdown from "../../Filters/FilterDropdown";
 import { sortByDateOptions, reviewsRatingOptions } from "../../../data/filterOptions";
-import { mockReviews } from "../../../mock data/seekerProfile";
+import { useParams } from "react-router-dom";
 
 export default function ReviewsSection() {
   const reviews = useStore.useCompanyProfileReviews();
@@ -12,9 +12,10 @@ export default function ReviewsSection() {
   const fetchReviews = useStore.useCompanyProfileFetchReviews();
   const filters = useStore.useCompanyProfileReviewsFilters();
   const setFilters = useStore.useCompanyProfileSetReviewsFilters();
+  const { id } = useParams();
 
   useEffect(() => {
-    fetchReviews();
+    fetchReviews(id);
   }, []);
 
   return (
@@ -26,13 +27,13 @@ export default function ReviewsSection() {
             label="Sort By Date"
             options={sortByDateOptions}
             selectedValue={filters.sortByDate}
-            onSelect={(value) => setFilters({ sortByDate: value })}
+            onSelect={(value) => setFilters({ sortByDate: value }, id)}
           />
           <FilterDropdown
-            label="Job Title"
+            label="Rating"
             options={reviewsRatingOptions}
             selectedValue={filters.rating}
-            onSelect={(value) => setFilters({ rating: value })}
+            onSelect={(value) => setFilters({ rating: value }, id)}
           />
         </div>
       </div>
