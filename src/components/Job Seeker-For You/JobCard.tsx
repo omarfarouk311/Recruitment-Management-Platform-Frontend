@@ -82,7 +82,7 @@ const JobCard = ({
 
   return (
     <div
-      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 shadow transition-colors w-full border-2 border-gray ${
         isSelected ? "border-black" : ""
       }`}
       onClick={() =>

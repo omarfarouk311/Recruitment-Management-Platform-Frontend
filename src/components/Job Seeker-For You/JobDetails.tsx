@@ -46,7 +46,6 @@ const JobDetails = ({
   const reportJob = useReportJob();
   const fetchCompanyIndustries = useFetchCompanyIndustries();
   const userRole = useStore.useUserRole();
-  const setSelectedCompanyId = useStore.useCompanyProfileSetSelectedId();
   const [cvs, useSetCvs] = useState<CV[]>([]);
 
   // Reset image error when image changes
@@ -160,11 +159,8 @@ const JobDetails = ({
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-xl font-bold">{name}</h2>
-              <Link to="/seeker/company-profile" className="px-2">
-                <ExternalLink
-                  className="w-5 h-6 cursor-pointer text-blue-600"
-                  onClick={() => setSelectedCompanyId(companyId)}
-                />
+              <Link to={`/seeker/companies/${companyId}`} className="px-2">
+                <ExternalLink className="w-5 h-6 cursor-pointer text-blue-600" />
               </Link>
             </div>
             <div className="flex items-center space-x-2">
@@ -278,9 +274,6 @@ const JobDetails = ({
 
           <div className="flex items-center space-x-2">
             <h3 className="text-lg font-semibold mb-4 pt-4">Reviews</h3>
-            <Link to="/company-profile#reviews" className="px-2">
-              <ExternalLink className="w-5 h-5 cursor-pointer text-blue-600" />
-            </Link>
           </div>
 
           <div className="space-y-4">

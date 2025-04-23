@@ -54,7 +54,7 @@ export default function ReviewList({
   }, [isLoading]);
 
   return (
-    <div className="space-y-6 max-h-[600px] overflow-y-auto">
+    <div className="space-y-6 h-[600px] overflow-y-auto">
       {reviews.length === 0 && !isLoading ? (
         <div className="text-center py-4 text-gray-500">No reviews found.</div>
       ) : (

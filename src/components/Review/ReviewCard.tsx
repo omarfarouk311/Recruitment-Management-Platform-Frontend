@@ -23,11 +23,11 @@ const ReviewCard = ({
     userRole === UserRole.COMPANY
       ? "/company/profile"
       : userRole === UserRole.SEEKER
-      ? "/seeker/company-profile"
-      : "/recruiter/company-profile";
+      ? `/seeker/companies/${companyData?.id}`
+      : `/recruiter/companies/${companyData?.id}`;
 
   return (
-    <div className="bg-gray-100 p-4 rounded-2xl">
+    <div className="bg-gray-100 p-4 rounded-3xl shadow border-2 border-gray-200">
       <div className="flex justify-between items-center mb-2">
         <h4 className="font-medium flex items-center space-x-2">
           {title}
