@@ -24,7 +24,6 @@ export interface CompanyJobsRecruitersSlice {
 
     CompanyJobsRecruitersClear: () => void;
     CompanyJobsRecruitersAssign: (recruiterId: number, recruiterName: string, jobId: (number | null), candidates: number[]) => Promise<void>;
-    CompanyJobsRecruitersUnAssign: (jobId: (number | null), candidates: number[]) => Promise<void>;
 
 }
 
@@ -187,7 +186,8 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
                         validCandidates.includes(candidate.seekerId)
                             ? {
                                 ...candidate,
-                                recruiterName: recruiterName
+                                recruiterName: recruiterName,
+                                recruiterId: recruiterId
                             }
                             : candidate
                     ),
@@ -195,6 +195,7 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
                     selectedCandidates: state.selectedCandidates.filter(
                         id => !validCandidates.includes(id)
                     ),
+                    selectedRecruiters: new Map(),
                     CompanyJobsRecruitersIsLoading: false
                 };
             });
@@ -204,26 +205,4 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
             throw error;
         }
     },
-    CompanyJobsRecruitersUnAssign: async (jobId, candidates) => {
-        set({ CompanyJobsRecruitersIsLoading: true });
-
-        try {
-            const res = await axios.patch(
-                `${config.API_BASE_URL}/candidates/unassign-candidates`,
-                {
-                    jobId: jobId,
-                    candidates: candidates,
-                }
-            );  
-            if (res.status!== 200) {
-                throw new Error("Error in unassigning candidates"); 
-            }
-            set({companiesTabIsCompaniesLoading: false})
-            await get().CompanyJobsRecruitersFetchRecruiters();
-
-        } catch (err) {
-
-            throw err;
-        }
-    }
 });

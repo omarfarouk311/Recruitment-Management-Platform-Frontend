@@ -28,8 +28,14 @@ const CompanyJobsCandidates = () => {
     const selectedCandidates = useStore.useSelectedCandidates();
     const setSelectedCandidates = useStore.useSetSelectedCandidates();
 
-    const toggleCandidateSelection = (seekerId: number) => {
-        setSelectedCandidates(seekerId)
+    const selectedRecruiters = useStore.useSelectedRecruiters();
+    // const setSelectedRecruiters = useStore.useSetSelectedRecruiters();
+
+    const toggleCandidateSelection = (seekerId: number, recruiterId: number | undefined) => {
+        setSelectedCandidates(seekerId, recruiterId)
+        console.log(seekerId, recruiterId)
+        // if(recruiterId)
+        //      setSelectedRecruiters(recruiterId)
     };
 
     useEffect(() => {
@@ -51,7 +57,7 @@ const CompanyJobsCandidates = () => {
             header: "",
             render: (row) => (
                 <button
-                    onClick={() => toggleCandidateSelection(row.seekerId)}
+                    onClick={() => toggleCandidateSelection(row.seekerId, row.recruiterId)}
                     className={`w-5 h-5 flex items-center justify-center border-2 rounded-sm transition-colors
                 ${selectedCandidates.includes(row.seekerId)
                             ? 'bg-gray-800 border-gray-800 text-white'

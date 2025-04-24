@@ -26,7 +26,6 @@ const CompanyJobsRecruiters = () => {
     const clear = useStore.useCompanyJobsRecruitersClear();
     const useSelectedJobId = useStore.useCompanyTabSelectJobId();
     const assignCandidatestoRecruiter = useStore.useCompanyJobsRecruitersAssign();
-    const unassignCandidatesFromRecruiter = useStore.useCompanyJobsRecruitersUnAssign();
     const selectedCandidates = useStore.useSelectedCandidates();
 
     const useHasMore = useStore.useCompanyJobsRecruitersHasMore;

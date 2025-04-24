@@ -47,6 +47,7 @@ export interface CompanyCandidates {
   score?: number;
   totalScore?: number;
   rank?: number;
+  recruiterId: number | undefined;
 }
 
 

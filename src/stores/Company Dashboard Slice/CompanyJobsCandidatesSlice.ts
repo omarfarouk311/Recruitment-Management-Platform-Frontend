@@ -17,6 +17,8 @@ export interface CompanyCandidatesSlice {
     CurrentJobId: number;
     
     selectedCandidates: number[];
+    selectedRecruiters: Map<number, number>;
+
 
     CompanyCandidatesSetCurrentJobId: (id: number) => void;
     CompanyCandidatesSetFilters: (
@@ -30,7 +32,9 @@ export interface CompanyCandidatesSlice {
         decision: boolean,
         jobId: number
     ) => Promise<void>;
-    setSelectedCandidates: (updater: number) => void;
+    setSelectedCandidates: (seekerId: number, recruiterId: number | undefined) => void;
+    // setSelectedRecruiters: (seekerId: Map<number, number>) => void;
+
     CompanyCandidateUnAssign: (jobId: (number | null), candidates: number[]) => Promise<void>;
 
 }
@@ -55,17 +59,35 @@ export const createCompanyCandidatesSlice: StateCreator<
     CompanyCandidatesPhases: [],
     CurrentJobId: 0,
     selectedCandidates: [],
+    selectedRecruiters: new Map<number, number>(),
 
-    setSelectedCandidates: (seekerId) => {
-        const { selectedCandidates } = get()
+    setSelectedCandidates: (seekerId, recruiterId) => {
+        const { selectedCandidates, selectedRecruiters } = get();
+        
         if (selectedCandidates.includes(seekerId)) {
-            set({ selectedCandidates: selectedCandidates.filter(id => id !== seekerId) }) 
-        }
-        else {
-            set((state) => {
-                const updated = [...state.selectedCandidates, seekerId];
-                return { selectedCandidates: updated };
+            set({
+                selectedCandidates: selectedCandidates.filter(id => id !== seekerId),
             });
+            if(recruiterId) {
+                set({ 
+                selectedRecruiters: new Map(selectedRecruiters).set(
+                    recruiterId,
+                    (selectedRecruiters.get(recruiterId) ?? 0) - 1
+                )
+            })
+            }
+        } else {
+            set((state) => ({
+                selectedCandidates: [...state.selectedCandidates, seekerId],
+            }));
+            if(recruiterId) {
+                set((state:CombinedState) => ({
+                selectedRecruiters: new Map(state.selectedRecruiters).set(
+                    recruiterId,
+                    (state.selectedRecruiters.get(recruiterId) || 0) + 1
+                )
+            }))
+        }
         }
     },
     CompanyCandidatesSetFilters: async (newFilters) => {
@@ -96,7 +118,9 @@ export const createCompanyCandidatesSlice: StateCreator<
                 status: ""
             },
             CompanyCandidatesPhases: [],
-            CurrentJobId: 0
+            CurrentJobId: 0,
+            selectedCandidates: [],
+            selectedRecruiters: new Map<number, number>(),
         });
     },
 
@@ -190,10 +214,10 @@ export const createCompanyCandidatesSlice: StateCreator<
     },
     CompanyCandidateUnAssign: async (jobId, candidates) => {
         set({ CompanyCandidatesIsLoading: true });
-
+        console.log("heree")
+        console.log(candidates)
+        
         try {
-            set({ CompanyCandidatesIsLoading: true });
-
             // 1. Unassign candidates
             const res = await axios.patch(
                 `${config.API_BASE_URL}/candidates/unassign-candidates`,
@@ -203,49 +227,44 @@ export const createCompanyCandidatesSlice: StateCreator<
             if (res.status >= 400) {
                 throw new Error(res.data?.message || "Error in unassigning candidates");
             }
-            const params = {
-                page: 1,
-                name: get().CompanyJobsRecruitersFilters.recruiterName,
-                department: get().CompanyJobsRecruitersFilters.department,
-                sorted: get().CompanyJobsRecruitersFilters.assignedCandidates,
+
+            set((state: CombinedState) => ({
+                Companycandidates: state.Companycandidates.map(candidate => {
+                    if (candidates.includes(candidate.seekerId)) {
+                        return {
+                            ...candidate,
+                            recruiterName: '',
+                            recruiterId: undefined // Assuming you also want to clear the recruiter ID
+                        };
+                    }
+                    return candidate;
+                }),
+                CompanyCandidatesIsLoading: false,
+                selectedCandidates: [],
+            }));
+
+
+
+            set((state: CombinedState) => {
+            // Get the current selectedRecruiters Map from state
+            const currentSelectedRecruiters = state.selectedRecruiters;
+            
+            return {
+                CompanyJobsRecruiters: state.CompanyJobsRecruiters.map(recruiter => {
+                    // Check if this recruiter exists in the selectedRecruiters Map
+                    if (currentSelectedRecruiters.has(recruiter.id)) {
+                        const countToSubtract = currentSelectedRecruiters.get(recruiter.id) || 0;
+                        return {
+                            ...recruiter,
+                            assigned_candidates_cnt: Math.max(0, recruiter.assigned_candidates_cnt - countToSubtract)
+                        };
+                    }
+                    return recruiter;
+                }),
+                // Clear the selectedRecruiters Map after applying the changes
+                selectedRecruiters: new Map()
             };
-
-            // Remove undefined values from params
-            for (const key in params) {
-                if (params[key as keyof typeof params] === "") {
-                    delete params[key as keyof typeof params];
-                }
-            }
-
-            // 2. Get updated recruiters list
-            const response = await axios.get(`${config.API_BASE_URL}/recruiters`, {
-                params
-            });
-            console.log(response)
-            const data = response.data.recruiters || [];
-            console.log(data)
-            set((state) => {
-                // Safely handle undefined/null state
-                const currentCandidates = state.Companycandidates || [];
-
-                return {
-                    ...state,
-                    Companycandidates: currentCandidates.map(candidate => {
-                        // Skip if candidate is invalid
-                        if (!candidate || !('seekerId' in candidate)) return candidate;
-
-                        // Only update if candidate is in the unassign list
-                        return candidates.includes(candidate.seekerId)
-                            ? { ...candidate, recruiterName: "" }
-                            : candidate;
-                    }),
-                    CompanyJobsRecruiters: data,
-                    CompanyJobsRecruitersPage: 1,
-                    CompanyJobsRecruitersHasMore: data.length > 0,
-                    CompanyCandidatesIsLoading: false,
-                    selectedCandidates: []
-                };
-            });
+        });   
 
         } catch (err) {
             set({ CompanyCandidatesIsLoading: false });
