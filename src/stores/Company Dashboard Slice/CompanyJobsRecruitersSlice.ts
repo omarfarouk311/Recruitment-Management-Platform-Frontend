@@ -192,9 +192,8 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
                             : candidate
                     ),
                     // Clear selected candidates that were successfully assigned
-                    selectedCandidates: state.selectedCandidates.filter(
-                        id => !validCandidates.includes(id)
-                    ),
+                    selectedCandidates: [],
+                
                     selectedRecruiters: new Map(),
                     CompanyJobsRecruitersIsLoading: false
                 };

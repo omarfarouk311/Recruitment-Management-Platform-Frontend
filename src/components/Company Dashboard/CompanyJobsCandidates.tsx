@@ -28,14 +28,12 @@ const CompanyJobsCandidates = () => {
     const selectedCandidates = useStore.useSelectedCandidates();
     const setSelectedCandidates = useStore.useSetSelectedCandidates();
 
-    const selectedRecruiters = useStore.useSelectedRecruiters();
     // const setSelectedRecruiters = useStore.useSetSelectedRecruiters();
 
     const toggleCandidateSelection = (seekerId: number, recruiterId: number | undefined) => {
         setSelectedCandidates(seekerId, recruiterId)
         console.log(seekerId, recruiterId)
-        // if(recruiterId)
-        //      setSelectedRecruiters(recruiterId)
+     
     };
 
     useEffect(() => {
@@ -137,7 +135,16 @@ const CompanyJobsCandidates = () => {
             render: (row) => {
                 return (
                     <>
-                        <span className="text-gray-600">{row.phase || ""}</span>
+                        <span className="text-gray-600">{row.phase || ''}</span>
+                        <br />
+                        {row.phase === 'assessment' && (
+                    <>
+                        <br />
+                        <span className="text-gray-600 font-semibold">
+                            Assessment Score: {row.score || '0'}
+                        </span>
+                    </>
+                )}
                     </>
                 );
             },
@@ -188,16 +195,12 @@ const CompanyJobsCandidates = () => {
                 <div className="flex justify-between items-center mb-4"> {/* Reduced mb-8 to mb-4 */}
                     <h1 className="px-6 py-2 text-3xl font-bold">Candidates</h1>
                     <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
-                        <LocationSearch
-                            selectedCountry={filters.candidateCountry}
-                            selectedCity={filters.candidateCity}
-                            onCountryChange={(value) =>
-                                setFilters({ candidateCountry: value })
-                            }
-                            onCityChange={(value) =>
-                                setFilters({ candidateCity: value })
-                            }
-                        />
+                    <LocationSearch
+                        selectedCountry={filters.candidateCountry}
+                        onCountryChange={(value) => setFilters({ candidateCountry: value })}
+                        selectedCity={filters.candidateCity}
+                        onCityChange={(value) => setFilters({ candidateCity: value })}
+                    />
 
                         <FilterDropdown
                             label="Phase Type"

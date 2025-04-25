@@ -53,7 +53,7 @@ export const createCompanyCandidatesSlice: StateCreator<
         candidateCountry: "",
         candidateCity: "",
         phaseType: "",
-        status: "",
+        status: "1",
         sortBy: ""
     },
     CompanyCandidatesPhases: [],
@@ -115,12 +115,11 @@ export const createCompanyCandidatesSlice: StateCreator<
                 candidateCity: "",
                 phaseType: "",
                 sortBy: "",
-                status: ""
+                status: "1"
             },
             CompanyCandidatesPhases: [],
-            CurrentJobId: 0,
             selectedCandidates: [],
-            selectedRecruiters: new Map<number, number>(),
+            selectedRecruiters: new Map(),
         });
     },
 
@@ -134,16 +133,28 @@ export const createCompanyCandidatesSlice: StateCreator<
             throw Error("Error in making decision");
             
         }
+        const updatedCandidates = res.data.updatedCandidates;
         set((state: CombinedState) => ({
             CompanyCandidatesFilters: {
-                ...state.CompanyCandidatesFilters,
+              ...state.CompanyCandidatesFilters,
             },
-            Companycandidates: [],
-            CompanyCandidatesPage: 1,
-            CompanyCandidatesHasMore: true,
-        }));
-        await get().CompanyCandidatesFetchCandidates();
-
+            Companycandidates: decision === true
+              ? state.Companycandidates.map(candidate => {
+                  const updatedCandidate = updatedCandidates.find(
+                    (uc: { seekerId: number }) => uc.seekerId === candidate.seekerId
+                  );
+                  return updatedCandidate
+                    ? { ...candidate, phase: updatedCandidate.nextPhaseName }
+                    : candidate;
+                })
+                : state.Companycandidates.filter(
+                    candidate => !updatedCandidates.some(
+                        (uc: { seekerId: number }) => uc.seekerId === candidate.seekerId
+                    )
+                ),
+            selectedCandidates: [],
+            selectedRecruiters: new Map(),
+          }));
     },
 
     CompanyCandidatesFetchCandidates: async () => {
@@ -152,7 +163,7 @@ export const createCompanyCandidatesSlice: StateCreator<
             CompanyCandidatesHasMore,
             CompanyCandidatesIsLoading,
             CompanyCandidatesFilters,
-            CurrentJobId
+            companyTabSelectJobId
         } = get();
 
         if (!CompanyCandidatesHasMore || CompanyCandidatesIsLoading) return;
@@ -165,7 +176,7 @@ export const createCompanyCandidatesSlice: StateCreator<
                 phaseType: CompanyCandidatesFilters.phaseType || "",
                 country: CompanyCandidatesFilters.candidateCountry || "",
                 city: CompanyCandidatesFilters.candidateCity || "",
-                status: CompanyCandidatesFilters.status || ""
+                status: CompanyCandidatesFilters.status || "1"
             };
 
             // Remove undefined values from params
@@ -176,21 +187,20 @@ export const createCompanyCandidatesSlice: StateCreator<
             }
 
             let res = await axios.get(
-                `${config.API_BASE_URL}/candidates/job/${CurrentJobId}`,
+                `${config.API_BASE_URL}/candidates/job/${companyTabSelectJobId}`,
                 { params }
             );
             console.log(res.data)
+            console.log(`Hello ${companyTabSelectJobId}`)
             set((state: CombinedState) => ({
                 Companycandidates: [
                     ...state.Companycandidates,
-                    ...res.data.map((candidate: any) => ({
-                        ...candidate
-                    })),
+                    ...res.data
                 ],
                 CompanyCandidatesHasMore: res.data.length > 0,
                 CompanyCandidatesIsLoading: false,
                 CompanyCandidatesPage: state.CompanyCandidatesPage + 1,
-                selectedCandidates: []
+                selectedCandidates: [],
             }));
             console.log("here")
         } catch (err) {
@@ -262,7 +272,8 @@ export const createCompanyCandidatesSlice: StateCreator<
                     return recruiter;
                 }),
                 // Clear the selectedRecruiters Map after applying the changes
-                selectedRecruiters: new Map()
+                selectedRecruiters: new Map(),
+                selectedCandidates: []
             };
         });   
 

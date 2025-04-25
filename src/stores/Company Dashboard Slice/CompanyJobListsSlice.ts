@@ -133,11 +133,8 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 `${config.API_BASE_URL}/jobs/${jobId}`
             );
 
-            // Update the local state by removing the deleted job
-            // set({
-            //     companyJobs: companyJobs.filter(job => job.id !== jobId),
-            //     companyJobsIsJobsLoading: false
-            // });
+            set({ companyJobsIsJobsLoading: false });
+
         } catch (err) {
             set({ companyJobsIsJobsLoading: false });
             throw err; // Re-throw the error for handling in the component
@@ -180,8 +177,10 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyTabSetSelectedJobId: async (id) => {
         if (id === get().forYouTabSelectedJobId) return;
-
+        console.log("in companyJob list slice " + id)
         set({ companyTabSelectJobId: id });
+        console.log(get().companyTabSelectJobId)
+
 
     }
 
