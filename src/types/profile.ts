@@ -42,7 +42,7 @@ export interface SeekerProfileInfo {
 
 export interface CompanyProfileInfo {
   id: number;
-  image?: string;
+  image: string;
   name: string;
   overview: string;
   type: string;
@@ -54,7 +54,7 @@ export interface CompanyProfileInfo {
   industriesCount: number;
   jobsCount: number;
   locations: { country: string, city: string }[];
-  industries: string[];
+  industries: { id: number, name: string }[];
 }
 
 export interface UserCredentials {

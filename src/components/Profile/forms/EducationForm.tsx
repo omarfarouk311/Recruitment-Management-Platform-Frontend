@@ -24,15 +24,17 @@ interface EducationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   education?: Education;
+  addEducation: (education: Education) => Promise<void> | void;
+  updateEducation: (education: Education) => Promise<void> | void;
 }
 
 export default function EducationDialog({
   isOpen,
   onClose,
   education,
+  addEducation,
+  updateEducation,
 }: EducationDialogProps) {
-  const addEducation = useStore.useSeekerProfileAddEducation();
-  const updateEducation = useStore.useSeekerProfileUpdateEducation();
 
   const {
     register,
@@ -60,7 +62,11 @@ export default function EducationDialog({
     if (education) {
       // Convert stored dates from MMM yyyy to yyyy-MM format
       const formatForInput = (dateString: string) => {
-        return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        try {
+          return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        } catch {
+          return "";
+        }
       };
 
       reset({

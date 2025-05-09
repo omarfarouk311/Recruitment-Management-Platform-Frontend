@@ -10,7 +10,7 @@ import axios from 'axios';
 import { UserRole } from '../User Slices/userSlice.ts';
 import { showErrorToast } from '../../util/errorHandler.ts';
 import { authRefreshToken } from '../../util/authUtils.ts';
-let cnt = 100;
+
 
 export interface SeekerProfileSlice {
     seekerProfileInfo: SeekerProfileInfo;
@@ -92,7 +92,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
                 gender: res.data.gender ? 'male' : 'female',
                 image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
-            }});
+            },
+            userImage: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+        });
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if(err.response?.status === 404) {
@@ -225,7 +227,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
 
     seekerProfileAddExperience: async (experience) => {
         try {
-            await axios.post(`${config.API_BASE_URL}/seekers/experiences`, {
+            let res = await axios.post(`${config.API_BASE_URL}/seekers/experiences`, {
                 ...experience,
                 startDate: new Date(experience.startDate).toISOString(),
                 endDate: experience.endDate ? new Date(experience.endDate).toISOString() : undefined,
@@ -237,7 +239,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                         ...experience,
                         startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
                         endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
-                        id: cnt++
+                        id: res.data.id
                     },
                     ...state.seekerProfileExperience
                 ]
@@ -347,7 +349,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
 
     seekerProfileAddEducation: async (education) => {
         try {
-            await axios.post(`${config.API_BASE_URL}/seekers/educations/add`, {
+            let res = await axios.post(`${config.API_BASE_URL}/seekers/educations/add`, {
                 ...education,
                 start_date: new Date(education.startDate).toISOString(),
                 end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
@@ -360,7 +362,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                         ...education,
                         startDate: formatDate(new Date(education.startDate), "MMM yyyy"),
                         endDate: formatDate(new Date(education.endDate), "MMM yyyy"),
-                        id: cnt++
+                        id: res.data.id
                     },
                     ...state.seekerProfileEducation
                 ]
@@ -480,9 +482,28 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         }
     },
 
-    // TODO: Skills for the user to select from 
+    
     seekerProfileFetchSkillsFormData: async () => {
+        try {
+            let res;
+            try {
+                res = await axios.get(`${config.API_BASE_URL}/skills`);
+            } catch (err) {
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        authRefreshToken();
+                    }
+                }
+            }
+            if (!res) {
+                res = await axios.get(`${config.API_BASE_URL}/skills`);
+            }
+            set({
+               seekerProfileSkillsFormData: [{name: "Select Skill", id: ""}, ...res.data]
+            })
+        } catch (err) {
 
+        }
     },
 
     seekerProfileFetchCVs: async () => {
@@ -514,7 +535,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             return;
         }
         try {
-            await axios.post(`${config.API_BASE_URL}/seekers/cvs`, cv, {
+            let res = await axios.post(`${config.API_BASE_URL}/seekers/cvs`, cv, {
                 headers: {
                     'File-Name': cv.name,
                     'Content-Type': cv.type,
@@ -526,7 +547,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     {
                         name: cv.name,
                         createdAt: formatDistanceToNow(new Date(createdAt), { addSuffix: true }),
-                        id: cnt++
+                        id: res.data.id
                     },
                     ...state.seekerProfileCVs
                 ]

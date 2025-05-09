@@ -1,7 +1,7 @@
 import { Star, Dot, Edit3, Trash2 } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BaseJobCardProps {
   job: Job;
@@ -72,19 +72,21 @@ const JobCard = ({
   const removeRecommendation = useRemoveRecommendation?.();
   const [removing, setRemoving] = useState(false);
   const deleteJob = useDeleteJob?.();
-  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [image]);
 
   return (
     <div
-      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 transition-colors w-full border-2 border-gray ${
+      className={`bg-gray-100 p-4 rounded-3xl mb-4 cursor-pointer hover:bg-gray-200 shadow transition-colors w-full border-2 border-gray ${
         isSelected ? "border-black" : ""
       }`}
       onClick={() =>
-        setSelectedJobId
-          ? setSelectedJobId(id)
-          : pushToJobDetails
-          ? pushToJobDetails(id)
-          : null
+        setSelectedJobId ? setSelectedJobId(id) : pushToJobDetails ? pushToJobDetails(id) : null
       }
       role="button"
     >
@@ -95,8 +97,10 @@ const JobCard = ({
             onClick={async (e) => {
               e.stopPropagation();
               setRemoving(true);
-              await removeRecommendation(id);
-              setTimeout(() => setRemoving(false), 500);
+              setTimeout(async () => {
+                await removeRecommendation(id);
+                setRemoving(false);
+              }, 500);
             }}
             title="Remove recommendation"
           >
@@ -105,46 +109,50 @@ const JobCard = ({
         )}
       </div>
 
-      <div className="relative">
-        {editJob && (
-          <button
-            className="absolute right-1 hover:text-blue-500"
-            onClick={(e) => {
-              e.stopPropagation();
-              editJob();
-            }}
-            title="Edit job"
-          >
-            <Edit3 />
-          </button>
-        )}
-        {deleteJob && (
-          <button
-            className="absolute right-1 mt-12 hover:text-red-500"
-            onClick={async (e) => {
-              e.stopPropagation();
-              setDeleting(true);
-              await deleteJob(id);
-              setTimeout(() => setDeleting(false), 500);
-            }}
-            title="Delete job"
-          >
-            <Trash2 />
-          </button>
-        )}
-      </div>
+      {!deleted && (
+        <div className="relative">
+          {editJob && (
+            <button
+              className="absolute right-1 hover:text-blue-500"
+              onClick={(e) => {
+                e.stopPropagation();
+                editJob();
+              }}
+              title="Edit job"
+            >
+              <Edit3 />
+            </button>
+          )}
+          {deleteJob && (
+            <button
+              className="absolute right-1 mt-12 hover:text-red-500"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await deleteJob(id);
+                setDeleted(true);
+              }}
+              title="Delete job"
+            >
+              <Trash2 />
+            </button>
+          )}
+        </div>
+      )}
+      {deleted && (
+        <div className="relative">
+          <div className="absolute right-1 hover:text-blue-500">
+            <p className="text-red-600 font-medium">Closed</p>
+          </div>
+        </div>
+      )}
 
       {removing ? (
-        <p className="text-red-500 text-md font-semibold">
-          Job Recommendation removed
-        </p>
-      ) : deleting ? (
-        <p className="text-red-500 text-md font-semibold">Job Deleted</p>
+        <p className="text-red-500 text-md font-semibold">Job Recommendation removed</p>
       ) : (
         <div className="flex items-center space-x-4">
           <div className="w-11 h-11 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {image && !imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>

@@ -54,8 +54,7 @@ const JobSeekerHome = () => {
           useIsLoading={useIsLoading}
           useSearchQuery={useSearchQuery}
           placeHolder={
-            activeTab === HomePageTabs.JobSearch ||
-            activeTab === HomePageTabs.ForYou
+            activeTab === HomePageTabs.JobSearch || activeTab === HomePageTabs.ForYou
               ? "Find your next job"
               : "Search for a company"
           }
@@ -72,11 +71,10 @@ const JobSeekerHome = () => {
         />
       </div>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto py-8">
         {loadingTab !== null ? (
           <SkeletonLoader />
-        ) : activeTab === HomePageTabs.JobSearch ||
-          activeTab === HomePageTabs.ForYou ? (
+        ) : activeTab === HomePageTabs.JobSearch || activeTab === HomePageTabs.ForYou ? (
           <ForYou />
         ) : (
           <Companies />

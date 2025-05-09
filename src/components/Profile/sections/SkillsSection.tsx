@@ -5,20 +5,28 @@ import Button from "../../common/Button";
 import SkillForm from "../forms/SkillForm"; // Add this import
 import SkeletonLoader from "../../common/SkeletonLoader";
 import { UserRole } from "../../../stores/User Slices/userSlice";
+import { Skill } from "../../../types/profile";
 
-export default function SkillsSection() {
+interface SkillSectionProps {
+  fetchSkills?: () => Promise<void>;
+  removeSkill: (skillId: number) => Promise<void> | void;
+  useSkills: () => Skill[];
+  addSkill: (skillId: number) => Promise<void> | void;
+}
+
+export default function SkillsSection({fetchSkills, removeSkill, useSkills, addSkill}: SkillSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const skills = useStore.useSeekerProfileSkills();
-  const removeSkill = useStore.useSeekerProfileRemoveSkill();
-  const fetchSkills = useStore.useSeekerProfileFetchSkills();
+  const [isLoading, setIsLoading] = useState(false);
+  const skills = useSkills();
   const userRole = useStore.useUserRole();
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchSkills().then(() => {
-      setIsLoading(false);
-    });
+    if(fetchSkills) {
+      setIsLoading(true);
+      fetchSkills().then(() => {
+        setIsLoading(false);
+      });
+    }
   }, []);
 
   return (
@@ -28,6 +36,7 @@ export default function SkillsSection() {
           <h2 className="text-xl font-semibold">Skills</h2>
           {userRole === UserRole.SEEKER && (
             <Button
+              type="button"
               variant="outline"
               onClick={() => setIsFormOpen(true)}
               className="!w-auto !h-8 !p-3"
@@ -64,12 +73,14 @@ export default function SkillsSection() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-600"> No skills to show.</p>
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-600">No skills to show.</p>
+            </div>
           )}
         </div>
 
         {userRole === UserRole.SEEKER && (
-          <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
+          <SkillForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} addSkill={addSkill} />
         )}
       </div>
     </div>

@@ -70,7 +70,8 @@ export const createSeekerInterviewsSlice: StateCreator<
       const res = await axios.get(`${config.API_BASE_URL}/interviews/seeker`, {
         params,
       });
-
+    console.log(res.data)
+      if (res.status!== 200) return;
       set((state) => ({
         seekerInterviewsData: [
           ...state.seekerInterviewsData,
@@ -83,6 +84,7 @@ export const createSeekerInterviewsSlice: StateCreator<
             country: i.location,
             city: i.city,
             date: formatDistanceToNow(new Date(i.deadline), { addSuffix: true }),
+            meetingLink: i.meetingLink,
           })),
         ],
         seekerInterviewsHasMore: res.data.length > 0,

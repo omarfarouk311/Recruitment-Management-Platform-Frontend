@@ -3,11 +3,17 @@ import { Star, ExternalLink, Dot, MoveLeft } from "lucide-react";
 import Button from "../common/Button";
 import { Link } from "react-router-dom";
 import JobDialog from "./JobDialog";
-import { mockCVs } from "../../mock data/CVs";
 import { useState, useEffect, useRef } from "react";
 import JobCard from "./JobCard";
 import ReviewCard from "../Review/ReviewCard";
 import InfoDialog from "../common/InfoDialog";
+import useStore from "../../stores/globalStore";
+import { UserRole } from "../../stores/User Slices/userSlice";
+import { CV } from "../../types/CV";
+import config from "../../../config/config";
+import axios from "axios";
+import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 
 interface JobDetailsProps {
   useDetailedjobs: () => JobDetails[];
@@ -15,8 +21,8 @@ interface JobDetailsProps {
   usePushToDetailedJobs: () => (id: number) => Promise<void>;
   usePopFromDetailedJobs: () => () => void;
   useApplyToJob: () => (id: number, cvId: number) => Promise<void>;
-  useReportJob: () => (id: number, message: string) => Promise<void>;
-  useFetchCompanyIndustries: () => (id: number) => Promise<void>;
+  useReportJob: () => (id: number, title: string, message: string) => Promise<void>;
+  useFetchCompanyIndustries: () => (companyId: number, jobId: number) => Promise<void>;
 }
 
 const JobDetails = ({
@@ -28,6 +34,10 @@ const JobDetails = ({
   useReportJob,
   useFetchCompanyIndustries,
 }: JobDetailsProps) => {
+  const [imageError, setImageError] = useState(false);
+  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const jobs = useDetailedjobs();
   const job = jobs[0];
   const isDetailsLoading = useIsDetailsLoading();
@@ -35,10 +45,15 @@ const JobDetails = ({
   const applyToJob = useApplyToJob();
   const reportJob = useReportJob();
   const fetchCompanyIndustries = useFetchCompanyIndustries();
-  const [dialogType, setDialogType] = useState<"apply" | "report" | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const userRole = useStore.useUserRole();
+  const [cvs, useSetCvs] = useState<CV[]>([]);
 
+  // Reset image error when image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [job?.companyData.image]); // Use optional chaining
+
+  // Scroll effect
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = 0;
@@ -67,6 +82,7 @@ const JobDetails = ({
   const {
     id,
     title,
+    description,
     city,
     country,
     applicantsCount,
@@ -83,7 +99,6 @@ const JobDetails = ({
       foundedIn,
       industriesCount,
       name,
-      overview,
       rating,
       size,
       industries,
@@ -91,6 +106,27 @@ const JobDetails = ({
     companyReviews,
     similarJobs,
   } = job;
+
+  const handleApply = async () => {
+    try {
+      let res;
+      try {
+        res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${id}`);
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          await authRefreshToken();
+          res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${job.id}`);
+        } else {
+          throw err;
+        }
+      }
+
+      useSetCvs([...res.data.cvs]);
+      setDialogType("apply");
+    } catch (err) {
+      showErrorToast("Something went wrong!");
+    }
+  };
 
   return (
     <div
@@ -112,8 +148,8 @@ const JobDetails = ({
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 flex items-center justify-center">
-            {image ? (
-              <img src={image} />
+            {!imageError ? (
+              <img src={image} onError={() => setImageError(true)} alt="Profile" />
             ) : (
               <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
                 <span className="text-xl text-gray-500">{name.charAt(0)}</span>
@@ -123,7 +159,7 @@ const JobDetails = ({
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-xl font-bold">{name}</h2>
-              <Link to="/seeker/company-profile" className="px-2">
+              <Link to={`/seeker/companies/${companyId}`} className="px-2">
                 <ExternalLink className="w-5 h-6 cursor-pointer text-blue-600" />
               </Link>
             </div>
@@ -158,39 +194,33 @@ const JobDetails = ({
           </div>
         </div>
 
-        <div className="space-y-4 w-40">
-          {applied ? (
-            <Button className="h-8" disabled={true} variant="outline">
-              Already Applied
-            </Button>
-          ) : (
-            <Button className="h-8" onClick={() => setDialogType("apply")}>
-              Apply
-            </Button>
-          )}
-          {reported ? (
-            <Button variant="outline" className="h-8" disabled={true}>
-              Already Reported
-            </Button>
-          ) : (
-            <Button
-              variant="report"
-              className="h-8"
-              onClick={() => setDialogType("report")}
-            >
-              Report
-            </Button>
-          )}
-        </div>
+        {userRole === UserRole.SEEKER && (
+          <div className="space-y-4 w-40">
+            {applied ? (
+              <Button className="h-8" disabled={true} variant="outline">
+                Already Applied
+              </Button>
+            ) : (
+              <Button className="h-8" onClick={handleApply}>
+                Apply
+              </Button>
+            )}
+            {reported ? (
+              <Button variant="outline" className="h-8" disabled={true}>
+                Already Reported
+              </Button>
+            ) : (
+              <Button variant="report" className="h-8" onClick={() => setDialogType("report")}>
+                Report
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
-      {overview && (
-        <div className="mb-6">
-          <p className="text-black whitespace-pre-line break-words">
-            {overview}
-          </p>
-        </div>
-      )}
+      <div className="mb-6">
+        <p className="text-black whitespace-pre-line break-words">{description}</p>
+      </div>
 
       <div className="mb-6 pt-4 relative">
         {/* Full-width border line */}
@@ -228,11 +258,10 @@ const JobDetails = ({
               title="View industries"
               onClick={() => {
                 setIsOpen(true);
-                fetchCompanyIndustries(id);
+                fetchCompanyIndustries(companyId, id);
               }}
             >
-              {industriesCount}{" "}
-              {industriesCount > 1 ? "Industries" : "Industry"}
+              {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
             </button>
           </div>
         </div>
@@ -245,9 +274,6 @@ const JobDetails = ({
 
           <div className="flex items-center space-x-2">
             <h3 className="text-lg font-semibold mb-4 pt-4">Reviews</h3>
-            <Link to="/company-profile#reviews" className="px-2">
-              <ExternalLink className="w-5 h-5 cursor-pointer text-blue-600" />
-            </Link>
           </div>
 
           <div className="space-y-4">
@@ -269,11 +295,7 @@ const JobDetails = ({
 
           <div className="space-y-4 !w-[500px] mx-auto">
             {similarJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                usePushToJobDetails={usePushToDetailedJobs}
-              />
+              <JobCard key={job.id} job={job} usePushToJobDetails={usePushToDetailedJobs} />
             ))}
           </div>
         </div>
@@ -281,10 +303,10 @@ const JobDetails = ({
 
       <JobDialog
         type={dialogType}
-        cvs={mockCVs}
+        cvs={cvs}
         onClose={() => setDialogType(null)}
         onApplySubmit={(cvId) => applyToJob(id, cvId)}
-        onReportSubmit={(message) => reportJob(id, message)}
+        onReportSubmit={(title, message) => reportJob(id, title, message)}
       />
 
       <InfoDialog

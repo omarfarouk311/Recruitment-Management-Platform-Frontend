@@ -4,19 +4,20 @@ export interface Job {
     id: number;
     title: string;
     country: string;
-    city?: string;
+    city: string;
     datePosted: string;
     companyData: {
         id: number
         name: string;
         rating: number;
-        image?: string;
+        image: string;
     }
 }
 
 export interface JobDetails {
     id: number;
     title: string;
+    description: string;
     country: string;
     city: string;
     datePosted: string;
@@ -28,10 +29,9 @@ export interface JobDetails {
     reported: boolean;
     companyData: {
         id: number;
-        image?: string;
+        image: string;
         name: string;
         rating: number;
-        overview: string;
         size: number;
         foundedIn: number;
         type: string;
@@ -48,5 +48,20 @@ export interface ForYouTabFilters {
     industry: string;
     country: string;
     city: string;
+    remote: boolean;
+}
+
+export interface CompanyJobListFilters {
+    jobs: {
+        id: number;
+        jobTitle: string;
+    },
+    sortBy: string;
+}
+
+export interface CompanyProfileJobsFilters {
+    sortByDate: string;
+    jobId: string
+    industryId: string;
     remote: boolean;
 }

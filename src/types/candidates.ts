@@ -33,3 +33,33 @@ export const CandidateSortOptions = [
   { label: 'Date Applied{Ascending}', value: "1" },
   { label: 'Date Applied{Desecending}', value: "-1" },
 ];
+
+
+
+export interface CompanyCandidates {
+  seekerId: number;
+  seekerName: string;
+  phase: string;
+  dateApplied: string;
+  candidateCountry: string;
+  candidateCity: string;
+  recruiterName?: string;
+  score?: number;
+  totalScore?: number;
+  rank?: number;
+  recruiterId: number | undefined;
+}
+
+
+export interface CompanyCandidateFilters {
+  candidateCountry: string;
+  candidateCity: string;
+  phaseType: string;
+  sortBy: string;
+  status: string;
+}
+
+export const CompanyCandidateSortByFilters = [
+  { value: "1", label: "Recommendation" },
+  { value: "-1", label: "Assessment Score" }
+]

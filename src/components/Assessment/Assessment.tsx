@@ -8,6 +8,7 @@ import useStore from "../../stores/globalStore";
 import { Timer } from "./Timer";
 import SkeletonLoader from "../common/SkeletonLoader";
 import { UserRole } from "../../stores/User Slices/userSlice";
+import { useNavigate } from "react-router-dom";
 
 export const Assessment = () => {
   const [activeQuestion, setActiveQuestion] = useState(1);
@@ -19,6 +20,8 @@ export const Assessment = () => {
   const modifyQuestions = useStore.useAssessmentModifyQuestions();
   const submitAnswers = useStore.useAssessmentSubmitAnswers();
   const isLoading = useStore.useAssessmentIsLoading();
+  const submitionIsLoading = useStore.useAssessmentSubmitionIsLoading();
+  const navigate = useNavigate();
 
   // Textarea auto-resize effect
   useEffect(() => {
@@ -36,12 +39,7 @@ export const Assessment = () => {
   useEffect(() => {
     if (isLoading == false && assessmentData?.questions.length)
       setShowInstructionsModal(true);
-    else if (assessmentData?.questions.length == 0) {
-      modifyQuestions((_) => [
-        { id: 1, text: "", answers: [""], correctAnswers: [] },
-      ]);
-      setActiveQuestion(0);
-    }
+    setActiveQuestion(0);
   }, [isLoading]);
 
   useEffect(() => {
@@ -68,7 +66,8 @@ export const Assessment = () => {
         ...(questions || []),
         {
           id: questions.length + 1,
-          text: "",
+          questionNum: questions.length + 1,
+          question: "",
           answers: [""],
           correctAnswers: [],
         },
@@ -186,7 +185,7 @@ export const Assessment = () => {
                         activeQuestion === index ? "text-white" : "text-black"
                       }`}
                     >
-                      {question.id}
+                      {question.questionNum}
                     </span>
                   </div>
                   <div className="w-full h-px bg-gray-300" />
@@ -246,7 +245,7 @@ export const Assessment = () => {
                   )}
                 </div>
                 <textarea
-                  value={assessmentData?.questions[activeQuestion]?.text || ""}
+                  value={assessmentData?.questions[activeQuestion]?.question || ""}
                   onChange={(e) =>
                     modifyQuestions((questions) =>
                       questions.map((q, i) =>
@@ -290,7 +289,7 @@ export const Assessment = () => {
                             <div className="w-6 h-6 bg-white rounded-md mr-4 flex items-center justify-center">
                               {assessmentData.questions[
                                 activeQuestion
-                              ].correctAnswers.includes(i) && (
+                              ].correctAnswers?.includes(i) && (
                                 <CheckIcon className="w-5 h-5" />
                               )}
                             </div>
@@ -367,6 +366,7 @@ export const Assessment = () => {
                             activeQuestion
                           ) {
                             submitAnswers();
+                            navigate('/seeker/home')
                           } else {
                             setActiveQuestion((prev) =>
                               Math.min(
@@ -376,6 +376,7 @@ export const Assessment = () => {
                             );
                           }
                         }}
+                        loading = {submitionIsLoading}
                       >
                         {assessmentData!.questions.length - 1 === activeQuestion
                           ? "Submit"

@@ -7,23 +7,31 @@ import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
 import { UserRole } from "../../../stores/User Slices/userSlice";
 
-export default function ExperienceSection() {
+interface ExperienceSectionProps {
+  fetchExperience?: () => Promise<void>;
+  removeExperience: (experienceId: number) => Promise<void> | void;
+  useExperiences: () => Experience[]; 
+  updateExperience: (experience: Experience) => Promise<void> | void;
+  addExperience: (experience: Experience) => Promise<void> | void;
+}
+
+export default function ExperienceSection({removeExperience, fetchExperience, useExperiences, updateExperience, addExperience}: ExperienceSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<
     Experience | undefined
   >(undefined);
-  const experiences = useStore.useSeekerProfileExperience();
-  const [isLoading, setIsLoading] = useState(true);
-  const removeExperience = useStore.useSeekerProfileRemoveExperience();
-  const fetchExperience = useStore.useSeekerProfileFetchExperience();
-  const [showAll, setShowAll] = useState(false);
+  const experiences = useExperiences();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);  
   const userRole = useStore.useUserRole();
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchExperience().then(() => {
-      setIsLoading(false);
-    });
+    if(fetchExperience) {
+      setIsLoading(true);
+      fetchExperience().then(() => {
+        setIsLoading(false);
+      });
+    }
   }, []);
 
   const handleAddExperience = () => {
@@ -43,6 +51,7 @@ export default function ExperienceSection() {
           <h2 className="text-xl font-semibold">Experiences</h2>
           {userRole === UserRole.SEEKER && (
             <Button
+              type="button"
               variant="outline"
               className="!w-auto !h-8 !p-3"
               onClick={handleAddExperience}
@@ -135,6 +144,8 @@ export default function ExperienceSection() {
 
       {userRole === UserRole.SEEKER && (
         <ExperienceForm
+          updateExperience={updateExperience}
+          addExperience={addExperience}
           experience={editingExperience}
           onClose={() => {
             setIsFormOpen(false);

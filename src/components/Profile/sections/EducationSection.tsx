@@ -7,23 +7,31 @@ import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
 import { UserRole } from "../../../stores/User Slices/userSlice";
 
-export default function EducationSection() {
+interface EducationSectionProps {
+  fetchEducation?: () => Promise<void>;
+  removeEducation: (educationId: number) => Promise<void> | void;
+  useEducation: () => Education[]; 
+  addEducation: (education: Education) => Promise<void> | void;
+  updateEducation: (education: Education) => Promise<void> | void;
+}
+
+export default function EducationSection({removeEducation, fetchEducation, useEducation, addEducation, updateEducation}: EducationSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<
     Education | undefined
   >(undefined);
-  const education = useStore.useSeekerProfileEducation();
-  const [isLoading, setIsLoading] = useState(true);
-  const removeEducation = useStore.useSeekerProfileRemoveEducation();
-  const fetchEducation = useStore.useSeekerProfileFetchEducation();
+  const education = useEducation();
+  const [isLoading, setIsLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const userRole = useStore.useUserRole();
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchEducation().then(() => {
-      setIsLoading(false);
-    });
+    if(fetchEducation) {
+      setIsLoading(true);
+      fetchEducation().then(() => {
+        setIsLoading(false);
+      });
+    }
   }, []);
 
   const handleAddEducation = () => {
@@ -43,6 +51,7 @@ export default function EducationSection() {
           <h2 className="text-xl font-semibold">Education</h2>
           {userRole === UserRole.SEEKER && (
             <Button
+              type="button"
               variant="outline"
               className="!w-auto !h-8 !p-3"
               onClick={handleAddEducation}
@@ -129,6 +138,8 @@ export default function EducationSection() {
       {userRole === UserRole.SEEKER && (
         <EducationForm
           education={editingEducation}
+          addEducation={addEducation}
+          updateEducation={updateEducation}
           onClose={() => {
             setIsFormOpen(false);
           }}

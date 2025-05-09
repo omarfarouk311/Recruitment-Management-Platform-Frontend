@@ -7,3 +7,8 @@ export interface Review {
     description: string;
     companyData?: { id: number, name: string }
 }
+
+export interface CompanyProfileReviewsFilters {
+    sortByDate: string;
+    rating: string;
+}

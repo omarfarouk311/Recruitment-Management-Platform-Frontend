@@ -37,7 +37,7 @@ function Dashboard<T>({
   const hasMore = useHasMore();
   const isLoading = useIsLoading();
   const fetchData = useFetchData();
-
+  console.log("innnnnnnnnnnn")
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {

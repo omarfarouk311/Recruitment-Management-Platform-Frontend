@@ -67,6 +67,7 @@ export const mockReviews: Review[] = Array(20)
       "Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company Great Company.",
     role: `Senior Developer ${i + 1}`,
     createdAt: new Date().toISOString(),
+    title: `Great Company ${i + 1}`,
     companyData: {
       id: i,
       name: `Microsoft ${i + 1}`

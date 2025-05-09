@@ -2,14 +2,23 @@ import { useEffect, useRef } from "react";
 import ReviewCard from "./ReviewCard";
 import { Review } from "../../types/review";
 
-interface ReviewListProps {
+interface BaseReviewListProps {
   reviews: Review[];
   hasMore: boolean;
   isLoading: boolean;
   onLoadMore: () => Promise<void>;
-  removeReview?: (id: number) => Promise<void>;
-  updateReview?: (review: Review) => Promise<void>;
 }
+interface ReviewListPropsEditDelete extends BaseReviewListProps {
+  removeReview: (id: number) => Promise<void>;
+  updateReview: (review: Review) => Promise<void>;
+}
+
+interface ReviewListPropsNoActions extends BaseReviewListProps {
+  removeReview?: never;
+  updateReview?: never;
+}
+
+type ReviewListProps = ReviewListPropsEditDelete | ReviewListPropsNoActions;
 
 export default function ReviewList({
   reviews,
@@ -45,18 +54,14 @@ export default function ReviewList({
   }, [isLoading]);
 
   return (
-    <div className="space-y-4 max-h-[500px] overflow-y-auto">
+    <div className="space-y-6 h-[600px] overflow-y-auto">
       {reviews.length === 0 && !isLoading ? (
         <div className="text-center py-4 text-gray-500">No reviews found.</div>
       ) : (
         <>
           {reviews.map((review) => (
             <div className="px-2" key={review.id}>
-              <ReviewCard
-                review={review}
-                removeReview={removeReview}
-                updateReview={updateReview}
-              />
+              <ReviewCard review={review} removeReview={removeReview} updateReview={updateReview} />
             </div>
           ))}
           {isLoading && (
@@ -65,9 +70,7 @@ export default function ReviewList({
             </div>
           )}
           {!hasMore && (
-            <div className="text-center pt-4 text-gray-500">
-              No more reviews to show
-            </div>
+            <div className="text-center pt-4 text-gray-500">No more reviews to show</div>
           )}
           <div ref={observerTarget} className="h-2" />
         </>

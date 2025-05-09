@@ -4,6 +4,7 @@ import { CombinedState } from '../storeTypes';
 export interface JobDetailsDialogSlice {
     JobDetailsDialogIsOpen: boolean;
     JobDetailsDialogSelectedJobId: number | null;
+    JobDetailsDialogClear: () => void;
     JobDetailsDialogSetIsOpen: (value: boolean) => void;
     JobDetailsDialogSetSelectedJobId: (id: number) => void;
 }
@@ -13,4 +14,5 @@ export const createJobDetailsDialogSlice: StateCreator<CombinedState, [], [], Jo
     JobDetailsDialogSelectedJobId: null,
     JobDetailsDialogSetIsOpen: (value) => set({ JobDetailsDialogIsOpen: value }),
     JobDetailsDialogSetSelectedJobId: (id) => set({ JobDetailsDialogSelectedJobId: id }),
+    JobDetailsDialogClear: () => set({ JobDetailsDialogIsOpen: false, JobDetailsDialogSelectedJobId: null }),
 });

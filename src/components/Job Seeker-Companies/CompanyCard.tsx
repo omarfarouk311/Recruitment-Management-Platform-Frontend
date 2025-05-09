@@ -2,7 +2,7 @@ import { Star, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CompanyCard } from "../../types/company";
 import InfoDialog from "../common/InfoDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CompanyCardProps {
   company: CompanyCard;
@@ -32,6 +32,12 @@ const CompanyCard = ({
   const [isLocationsDialogOpen, setLocationsDialogOpen] = useState(false);
   const fetchCompanyIndustries = useFetchCompanyIndustries();
   const fetchCompanyLocations = useFetchCompanyLocations();
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [image]);
 
   return (
     <>
@@ -39,13 +45,11 @@ const CompanyCard = ({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="w-11 h-11 flex items-center justify-center">
-              {image ? (
-                <img src={image} />
+              {image && !imageError ? (
+                <img src={image} onError={() => setImageError(true)} alt="Profile" />
               ) : (
                 <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
-                  <span className="text-xl text-gray-500">
-                    {name.charAt(0)}
-                  </span>
+                  <span className="text-xl text-gray-500">{name.charAt(0)}</span>
                 </div>
               )}
             </div>
@@ -66,37 +70,29 @@ const CompanyCard = ({
 
           <div className="flex mx-5 mb-2 space-x-24">
             <div className="text-center">
-              <Link to="/seeker/company-profile#reviews">
-                <div className="text-xl font-semibold text-blue-500">
-                  {new Intl.NumberFormat("en-US", {
-                    notation: "compact",
-                    compactDisplay: "short",
-                    maximumFractionDigits: 1,
-                    maximumSignificantDigits: 3,
-                    signDisplay: "never",
-                  }).format(reviewsCount)}
-                </div>
-              </Link>
-              <div className="text-sm text-black text-center font-semibold">
-                Reviews
+              <div className="text-xl font-semibold text-blue-500">
+                {new Intl.NumberFormat("en-US", {
+                  notation: "compact",
+                  compactDisplay: "short",
+                  maximumFractionDigits: 1,
+                  maximumSignificantDigits: 3,
+                  signDisplay: "never",
+                }).format(reviewsCount)}
               </div>
+              <div className="text-sm text-black text-center font-semibold">Reviews</div>
             </div>
 
             <div className="text-center">
-              <Link to="/seeker/company-profile#jobs">
-                <div className="text-xl font-semibold text-blue-500">
-                  {new Intl.NumberFormat("en-US", {
-                    notation: "compact",
-                    compactDisplay: "short",
-                    maximumFractionDigits: 1,
-                    maximumSignificantDigits: 3,
-                    signDisplay: "never",
-                  }).format(jobsCount)}
-                </div>
-              </Link>
-              <div className="text-sm text-black text-center font-semibold">
-                Jobs
+              <div className="text-xl font-semibold text-blue-500">
+                {new Intl.NumberFormat("en-US", {
+                  notation: "compact",
+                  compactDisplay: "short",
+                  maximumFractionDigits: 1,
+                  maximumSignificantDigits: 3,
+                  signDisplay: "never",
+                }).format(jobsCount)}
               </div>
+              <div className="text-sm text-black text-center font-semibold">Jobs</div>
             </div>
           </div>
         </div>
@@ -140,8 +136,7 @@ const CompanyCard = ({
                 fetchCompanyIndustries(id);
               }}
             >
-              {industriesCount}{" "}
-              {industriesCount > 1 ? "Industries" : "Industry"}
+              {industriesCount} {industriesCount > 1 ? "Industries" : "Industry"}
             </button>
           </div>
         </div>
@@ -158,9 +153,7 @@ const CompanyCard = ({
       <InfoDialog
         header={`${name} Locations`}
         isOpen={isLocationsDialogOpen}
-        data={locations.map(
-          ({ country, city }) => `${country}${city ? `, ${city}` : ""}`
-        )}
+        data={locations.map(({ country, city }) => `${country}${city ? `, ${city}` : ""}`)}
         onClose={() => setLocationsDialogOpen(false)}
       />
     </>

@@ -27,15 +27,17 @@ interface ExperienceDialogProps {
   isOpen: boolean;
   onClose: () => void;
   experience?: Experience;
+  updateExperience: (experience: Experience) => Promise<void> | void;
+  addExperience: (experience: Experience) => Promise<void> | void;
 }
 
 export default function ExperienceDialog({
   isOpen,
   onClose,
   experience,
+  updateExperience,
+  addExperience
 }: ExperienceDialogProps) {
-  const addExperience = useStore.useSeekerProfileAddExperience();
-  const updateExperience = useStore.useSeekerProfileUpdateExperience();
 
   const {
     register,
@@ -67,7 +69,11 @@ export default function ExperienceDialog({
     if (experience) {
       // Convert stored dates from MMM yyyy to yyyy-MM format
       const formatForInput = (dateString: string) => {
-        return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        try {
+          return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+        } catch {
+          return "";
+        }
       };
 
       reset({
@@ -90,7 +96,8 @@ export default function ExperienceDialog({
     }
   }, [isOpen]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: FormData, event?: React.BaseSyntheticEvent) => {
+    event?.stopPropagation();
     const isValid = await trigger();
 
     const [startYear, startMonth] = data.startDate.split("-").map(Number);

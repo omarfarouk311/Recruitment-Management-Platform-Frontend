@@ -25,82 +25,81 @@ const SeekerInterviews = () => {
     const clear = useStore.useClearSeekerInterviews();
 
     useEffect(() => {
-       clear();
-       useSetCompanyNames();
-       fetchData();
+        clear();
+        useSetCompanyNames();
+        fetchData();
 
-       return clear;
-   }, []);
+        return clear;
+    }, []);
 
-   const handleEnterInterview = (row:number) => {
-    console.log("Entering interview for:", row);
-    // You can navigate to another page, open a modal, etc.
-  };
-  
-   
+
 
 
     const columns: ColumnDef<interview>[] = [
-        { 
-            key: "jobTitle", 
+        {
+            key: "jobTitle",
             header: "Job Title",
             render: (row) => {
-                return(
-                <div>
-                    <button onClick={() => {
-                        setDialogIsOpen(true);
-                        setSelectedJobId(row.jobId);
-                    }}
-                    disabled={!row.jobId}
-                    className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
-                    title={row.jobId ? "Click to view job details" : "No job details available"}>
-                        {row.jobTitle}
-                    </button>
-                </div>
-            )}
+                return (
+                    <div>
+                        <button onClick={() => {
+                            setDialogIsOpen(true);
+                            setSelectedJobId(row.jobId);
+                        }}
+                            disabled={!row.jobId}
+                            className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
+                            title={row.jobId ? "Click to view job details" : "No job details available"}>
+                            {row.jobTitle}
+                        </button>
+                    </div>
+                )
+            }
         },
-        { 
-            key: "companyName", 
+        {
+            key: "companyName",
             header: "Company",
             render: (row) => {
-                return(
-                <div>
-                    {row.companyId ? (
-                        <Link 
-                            to="/seeker/company-profile" 
-                            className="px-2 text-blue-600 hover:underline underline-offset-2"
-                            title="Click to view company profile">
-                            {row.companyName}
-                        </Link>
-                    ) : (
-                        <span className="px-2 cursor-default" title="Company profile not available">
-                            {row.companyName}
-                        </span>
-                    )}
-                </div>
-            )}
+                return (
+                    <div>
+                        {row.companyId ? (
+                            <Link
+                                to="/seeker/company-profile"
+                                className="px-2 text-blue-600 hover:underline underline-offset-2"
+                                title="Click to view company profile">
+                                {row.companyName}
+                            </Link>
+                        ) : (
+                            <span className="px-2 cursor-default" title="Company profile not available">
+                                {row.companyName}
+                            </span>
+                        )}
+                    </div>
+                )
+            }
         },
         { key: "country", header: "Locations" }, // Updated header to "Locations"
         { key: "date", header: "Date" }, // Updated header to "Date"
-        { key: "recruiter", header: "recruiter" }, 
+        { key: "recruiter", header: "recruiter" },
         {
             key: 'actions',
             header: 'Actions',
             render: (row) => (
-              <Button
-                variant="primary"
-                className="h-7 text-sm !w-auto ml-4"
-                onClick={() => handleEnterInterview(row.companyId!)} 
-              >
-                Enter Interview
-              </Button>
+                <div className="flex space-x-1">
+                    <Button
+                        variant="primary"
+                        className="px-0.5 py-1 rounded-full bg-black text-white hover:bg-white hover:text-black border border-black transition-colors duration-200"
+                        onClick={() => window.open(row.meetingLink, '_blank')}
+                    >
+                        Join Interview
+                    </Button>
+                </div>
             )
-          },
-          
+        },
+
 
 
     ];
-    
+
     return (
         <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
             <div className="flex justify-between items-center mb-8">
@@ -145,10 +144,10 @@ const SeekerInterviews = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
-                <JobDetailsDialog 
+                <JobDetailsDialog
                     useIsOpen={useStore.useJobDetailsDialogIsOpen}
                     useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen}
-               
+
                 />
             </div>
         </div>
