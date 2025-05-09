@@ -40,3 +40,23 @@ export interface LogsFilters {
   action: string;
 }
 
+
+export interface CompanyRecruiters {
+  id: number;
+  name: string;
+  department: string;
+  assigned_candidates_cnt: number;
+}
+
+export interface RecruiterNames {
+  id: string;
+  name: string;
+}
+
+export interface CompanyRecruitersFilter {
+  id: number | undefined;
+  name: string | undefined;
+  department: string | undefined;
+  assigned_candidates_cnt: number | undefined;
+}
+

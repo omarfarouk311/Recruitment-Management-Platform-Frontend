@@ -190,8 +190,8 @@ export const createCompanyCandidatesSlice: StateCreator<
                 `${config.API_BASE_URL}/candidates/job/${companyTabSelectJobId}`,
                 { params }
             );
-            console.log(res.data)
-            console.log(`Hello ${companyTabSelectJobId}`)
+            console.log(res)
+            console.log(`Hello ${res.data.length}`)
             set((state: CombinedState) => ({
                 Companycandidates: [
                     ...state.Companycandidates,

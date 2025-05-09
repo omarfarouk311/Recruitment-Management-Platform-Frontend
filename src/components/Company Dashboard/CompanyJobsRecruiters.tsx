@@ -75,47 +75,51 @@ const CompanyJobsRecruiters = () => {
             {/* Non-scrollable header */}
             <div className="flex justify-between items-center mb-4 shrink-0">
                 <h1 className="px-6 py-2 text-3xl font-bold">Recruiters</h1>
-                <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-10">
-                    <FilterDropdown
-                        key="recruiterName"
-                        label="Recruiter"
-                        options={
-                            recruiterNames && recruiterNames.length > 0
-                                ? recruiterNames.map((title) => ({
-                                    value: String(title),
-                                    label: String(title) // Ensure label is always a string
-                                }))
-                                : [{
-                                    value: '',
-                                    label: 'No recruiter available'
-                                }]
-                        }
-                        selectedValue={filters.recruiterName}
-                        onSelect={(value) => setFilters({ ...filters, recruiterName: value })}
-                        disabled={!recruiterNames || recruiterNames.length === 0}
-                    />
+                  {/* Filter dropdowns row - now positioned below the title */}
+            <div className="flex items-center py-4 px-6 gap-4 flex-nowrap z-10">
+            {/* First dropdown */}
+            <FilterDropdown
+                key="name"
+                label="Recruiter"
+                options={[
+                    ...(recruiterNames && recruiterNames.length > 0
+                    ? recruiterNames.map((title) => ({
+                        value: String(title),
+                        label: String(title)
+                        }))
+                    : [{
+                        value: '',
+                        label: 'No recruiters available'
+                        }])
+                ]}
+                selectedValue={filters.recruiterName ? String(filters.recruiterName) : ''}
+                onSelect={(value) => {
+                    setFilters({ 
+                    ...filters, 
+                    recruiterName: value || undefined // Set to undefined when neutral is selected
+                    });
+                }}
+                disabled={!recruiterNames || recruiterNames.length === 0}
+                />
 
-                    <FilterDropdown
-                        key="department"
-                        label="Department"
-                        options={departments && departments.length > 0
-                            ? departments.map((title) => ({ value: String(title), label: String(title) }))
-                            : [{ value: '', label: 'No departments available' }]
-                        }
-                        selectedValue={filters.department}
-                        onSelect={(value) => setFilters({ ...filters, department: value })}
-                        disabled={!departments || departments.length === 0}
-                    />
-
-                    <FilterDropdown
-                        key="assignedCandidates"
-                        label="Sort by: Assigned Candidates"
-                        options={CompanyJobsRecruitersSortOptions.filter(
-                            (option) => option.value === "1" || option.value === "-1"
-                        )}
-                        selectedValue={String(filters.assignedCandidates)}
-                        onSelect={(value) => setFilters({ ...filters, assignedCandidates: (value) })}
-                    /> 
+            {/* Second dropdown - now positioned immediately after the first */}
+            <FilterDropdown
+                key="assignedCandidates"
+                label="Sort by: Assigned Candidates"
+                options={[
+                    // Add neutral option first
+                    ...CompanyJobsRecruitersSortOptions.filter(
+                    (option) => option.value === "1" || option.value === "-1"
+                    )
+                ]}
+                selectedValue={filters.assignedCandidates ? String(filters.assignedCandidates) : ''}
+                onSelect={(value) => {
+                    setFilters({ 
+                    ...filters, 
+                    assignedCandidates: value ? String(Number(value)) : undefined
+                    });
+                }}
+                />
                 </div>
             </div>
             {/* Scrollable content area */}

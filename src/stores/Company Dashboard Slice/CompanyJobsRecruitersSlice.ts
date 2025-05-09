@@ -61,31 +61,29 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
 
     CompanyJobsRecruitersFetchRecruiters: async () => {
         const { CompanyJobsRecruitersPage, CompanyJobsRecruitersFilters } = get();
-
         set({ CompanyJobsRecruitersIsLoading: true });
         try {
-            const params = {
-                page: CompanyJobsRecruitersPage,
-                name: CompanyJobsRecruitersFilters.recruiterName,
-                department: CompanyJobsRecruitersFilters.department,
-                sorted: CompanyJobsRecruitersFilters.assignedCandidates,
-            };
-
-            // Remove undefined values from params
-            for (const key in params) {
-                if (params[key as keyof typeof params] === "") {
-                    delete params[key as keyof typeof params];
-                }
-            }
-            
+            // Clean filters the same way as the second function
+            const cleanedFilters = Object.fromEntries(
+                Object.entries(CompanyJobsRecruitersFilters).filter(
+                    ([_, value]) => value !== "" && value !== undefined && value !== null
+                )
+            );
+    
             const response = await axios.get(
                 `${API_BASE_URL}/recruiters`,
                 {
-                   params,
+                    params: {
+                        page: CompanyJobsRecruitersPage,
+                        ...cleanedFilters,
+                        // Ensure consistent param names with backend expectations
+                        name: cleanedFilters.recruiterName,
+                        sorted: cleanedFilters.assignedCandidates,
+                    }
                 }
             );
+    
             const data = response.data.recruiters;
-            console.log(data)
             set((state: CombinedState) => ({
                 CompanyJobsRecruiters: [...state.CompanyJobsRecruiters, ...data],
                 CompanyJobsRecruitersPage: CompanyJobsRecruitersPage + 1,

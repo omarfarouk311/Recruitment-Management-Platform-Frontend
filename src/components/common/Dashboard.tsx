@@ -39,13 +39,15 @@ function Dashboard<T>({
   const fetchData = useFetchData();
   console.log("innnnnnnnnnnn")
   useEffect(() => {
+    console.log(hasMore, isLoading)
     const observer = new IntersectionObserver(
+  
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !isLoading) {
           fetchData();
         }
       },
-      { threshold: 0.9 }
+      { threshold: 0.8 }
     );
 
     const currentTarget = observerTarget.current;

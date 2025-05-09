@@ -7,7 +7,7 @@ import useStore from "../stores/globalStore";
 import { useEffect } from "react";
 import CompanyLogs from "../components/Company Dashboard/CompanyLogs";
 import CompanyJobs from "../components/Company Dashboard/CompanyJobs";
-
+import CompanyRecruiters from "../components/Company Dashboard/CompanyRecruitersParent";
 
 const CompanyDashboard = () => {
   const activeTab = useStore.useCompanyDashboardActiveTab();
@@ -52,7 +52,10 @@ const CompanyDashboard = () => {
         ) : activeTab == companyDashboardTabs.logs ? (
           <CompanyLogs />
         ) : activeTab == companyDashboardTabs.jobs ? (
-           <CompanyJobs/>): null}
+           <CompanyJobs/>
+        ): activeTab == companyDashboardTabs.recruiters? (
+          <CompanyRecruiters />
+        ): null} 
       </div>
     </>
   );
