@@ -4,7 +4,7 @@ import { CombinedState } from "../storeTypes";
 export enum UserRole {
   SEEKER = 0,
   COMPANY = 1,
-  RECRUITER = 3
+  RECRUITER = 2
 }
 export interface userSlice {
   userId: number | null;

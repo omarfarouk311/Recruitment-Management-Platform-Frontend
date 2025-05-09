@@ -5,19 +5,49 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import googleLogo from "../assets/google-logo.png";
 import facebookLogo from "../assets/facebook-logo.png";
+import axios from "axios";
+import config from '../../config/config';
+import useStore from "../stores/globalStore";
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const setUserId=useStore.useUserSetId();
+  const setName=useStore.useUserSetName();
+  const setRole=useStore.useUserSetRole();
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     // Add login logic here
-    setTimeout(() => {
+    let res;
+    try {
+        res = await axios.post(`${config.API_BASE_URL}/auth/login`, {
+        email,
+        password
+      },
+      {
+        withCredentials: true 
+      }
+
+    );
+
+      setUserId(res.data.userId);
+      setName(res.data.name); 
+      setRole(res.data.userRole);
+      
+      // localStorage.setItem("token", res.data.token);
+      navigate("/seeker/home");
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Login failed");
+    } finally {
       setLoading(false);
-      navigate("/home");
-    }, 1500);
+    }
+   
   };
 
   return (
@@ -36,17 +66,22 @@ const Login = () => {
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
-          label="Email address"
-          type="email"
-          placeholder="Enter your email address"
-          required
-        />
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          required
-        />
+        label="Email address"
+        type="email"
+        placeholder="Enter your email address"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <Input
+        label="Password"
+        type="password"
+        placeholder="Enter your password"
+        required
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
         <div className="flex items-center justify-end">
           <Link
