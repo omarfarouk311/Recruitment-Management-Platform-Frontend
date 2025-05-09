@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { Link } from "react-router-dom";
 import useStore from "../../stores/globalStore";
@@ -9,7 +9,6 @@ import LocationSearch from "../common/LocationSearch";
 import { CompanyCandidates } from "../../types/candidates";
 import { DashboardStatusFilterOptions } from "../../types/company";
 import { CompanyCandidateSortByFilters } from "../../types/candidates";
-import Button from "../common/Button";
 
 
 

@@ -24,6 +24,7 @@ export interface CompanyRecruitersSlice {
     CompanyRecruitersDelete: ( recruiterId: number ) => Promise<void>;
     CompanyRecruiterFetchAllRecruiters: () => Promise<void>;
     CompanyRecruiterSetId: (recruiterId: number | null) => void;
+    CompanyRecruitersAdd(email: string, department: string, deadline: string): Promise<void>;
 }
 
 export const createCompanyRecruitersSlice: StateCreator<
@@ -40,11 +41,39 @@ export const createCompanyRecruitersSlice: StateCreator<
         id: undefined,
         name: undefined,
         department: undefined,
-        assigned_candidates_cnt: undefined,
+        sorted: undefined,
     },
     RecruiterNames: [],
     CompanyRecruiterId: null,
 
+    CompanyRecruitersAdd: async (email, department, deadline) => {
+        set({ CompanyRecruitersIsLoading: true });
+        try {
+            console.log("email", email);
+            console.log("department", department);
+            console.log("deadline", deadline);
+            // const response = await axios.post(
+            //     `${API_BASE_URL}/recruiters`,
+            //     {
+            //         email,
+            //         department,
+            //         deadline,
+            //     }
+            // );
+            // if (response.status === 200) {
+            //     set((state) => ({
+            //         CompanyRecruiters: [
+            //             ...state.CompanyRecruiters,
+            //             response.data.recruiter,
+            //         ],
+            //     }));
+            // }
+        } catch (error) {
+            console.error("Error adding recruiter:", error);
+        } finally {
+            set({ CompanyRecruitersIsLoading: false });
+        }
+    },
     CompanyRecruiterSetId: (recruiterId) => {
         set({ CompanyRecruiterId: recruiterId });
     },
@@ -109,7 +138,7 @@ export const createCompanyRecruitersSlice: StateCreator<
                 id: undefined,
                 name: undefined,
                 department: undefined,
-                assigned_candidates_cnt: undefined,
+                sorted: undefined,
             },
             RecruiterNames: [],
             CompanyRecruiterId: null,

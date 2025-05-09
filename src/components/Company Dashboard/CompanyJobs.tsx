@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import CompanyJobsCandidates from "./CompanyJobsCandidates";
 import JobList from "./CompanyJobsList";
 import CompanyJobsRecruiters from "./CompanyJobsRecruiters";

@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useStore from "../../stores/globalStore";
 import JobList from '../Job Seeker-For You/JobList'
 

@@ -32,6 +32,8 @@ import { CompanyJobListSlice } from './Company Dashboard Slice/CompanyJobListsSl
 import { CompanyJobsRecruitersSlice } from './Company Dashboard Slice/CompanyJobsRecruitersSlice';
 
 import { CompanyRecruitersSlice } from "./Company Dashboard Slice/CompanyRecruitersSlice";
+
+import { CompanyAssignedCandidatesSlice } from "./Company Dashboard Slice/CompanyAssignedCandidatesSlice";
  
 export type CombinedState =
   ForYouTabSlice &
@@ -58,4 +60,5 @@ export type CombinedState =
   CompanyJobListSlice &
   CompanyJobsRecruitersSlice &
   CompanyProfileSlice &
-  CompanyRecruitersSlice;
+  CompanyRecruitersSlice &
+  CompanyAssignedCandidatesSlice;

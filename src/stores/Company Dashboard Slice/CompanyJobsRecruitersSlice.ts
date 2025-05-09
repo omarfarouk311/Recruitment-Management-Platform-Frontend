@@ -55,11 +55,13 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
             CompanyJobsRecruiters: [],
             CompanyJobsRecruitersPage: 1,
             CompanyJobsRecruitersHasMore: true,
+            CompanyJobsRecruitersIsLoading: false,
         }));
         await get().CompanyJobsRecruitersFetchRecruiters();
     },
 
     CompanyJobsRecruitersFetchRecruiters: async () => {
+        console.log("fetching recruiters")
         const { CompanyJobsRecruitersPage, CompanyJobsRecruitersFilters } = get();
         set({ CompanyJobsRecruitersIsLoading: true });
         try {
@@ -88,7 +90,9 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
                 CompanyJobsRecruiters: [...state.CompanyJobsRecruiters, ...data],
                 CompanyJobsRecruitersPage: CompanyJobsRecruitersPage + 1,
                 CompanyJobsRecruitersHasMore: data.length > 0,
+                CompanyJobsRecruitersIsLoading: false,
             }));
+            console.log("now " + get().CompanyJobsRecruitersIsLoading)
         }
         catch (error) {
             console.error("Error fetching recruiters:", error);

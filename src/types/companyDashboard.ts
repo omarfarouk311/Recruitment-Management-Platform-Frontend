@@ -57,6 +57,21 @@ export interface CompanyRecruitersFilter {
   id: number | undefined;
   name: string | undefined;
   department: string | undefined;
-  assigned_candidates_cnt: number | undefined;
+  sorted: number | undefined;
 }
 
+
+
+export interface CompanyAssignedCandidates {
+  job_seeker_id: number;
+  job_seeker_name: string;
+  job_title: string;
+  job_id: number
+  phase_name: string;
+}
+
+
+export interface CompanyAssignedCandidatesFilters {
+  phaseType: string;
+  jobTitle: string;
+}

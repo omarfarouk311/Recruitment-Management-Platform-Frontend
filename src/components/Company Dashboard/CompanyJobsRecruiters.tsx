@@ -16,7 +16,6 @@ const CompanyJobsRecruiters = () => {
     const recruiterNames = useStore.useCompanyRecruiterNames()
 
     const fetchDepartments = useStore.useCompanyJobsRecruitersFetchDepartments()
-    const departments = useStore.useCompanyJobsRecruitersDepartments()
 
     const fetchRecruiters = useStore.useCompanyJobsRecruitersFetchRecruiters;
     const fetchRecruitersData = fetchRecruiters();
