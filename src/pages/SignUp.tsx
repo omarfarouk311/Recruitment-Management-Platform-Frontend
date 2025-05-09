@@ -5,19 +5,51 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import googleLogo from "../assets/google-logo.png";
 import facebookLogo from "../assets/facebook-logo.png";
+import axios from "axios";
+import config from "../../config/config";
+import useStore from "../stores/globalStore";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const userRole=useStore.useUserRole();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Add signup logic here
-    setTimeout(() => {
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
       setLoading(false);
-      navigate("/finish-profile");
-    }, 1500);
+      return;
+    }
+
+    try {
+
+      const res = await axios.post(`${config.API_BASE_URL}/auth/signup`, {
+        email,
+        password,
+        confirmationPassword:confirmPassword,
+        role:userRole
+      }); 
+      if(userRole===2){
+        navigate("/recruiter/profile");
+      }
+      else if(userRole===0){
+        navigate("/seeker/profile");
+      }
+      else{
+        navigate("/company/profile");
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,18 +71,32 @@ const SignUp = () => {
           label="What should we call you?"
           placeholder="Enter your profile name"
           required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
         <Input
           label="What's your email?"
           type="email"
           placeholder="Enter your email address"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <Input
           label="Create a password"
           type="password"
           placeholder="Enter your password"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <Input
+          label="Confirm your password"
+          type="password"
+          placeholder="Enter your confirm password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
         <p className="text-sm text-gray-500">
           Use 8 or more characters with a mix of letters, numbers & symbols
