@@ -7,10 +7,24 @@ export interface Invitations {
   recruiterId: number;
 }
 
+
 export interface InvitationsFilters {
   status: string;
   sortBy: string;
 }
+
+export interface assessment  {
+  assessmentId: number
+  jobTitle: string;
+  assessmentName: string;
+  assessmentTime:string
+  numberOfQuestions: number;
+}
+
+export interface AssessmentFilters{  
+  jobTitle: string;
+}
+
 
 export const InvitationsStatusFilterOptions = [
   { value: "", label: "Any" },
