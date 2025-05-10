@@ -364,10 +364,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabApplyToJob: async (id, cvId) => {
-        let res;
         try {
             try {
-                res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
                     jobId: id,
                     cvId: cvId
                 });
@@ -375,7 +374,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
                     await authRefreshToken();
-                    res = await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                    await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
                         jobId: id,
                         cvId: cvId
                     })
@@ -400,10 +399,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     },
 
     forYouTabReportJob: async (id, title, message) => {
-        let res;
         try {
             try {
-                res = await axios.post(`${config.API_BASE_URL}/reports`, {
+                await axios.post(`${config.API_BASE_URL}/reports`, {
                     jobId: id,
                     title,
                     description: message
@@ -412,7 +410,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
                     await authRefreshToken();
-                    res = await axios.post(`${config.API_BASE_URL}/reports`, {
+                    await axios.post(`${config.API_BASE_URL}/reports`, {
                         jobId: id,
                         message: message
                     });
