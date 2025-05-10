@@ -90,10 +90,7 @@ export default function CompanyProfile() {
         </div>
       </div>
 
-      <JobDetailsDialog
-        useIsOpen={useIsJobDetailsDialogOpen}
-        useSetIsOpen={setJobDetailsDialogOpen}
-      />
+      <JobDetailsDialog/>
     </div>
   );
 }

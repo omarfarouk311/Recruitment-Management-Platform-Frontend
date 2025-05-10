@@ -144,11 +144,7 @@ const SeekerInterviews = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
-                <JobDetailsDialog
-                    useIsOpen={useStore.useJobDetailsDialogIsOpen}
-                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen}
-
-                />
+                <JobDetailsDialog/>
             </div>
         </div>
     );

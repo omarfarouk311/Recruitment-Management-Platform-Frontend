@@ -158,10 +158,7 @@ const RecruiterJobOffer = () => {
                     useFetchData={useStore.useRecruiterJobOfferFetchCandidates}
                 />
 
-                <JobDetailsDialog
-                    useIsOpen={useStore.useJobDetailsDialogIsOpen}
-                    useSetIsOpen={useStore.useJobDetailsDialogSetIsOpen()}
-                />
+                <JobDetailsDialog/>
 
                 <JobOfferDialog
                     useIsOpen={useStore.useSeekerJobOfferDialogIsOpen}
