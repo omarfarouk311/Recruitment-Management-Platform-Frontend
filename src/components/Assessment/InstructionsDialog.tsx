@@ -16,7 +16,7 @@ export const InstructionsDialog = ({
   userRole,
 }: InstructionsModalProps) => {
   if (!isOpen) return null;
-  const assessmentData = useStore.useSelectedAssessment();
+  const assessmentData = useStore.useAssessmentData();
   const saveAssessment = useStore.useAssessmentSaveData();
   const updateAssessmentData = useStore.useAssessmentUpdateData();
   const navigate = useNavigate();

@@ -8,14 +8,25 @@ import UserNav from "../components/Header/UserNav";
 import { useEffect } from "react";
 import useStore from "../stores/globalStore";
 import { UserRole } from "../stores/User Slices/userSlice";
+import { useParams } from "react-router-dom";
 
 function JobSeekerProfile() {
   const clearProfile = useStore.useSeekerProfileClear();
   const userRole = useStore.useUserRole();
   const removeSkill = useStore.useSeekerProfileRemoveSkill();
   const fetchSkills = useStore.useSeekerProfileFetchSkills();
+  const { userId, jobId } = useParams();
+  const fetchAll = useStore.useSeekerProfileFetchAll();
+  const setSelectedUser = useStore.useSetSeekerProfileSelectedSeekerData();
 
   useEffect(() => {
+    if (userRole !== UserRole.SEEKER && userId && jobId) {
+      setSelectedUser({
+        seekerId: parseInt(userId),
+        jobId: parseInt(jobId),
+      });
+      fetchAll();
+    }
     return () => {
       clearProfile();
     };

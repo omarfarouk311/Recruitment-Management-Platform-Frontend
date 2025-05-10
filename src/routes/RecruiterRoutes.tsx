@@ -3,14 +3,16 @@ import Dashboard from "../pages/RecruiterDashboard";
 import JobSeekerProfile from "../pages/JobSeekerProfile";
 import Profile from '../pages/RecruiterProfile';
 import CompanyProfile from "../pages/CompanyProfile";
+import NotFound from "../pages/NotFound";
 
 function RecruiterRoutes() {
     return (
         <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/seekers/:id" element={<JobSeekerProfile />} />
+            <Route path="/seekers/:userId/job/:jobId" element={<JobSeekerProfile />} />
             <Route path="/companies/:id" element={<CompanyProfile />} />
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
 }

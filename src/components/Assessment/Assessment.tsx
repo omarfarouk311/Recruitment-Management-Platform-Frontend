@@ -8,7 +8,7 @@ import useStore from "../../stores/globalStore";
 import { Timer } from "./Timer";
 import SkeletonLoader from "../common/SkeletonLoader";
 import { UserRole } from "../../stores/User Slices/userSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const Assessment = () => {
   const [activeQuestion, setActiveQuestion] = useState(1);
@@ -16,12 +16,15 @@ export const Assessment = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const userRole = useStore.useUserRole();
   const [timeIsUp, setTimeIsUp] = useState(false);
-  const assessmentData = useStore.useSelectedAssessment();
+  const assessmentData = useStore.useAssessmentData();
   const modifyQuestions = useStore.useAssessmentModifyQuestions();
   const submitAnswers = useStore.useAssessmentSubmitAnswers();
   const isLoading = useStore.useAssessmentIsLoading();
   const submitionIsLoading = useStore.useAssessmentSubmitionIsLoading();
   const navigate = useNavigate();
+  const fetchAssessmentData = useStore.useFetchAssessmentData();
+  const { assessmentId, jobId } = useParams();
+  const reset = useStore.useClearAssessmentData();
 
   // Textarea auto-resize effect
   useEffect(() => {
@@ -34,17 +37,26 @@ export const Assessment = () => {
     resizeTextareas();
     window.addEventListener("resize", resizeTextareas);
     return () => window.removeEventListener("resize", resizeTextareas);
-  }, [assessmentData?.questions, activeQuestion]);
+  }, [assessmentData, activeQuestion]);
 
   useEffect(() => {
-    if (isLoading == false && assessmentData?.questions.length)
+    if (isLoading == false && assessmentData?.questions.length && userRole !== UserRole.COMPANY)
       setShowInstructionsModal(true);
     setActiveQuestion(0);
-  }, [isLoading]);
+  }, [assessmentData]);
 
   useEffect(() => {
     if (timeIsUp) submitAnswers();
   }, [timeIsUp]);
+
+  useEffect(() => {
+    if(userRole === UserRole.SEEKER)
+      fetchAssessmentData(parseInt(assessmentId!), parseInt(jobId!));
+    else if (userRole === UserRole.COMPANY && assessmentId)
+      fetchAssessmentData(parseInt(assessmentId));
+
+    return reset;
+  }, []);
 
   const handleAddAnswer = (questionId: number) => {
     modifyQuestions((questions) => {
