@@ -14,5 +14,5 @@ export const createJobDetailsDialogSlice: StateCreator<CombinedState, [], [], Jo
     JobDetailsDialogSelectedJobId: null,
     JobDetailsDialogSetIsOpen: (value) => set({ JobDetailsDialogIsOpen: value }),
     JobDetailsDialogSetSelectedJobId: (id) => set({ JobDetailsDialogSelectedJobId: id }),
-    JobDetailsDialogClear: () => set({ JobDetailsDialogIsOpen: false, JobDetailsDialogSelectedJobId: null }),
+    JobDetailsDialogClear: () => set({ JobDetailsDialogSelectedJobId: null }),
 });

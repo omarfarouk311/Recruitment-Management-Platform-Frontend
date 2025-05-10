@@ -57,7 +57,7 @@ const CompanyCard = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h3 className="text-xl font-semibold">{name}</h3>
-                <Link to="/seeker/company-profile" className="px-2">
+                <Link to={`/seeker/companies/${id}`} className="px-2">
                   <ExternalLink className="w-5 h-6  cursor-pointer text-blue-600" />
                 </Link>
               </div>

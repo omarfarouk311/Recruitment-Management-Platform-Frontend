@@ -36,11 +36,8 @@ export interface CompanyProfileSlice {
     companyProfileJobsHasMore: boolean;
     companyProfileIsJobsLoading: boolean;
     companyProfileJobsFilters: CompanyProfileJobsFilters;
-    companyProfileIsJobDetailsDialogOpen: boolean;
     companyProfileFetchJobs: (id?: string) => Promise<void>;
-    companyProfileSetSelectedJobId: (id: number) => Promise<void>;
     companyProfileSetJobsFilters: (filters: Partial<CompanyProfileSlice['companyProfileJobsFilters']>, id?: string) => Promise<void>;
-    companyProfileSetJobDetailsDialogOpen: (isOpen: boolean) => void;
 
     companyProfileClear: () => void;
 }
@@ -80,7 +77,6 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         jobId: '',
         remote: false,
     },
-    companyProfileIsJobDetailsDialogOpen: false,
     companyProfileReviewsFilters: {
         sortByDate: '',
         rating: '',
@@ -301,10 +297,6 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }
     },
 
-    companyProfileSetSelectedJobId: async (id) => {
-        set({ companyProfileIsJobDetailsDialogOpen: true });
-    },
-
     companyProfileSetJobsFilters: async (filters, id) => {
         set((state) => ({
             companyProfileJobsFilters: { ...state.companyProfileJobsFilters, ...filters },
@@ -316,10 +308,6 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }));
 
         await get().companyProfileFetchJobs(id);
-    },
-
-    companyProfileSetJobDetailsDialogOpen: (isOpen) => {
-        set({ companyProfileIsJobDetailsDialogOpen: isOpen });
     },
 
     companyProfileClear: () => {

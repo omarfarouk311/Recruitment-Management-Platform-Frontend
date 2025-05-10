@@ -17,10 +17,9 @@ export default function CompanyProfile() {
   const useSelectedJobId = useStore.useForYouTabSelectedJobId;
   const filters = useStore.useCompanyProfileJobsFilters();
   const setFilters = useStore.useCompanyProfileSetJobsFilters();
-  const useIsJobDetailsDialogOpen = useStore.useCompanyProfileIsJobDetailsDialogOpen;
   const useFetchJobs = useStore.useCompanyProfileFetchJobs;
-  const useSetSelectedJobId = useStore.useCompanyProfileSetSelectedJobId;
-  const setJobDetailsDialogOpen = useStore.useCompanyProfileSetJobDetailsDialogOpen();
+  const setSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+  const setJobDetailsDialogOpen = useStore.useJobDetailsDialogSetIsOpen();
   const { industries } = useStore.useCompanyProfileInfo();
   const clearProfile = useStore.useCompanyProfileClear();
   const fetchJobs = useFetchJobs();
@@ -79,7 +78,10 @@ export default function CompanyProfile() {
                 useIsLoading={useJobsIsLoading}
                 useJobs={useJobs}
                 useSelectedJobId={useSelectedJobId}
-                useSetSelectedJobId={useSetSelectedJobId}
+                useSetSelectedJobId={() => async (id: number) => {
+                  setJobDetailsDialogOpen(true);
+                  setSelectedJobId(id);
+                }}
               />
             </div>
           </div>
@@ -90,7 +92,7 @@ export default function CompanyProfile() {
         </div>
       </div>
 
-      <JobDetailsDialog/>
+      <JobDetailsDialog />
     </div>
   );
 }

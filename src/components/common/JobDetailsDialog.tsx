@@ -1,8 +1,7 @@
 import { Dialog, DialogPanel } from "@headlessui/react";
 import JobDetails from "../Job Seeker-For You/JobDetails";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useStore from "../../stores/globalStore";
-
 
 const JobDetailsDialog = () => {
     const isOpen = useStore.useJobDetailsDialogIsOpen();
@@ -15,14 +14,22 @@ const JobDetailsDialog = () => {
     const useReportJob = useStore.useForYouTabReportJob;
     const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
     const clearDetailedJobs = useStore.useForYouTabClearDetailedJobs();
+    const clearDialog = useStore.useJobDetailsDialogClear();
     const selectedJobId = useStore.useJobDetailsDialogSelectedJobId();
 
     useEffect(() => {
         if (isOpen && selectedJobId) {
             pushToDetailedJobs(selectedJobId);
         }
-        if(!isOpen) clearDetailedJobs();
-    },[isOpen])
+
+        return () => {
+            if (isOpen) {
+                setIsOpen(false);
+                clearDetailedJobs();
+                clearDialog();
+            }
+        };
+    }, [isOpen]);
 
     return (
         <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
