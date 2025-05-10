@@ -4,32 +4,28 @@ import { useEffect, useState } from "react";
 import useStore from "../../stores/globalStore";
 
 
-interface JobDetailsDialogProps {
-    useIsOpen: () => boolean;
-    useSetIsOpen: (value: boolean) => void;
-}
-
-const JobDetailsDialog = ({
-    useIsOpen,
-    useSetIsOpen,
-}: JobDetailsDialogProps) => {
-    const isOpen = useIsOpen();
-    const onClose = () => useSetIsOpen(false);
+const JobDetailsDialog = () => {
+    const isOpen = useStore.useJobDetailsDialogIsOpen();
+    const setIsOpen = useStore.useJobDetailsDialogSetIsOpen();
     const useDetailedjobs = useStore.useForYouTabDetailedJobs;
     const useIsDetailsLoading = useStore.useForYouTabIsDetailsLoading;
-    const usePushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs;
+    const pushToDetailedJobs = useStore.useForYouTabPushToDetailedJobs();
     const usePopFromDetailedJobs = useStore.useForYouTabPopFromDetailedJobs;
     const useApplyToJob = useStore.useForYouTabApplyToJob;
     const useReportJob = useStore.useForYouTabReportJob;
     const useFetchCompanyIndustries = useStore.useForYouTabFetchCompanyIndustries;
     const clearDetailedJobs = useStore.useForYouTabClearDetailedJobs();
+    const selectedJobId = useStore.useJobDetailsDialogSelectedJobId();
 
     useEffect(() => {
+        if (isOpen && selectedJobId) {
+            pushToDetailedJobs(selectedJobId);
+        }
         if(!isOpen) clearDetailedJobs();
     },[isOpen])
 
     return (
-        <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+        <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
             {/* Overlay */}
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
 
@@ -38,7 +34,7 @@ const JobDetailsDialog = ({
                     <JobDetails
                         useDetailedjobs={useDetailedjobs}
                         useIsDetailsLoading={useIsDetailsLoading}
-                        usePushToDetailedJobs={usePushToDetailedJobs}
+                        usePushToDetailedJobs={() => pushToDetailedJobs}
                         usePopFromDetailedJobs={usePopFromDetailedJobs}
                         useApplyToJob={useApplyToJob}
                         useReportJob={useReportJob}

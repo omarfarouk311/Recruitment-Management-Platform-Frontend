@@ -2,13 +2,13 @@ import UserNav from "../components/Header/UserNav";
 import TabGroup from "../components/Tabs/TabGroup";
 import useStore from "../stores/globalStore";
 import SeekerJobsAppliedFor from "../components/Seeker Dashboard/SeekerJobsAppliedFor";
-import SeekerAssessments from "../components/SeekerAssessments/SeekerAssessments";
+import SeekerAssessments from "../components/Seeker Dashboard/SeekerAssessments";
 import SkeletonLoader from "../components/common/SkeletonLoader";
 import { useEffect } from "react";
 import { seekerDashboardTabs } from "../stores/Seeker Dashboard Slices/dashboardPageSlice";
 import SeekerStats from "../components/Seeker Dashboard/SeekerStats";
 import SeekerJobOffers from "../components/Seeker Dashboard/SeekerJobOffers";
-import SeekerInterviews from "../components/SeekerInterviews/SeekerInterviews"
+import SeekerInterviews from "../components/Seeker Dashboard/SeekerInterviews"
 
 
 const SeekerDashboard = () => {

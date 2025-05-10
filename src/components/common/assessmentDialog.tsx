@@ -15,7 +15,7 @@ interface AssessmentDetails {
 }
 
 const AssessmentDialog = () => {
-    const setAssessmentId=useStore.useSetSelectedAssessment();
+    const setAssessmentId=useStore.useSetSelectedAssessmentId();
     const isOpen = useStore.useAssessmentDialogIsOpen();
     const setIsOpen = useStore.useSetAssessmentDialogIsOpen();
     const selectedAssessmentId = useStore.useSelectedAssessmentId();
