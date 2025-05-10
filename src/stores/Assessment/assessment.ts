@@ -10,16 +10,17 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 export interface Assessment {
-    selectedAssessment: AssessmentData | null;
+    assessmentData: AssessmentData | null;
     assessmentIsLoading: boolean;
     assessmentSubmitionIsLoading: boolean;
-    setSelectedAssessment: (id?: number, jobId?: number) => Promise<void>;
+    fetchAssessmentData: (id?: number, jobId?: number) => Promise<void>;
     assessmentModifyQuestions: (
         newQuestions: (questions: Question[]) => Question[]
     ) => void;
     assessmentSubmitAnswers: () => void;
     assessmentSaveData: () => void;
     assessmentUpdateData: (key: string, value: string | number) => void;
+    clearAssessmentData: () => void;
 }
 
 export const createAssessmentSlice: StateCreator<
@@ -29,7 +30,7 @@ export const createAssessmentSlice: StateCreator<
     Assessment
 > = (set, get) => ({
     assessmentIsLoading: false,
-    selectedAssessment: {
+    assessmentData: {
         name: "",
         time: 1,
         questions: [],
@@ -38,18 +39,18 @@ export const createAssessmentSlice: StateCreator<
     assessmentSubmitionIsLoading: false,
     assessmentModifyQuestions: (newQuestions) => {
         set((state) => ({
-            selectedAssessment: {
-                ...state.selectedAssessment!,
-                questions: newQuestions(state.selectedAssessment!.questions),
+            assessmentData: {
+                ...state.assessmentData!,
+                questions: newQuestions(state.assessmentData!.questions),
             },
         }));
     },
 
-    setSelectedAssessment: async (id, jobId) => {
+    fetchAssessmentData: async (id, jobId) => {
         set({ assessmentIsLoading: true });
         if (!id && get().userRole === UserRole.COMPANY) {
             set({
-                selectedAssessment: {
+                assessmentData: {
                     name: "",
                     time: 0,
                     questions: [
@@ -76,7 +77,7 @@ export const createAssessmentSlice: StateCreator<
                         err.response?.status === 404
                     ) {
                         set({
-                            selectedAssessment: null,
+                            assessmentData: null,
                             assessmentIsLoading: false,
                         });
                         showErrorToast("Assessment not found");
@@ -94,7 +95,7 @@ export const createAssessmentSlice: StateCreator<
                 }
                 if (res) {
                     set({
-                        selectedAssessment: {
+                        assessmentData: {
                             id: id,
                             name: res.data.assessment.assessmentInfo.name,
                             time: res.data.assessment.assessmentInfo
@@ -110,7 +111,7 @@ export const createAssessmentSlice: StateCreator<
                     });
                 }
             } catch (err) {
-                set({ selectedAssessment: null, assessmentIsLoading: false });
+                set({ assessmentData: null, assessmentIsLoading: false });
                 showErrorToast("Error fetching assessment data");
             }
         } else if (id && jobId && get().userRole === UserRole.SEEKER) {
@@ -123,10 +124,12 @@ export const createAssessmentSlice: StateCreator<
                 } catch (err) {
                     if (axios.isAxiosError(err) && err.response?.status === 404) {
                         set({
-                            selectedAssessment: null,
+                            assessmentData: null,
                             assessmentIsLoading: false,
                         });
                         showErrorToast("Assessment not found");
+                        const navigate = useNavigate();
+                        navigate("/seeker/dashboard");
                         return;
                     }
                     if (axios.isAxiosError(err) && err.response?.status === 401) {
@@ -139,7 +142,7 @@ export const createAssessmentSlice: StateCreator<
                 if (res) {
                     if (res.data.assessmentDetails.questions.length === 0) {
                         set({
-                            selectedAssessment: null,
+                            assessmentData: null,
                             assessmentIsLoading: false,
                         });
                         showErrorToast("Assessment not found");
@@ -147,7 +150,7 @@ export const createAssessmentSlice: StateCreator<
                     }
                     [].sort()
                     set({
-                        selectedAssessment: {
+                        assessmentData: {
                             id: id,
                             jobId: jobId,
                             name: res.data.assessmentDetails.name,
@@ -165,7 +168,7 @@ export const createAssessmentSlice: StateCreator<
                     });
                 }
             } catch (err) {
-                set({ selectedAssessment: null, assessmentIsLoading: false });
+                set({ assessmentData: null, assessmentIsLoading: false });
                 showErrorToast("Error fetching assessment data");
             }
         }
@@ -174,7 +177,7 @@ export const createAssessmentSlice: StateCreator<
     assessmentSubmitAnswers: async () => {
         try {
             set({ assessmentSubmitionIsLoading: true });
-            const { selectedAssessment } = get();
+            const { assessmentData: selectedAssessment } = get();
             if (!selectedAssessment) return;
             const answers = selectedAssessment.questions.map((question) => ({
                 questionId: question.id,
@@ -209,7 +212,7 @@ export const createAssessmentSlice: StateCreator<
     assessmentSaveData: async () => {
         try {
             let res
-            const { selectedAssessment } = get();
+            const { assessmentData: selectedAssessment } = get();
             if (!selectedAssessment) return;
             try {
                 res = await axios.post(
@@ -255,10 +258,22 @@ export const createAssessmentSlice: StateCreator<
 
     assessmentUpdateData: (key, value) => {
         set((state) => ({
-            selectedAssessment: {
-                ...state.selectedAssessment!,
+            assessmentData: {
+                ...state.assessmentData!,
                 [key]: value,
             },
         }));
     },
+
+    clearAssessmentData: () => {
+        set({
+            assessmentIsLoading: false,
+            assessmentData: {
+                name: "",
+                time: 1,
+                questions: [],
+                jobTitle: "",
+            },
+        })
+    }
 });

@@ -53,9 +53,12 @@ export interface SeekerProfileSlice {
     seekerProfileRemoveReview: (id: number) => Promise<void>;
 
     seekerProfileSelectedSeekerData: {seekerId?: number, jobId?: number};
+    setSeekerProfileSelectedSeekerData: (data: {seekerId?: number, jobId?: number}) => void;
+
     seekerProfileSkillsFormData: Skill[];
     seekerProfileFetchSkillsFormData: () => Promise<void>;
     seekerProfileClear: () => void;
+    seekerProfileFetchAll: () => Promise<void>;
 }
 
 export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], SeekerProfileSlice> = (set, get) => ({
@@ -81,6 +84,10 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileReviewsIsLoading: false,
     seekerProfileSelectedSeekerData: {},
     seekerProfileSkillsFormData: [],
+    
+    setSeekerProfileSelectedSeekerData: (data) => {
+        set({ seekerProfileSelectedSeekerData: data });
+    },
 
     seekerProfileFetchInfo: async () => {
         const { userId, seekerProfileSelectedSeekerData } = get();
@@ -433,8 +440,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchSkills: async () => {
+        const { seekerProfileSelectedSeekerData } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`);
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`, {
+                params: {
+                    seekerId: seekerProfileSelectedSeekerData.seekerId,
+                }
+            });
             set({ seekerProfileSkills: res.data.map((skill: {skillid: number; skillname: string}) => ({id: skill.skillid, name: skill.skillname})) });
         } catch (err) {
             showErrorToast('Failed to fetch skills. Please try again later.');
@@ -516,7 +528,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             set({
                 seekerProfileCVs: res.data.cvNames.map((cv: {id: number; name: string; created_at: string}) => ({
                     ...cv,
-                    createdAt: formatDistanceToNow(new Date(cv.created_at), { addSuffix: true })
+                    createdAt: cv.created_at? formatDistanceToNow(new Date(cv.created_at), { addSuffix: true }): '',
                 }))
             });
         } catch(err) {
@@ -524,6 +536,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 showErrorToast(`Failed to fetch CVs: ${err.response?.statusText || 'Network error'}`);
             } else {
                 showErrorToast('Failed to fetch CVs: Unexpected error');
+                console.error(err);
             }
         }
     },
@@ -590,9 +603,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
 
     
     seekerProfileGetCV: async (id) => {
+        const { seekerProfileSelectedSeekerData } = get();
         try {
             const res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/${id}`, {
-                responseType: 'arraybuffer'
+                responseType: 'arraybuffer',
+                params: {
+                    seekerId: seekerProfileSelectedSeekerData.seekerId,
+                    jobId: seekerProfileSelectedSeekerData.jobId
+                }
             });
             return res.data;
         } catch (err) {
@@ -601,11 +619,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchReviews: async () => {
-        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading, seekerProfileReviewsPage } = get();
+        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading, seekerProfileReviewsPage, seekerProfileSelectedSeekerData } = get();
         if (!seekerProfileReviewsHasMore || seekerProfileReviewsIsLoading) return;
 
         set({ seekerProfileReviewsIsLoading: true });
         try {
+            if (seekerProfileSelectedSeekerData.jobId) {
+                return;
+            }
             let res;
             try {
                 res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
@@ -750,5 +771,20 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             seekerProfileReviewsPage: 1,
             seekerProfileReviewsIsLoading: false,
         });
+    },
+
+    seekerProfileFetchAll: async () => {
+        const { seekerProfileFetchInfo, seekerProfileFetchExperience, seekerProfileFetchEducation, seekerProfileFetchSkills, seekerProfileFetchCVs, seekerProfileFetchReviews } = get();
+        await Promise.all([
+            seekerProfileFetchInfo(),
+            seekerProfileFetchExperience(),
+            seekerProfileFetchEducation(),
+        ]);
+
+        await Promise.all([
+            seekerProfileFetchSkills(),
+            seekerProfileFetchCVs(),
+            seekerProfileFetchReviews()
+        ]);
     }
 });

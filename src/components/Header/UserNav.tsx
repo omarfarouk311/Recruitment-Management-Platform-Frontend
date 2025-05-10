@@ -12,6 +12,7 @@ const UserNav = ({ children }: UserNavProps) => {
   const userRole = useStore.useUserRole();
   const userImage = useStore.useUserImage();
   const userName = useStore.useUserName();
+  const userId = useStore.useUserId();
   const urlRole =
     userRole === UserRole.SEEKER
       ? "seeker"
