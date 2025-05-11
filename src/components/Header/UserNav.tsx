@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ReactNode } from "react";
 import useStore from "../../stores/globalStore";
 import { UserRole } from "../../stores/User Slices/userSlice";
+import { useEffect, useState } from "react";
 
 interface UserNavProps {
   children?: ReactNode;
@@ -12,13 +13,19 @@ const UserNav = ({ children }: UserNavProps) => {
   const userRole = useStore.useUserRole();
   const userImage = useStore.useUserImage();
   const userName = useStore.useUserName();
-  const userId = useStore.useUserId();
   const urlRole =
     userRole === UserRole.SEEKER
       ? "seeker"
       : userRole === UserRole.RECRUITER
       ? "recruiter"
       : "company";
+
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Reset error state when image URL changes
+    setImageError(false);
+  }, [userImage]);
 
   return (
     <div className="flex items-center px-6 py-4 h-20 bg-white shadow-sm border-b-2 border-gray-300 relative">
@@ -27,10 +34,12 @@ const UserNav = ({ children }: UserNavProps) => {
         {/* Profile Button */}
         <div className="flex items-center space-x-1 p-2">
           <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-            {userImage ? (
+            {!imageError && userImage ? (
               <img
                 src={userImage}
+                onError={() => setImageError(true)}
                 className="h-12 w-12 rounded-full object-cover"
+                alt="Profile Image"
               />
             ) : (
               <span className="h-12 w-12 text-2xl text-gray-400 flex items-center justify-center">
@@ -60,9 +69,7 @@ const UserNav = ({ children }: UserNavProps) => {
       </div>
 
       {/* Centered Search Bar */}
-      {children && (
-        <div className="flex justify-center flex-grow">{children}</div>
-      )}
+      {children && <div className="flex justify-center flex-grow">{children}</div>}
 
       {/* Right Section (Home Button) */}
       {userRole === UserRole.SEEKER && (
