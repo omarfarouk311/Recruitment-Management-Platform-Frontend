@@ -6,10 +6,12 @@ export async function authRefreshToken() {
 
     try {
         await axios.post("/auth/refresh-token", {});
+        return true;
     }
     catch (err) {
         if (axios.isAxiosError(err) && err.response?.status === 401) {
             navigate('/login');
+            return false;
         }
     }
 }

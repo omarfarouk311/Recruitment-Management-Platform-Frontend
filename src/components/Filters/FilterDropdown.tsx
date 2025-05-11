@@ -83,10 +83,10 @@ const FilterDropdown = ({
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={"relative " + className} ref={dropdownRef}>
       <Button
         variant={selectedValue !== "" ? "currentTab" : variant}
-        className={"h-7 w-auto text-sm " + className}
+        className="h-7 w-auto text-sm "
         onClick={() => !disabled && setIsOpen(!isOpen)}
         type="button"
         disabled={disabled}

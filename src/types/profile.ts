@@ -42,7 +42,7 @@ export interface SeekerProfileInfo {
 
 export interface CompanyProfileInfo {
   id: number;
-  image: string;
+  image?: string | File;
   name: string;
   overview: string;
   type: string;
@@ -62,9 +62,7 @@ export interface UserCredentials {
   password: string;
 }
 
-
 export interface RecruiterProfileInfo {
   avatar?: string;
   recruitername: string;
 }
-

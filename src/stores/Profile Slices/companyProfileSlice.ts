@@ -8,6 +8,7 @@ import axios from 'axios';
 import { Job } from '../../types/job.ts';
 import { CompanyProfileJobsFilters } from '../../types/job.ts';
 import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 const { paginationLimit } = config;
 
 export interface CompanyProfileSlice {
@@ -83,7 +84,66 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     },
 
     companyProfileUpdateInfo: async (profile) => {
-        set({ companyProfileInfo: profile });
+        const { userId } = get();
+        try {
+            await axios.put(`${config.API_BASE_URL}/companies/profile/`, {
+                name: profile.name,
+                overview: profile.overview,
+                type: profile.type === 'Public',
+                foundedIn: profile.foundedIn,
+                size: profile.size,
+                locations: profile.locations,
+                industriesIds: profile.industries.map((industry) => industry.id),
+            });
+
+            if (profile.image instanceof File) {
+                await axios.post(`${config.API_BASE_URL}/companies/${userId}/image`, profile.image, {
+                    headers: {
+                        'Content-Type': profile.image.type,
+                        'File-Name': profile.image.name,
+                    }
+                });
+            }
+
+            set({
+                companyProfileInfo: {
+                    ...profile,
+                    image: `${config.API_BASE_URL}/companies/${userId}/image?t=${Date.now()}`
+                },
+                userName: profile.name,
+                userImage: `${config.API_BASE_URL}/companies/${userId}/image?t=${Date.now()}`
+            });
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        await get().companyProfileUpdateInfo(profile);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    if (err.response.data.message !== 'Validation Error') {
+                        showErrorToast(err.response.data.message);
+                    }
+                    else {
+                        const validationErrors: string[] = err.response.data.validationErrors;
+                        validationErrors.forEach((error) => {
+                            showErrorToast(error);
+                        });
+                    }
+                    throw err;
+                }
+                else if (err.response?.status === 413) {
+                    showErrorToast('Image size exceeded 10MB');
+                    throw err;
+                }
+                else {
+                    showErrorToast('Failed to update company profile');
+                    throw err;
+                }
+            }
+        }
     },
 
     companyProfileFetchInfo: async (id) => {
@@ -173,7 +233,6 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     },
 
     companyProfileUpdateCredentials: async (credentials) => {
-        set({ companyCredentials: credentials });
     },
 
     companyProfileFetchReviews: async (id) => {

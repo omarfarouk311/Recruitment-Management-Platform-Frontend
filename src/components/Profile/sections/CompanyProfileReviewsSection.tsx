@@ -16,7 +16,7 @@ export default function ReviewsSection() {
 
   useEffect(() => {
     fetchReviews(id);
-  }, []);
+  }, [id]);
 
   return (
     <div className="p-6 bg-white rounded-3xl shadow border-2 border-gray-200">

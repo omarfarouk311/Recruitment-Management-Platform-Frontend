@@ -29,8 +29,9 @@ export default function CompanyProfile() {
     fetchJobs(id);
     return () => {
       clearProfile();
+      setJobDetailsDialogOpen(false);
     };
-  }, []);
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-gray-100">

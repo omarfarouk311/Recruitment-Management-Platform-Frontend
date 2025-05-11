@@ -14,6 +14,7 @@ function CompanyRoutes() {
       <Route path="/profile" element={<CompanyProfile />} />
       <Route path="/seekers/:id" element={<JobSeekerProfile />} />
       <Route path="/recruiters/:id" element={<RecruiterProfile />} />
+      <Route path="/:id" element={<CompanyProfile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
