@@ -46,6 +46,7 @@ const JobDetails = ({
   const reportJob = useReportJob();
   const fetchCompanyIndustries = useFetchCompanyIndustries();
   const userRole = useStore.useUserRole();
+  const userId = useStore.useUserId();
   const [cvs, useSetCvs] = useState<CV[]>([]);
 
   // Reset image error when image changes
@@ -107,6 +108,15 @@ const JobDetails = ({
     similarJobs,
   } = job;
 
+  const companyProfileUrl =
+    userRole === UserRole.SEEKER
+      ? `/seeker/companies/${companyId}`
+      : userRole === UserRole.RECRUITER
+      ? `/recruiter/companies/${companyId}`
+      : userId === companyId
+      ? `/company/profile`
+      : `/company/${companyId}`;
+
   const handleApply = async () => {
     try {
       let res;
@@ -159,7 +169,7 @@ const JobDetails = ({
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-xl font-bold">{name}</h2>
-              <Link to={`/seeker/companies/${companyId}`} className="px-2">
+              <Link to={companyProfileUrl} className="px-2">
                 <ExternalLink className="w-5 h-6 cursor-pointer text-blue-600" />
               </Link>
             </div>
@@ -180,11 +190,13 @@ const JobDetails = ({
               <div className="bg-gray-200 rounded-3xl px-3 py-1 text-sm font-semibold">
                 {applicantsCount} applicants
               </div>
-              <div className="bg-gray-200 rounded-3xl px-3 py-1 text-sm font-semibold">
-                {`${matchingSkillsCount} of ${jobSkillsCount} ${
-                  jobSkillsCount > 1 ? "skills" : "skill"
-                } match`}
-              </div>
+              {userRole === UserRole.SEEKER && (
+                <div className="bg-gray-200 rounded-3xl px-3 py-1 text-sm font-semibold">
+                  {`${matchingSkillsCount} of ${jobSkillsCount} ${
+                    jobSkillsCount > 1 ? "skills" : "skill"
+                  } match`}
+                </div>
+              )}
               <div>
                 <div className="bg-gray-200 rounded-3xl px-3 py-1 text-sm font-semibold">
                   {remote ? "Remote" : "On-site"}

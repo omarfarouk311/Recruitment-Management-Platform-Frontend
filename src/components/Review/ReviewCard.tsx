@@ -19,12 +19,15 @@ const ReviewCard = ({
 }: ReviewCardProps) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const userRole = useStore.useUserRole();
+  const userId = useStore.useUserId();
   const redirect =
-    userRole === UserRole.COMPANY
-      ? "/company/profile"
-      : userRole === UserRole.SEEKER
+    userRole === UserRole.SEEKER
       ? `/seeker/companies/${companyData?.id}`
-      : `/recruiter/companies/${companyData?.id}`;
+      : userRole === UserRole.RECRUITER
+      ? `/recruiter/companies/${companyData?.id}`
+      : userId === companyData?.id
+      ? `/company/profile`
+      : `/company/${companyData?.id}`;
 
   return (
     <div className="bg-gray-100 p-4 rounded-3xl shadow border-2 border-gray-200">
