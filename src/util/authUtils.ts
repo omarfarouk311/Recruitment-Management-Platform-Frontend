@@ -9,9 +9,7 @@ export async function authRefreshToken() {
         return true;
     }
     catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-            navigate('/login');
-            return false;
-        }
+        navigate('/login');
+        return false;
     }
 }
