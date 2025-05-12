@@ -39,7 +39,6 @@ function Dashboard<T>({
   const fetchData = useFetchData();
   
   useEffect(() => {
-    console.log(hasMore, isLoading)
     const observer = new IntersectionObserver(
   
       (entries) => {
