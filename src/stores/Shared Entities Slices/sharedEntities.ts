@@ -1,8 +1,9 @@
 import { StateCreator } from 'zustand';
-import { mockIndustries } from '../../mock data/seekerForYou';
 import { CombinedState } from '../storeTypes';
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 export interface SharedEntitiesSlice {
     sharedEntitiesIndustryOptions: { value: string, label: string }[];
@@ -13,28 +14,27 @@ export const createSharedEntitiesSlice: StateCreator<CombinedState, [], [], Shar
     sharedEntitiesIndustryOptions: [],
 
     sharedEntitiesSetIndustryOptions: async () => {
-        // mock API call
-
         try {
-            
-      
-            let res = await axios.get(`${config.API_BASE_URL}/industries/`);
-            
-            set((state) => ({
-                sharedEntitiesIndustryOptions: [
-                ...state.sharedEntitiesIndustryOptions,
-                ...res.data.map((obj: any) => ({
+            const res = await axios.get(`${config.API_BASE_URL}/industries/`);
+            set({
+                sharedEntitiesIndustryOptions: res.data.map((obj: any) => ({
                     value: obj.id.toString(),
                     label: obj.name,
                 })),
-              ],
-             
-            }));
-      
-          }catch (err) {
-            console.error(err);
-          }
-      
+            });
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().sharedEntitiesSetIndustryOptions();
+                    }
+                }
+                else {
+                    showErrorToast('Error fetching industries');
+                }
+            }
+        }
     }
-
 });
