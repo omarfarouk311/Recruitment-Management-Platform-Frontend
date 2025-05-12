@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import CompanyLogs from "../components/Company Dashboard/CompanyLogs";
 import CompanyJobs from "../components/Company Dashboard/CompanyJobs";
 import CompanyRecruiters from "../components/Company Dashboard/CompanyRecruitersParent";import CompanyAssessments from "../components/Company Dashboard/CompanyAssessments";
+import CompanyTemplatesDashboard from "../components/Company Dashboard/CompanyTemplates";
 
 const CompanyDashboard = () => {
   const activeTab = useStore.useCompanyDashboardActiveTab();
@@ -27,7 +28,7 @@ const CompanyDashboard = () => {
   return (
     <>
       <UserNav />
-      <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-20 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-10 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto mb-8">
           <TabGroup
             tabs={[
@@ -57,7 +58,9 @@ const CompanyDashboard = () => {
             <CompanyAssessments/>
         ): activeTab == companyDashboardTabs.recruiters? (
           <CompanyRecruiters />
-        ): null}  
+        ): activeTab == companyDashboardTabs.templates ? (
+          <CompanyTemplatesDashboard />
+        ) : null}  
       </div>
     </>
   );

@@ -25,6 +25,13 @@ export interface AssessmentFilters{
   jobTitle: string;
 }
 
+export interface TemplateData { 
+  id?: number;
+  name: string;
+  updatedAt?: string;
+  content?: string;
+}
+
 
 export const InvitationsStatusFilterOptions = [
   { value: "", label: "Any" },
