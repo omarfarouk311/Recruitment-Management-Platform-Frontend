@@ -74,8 +74,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     companyProfileIsJobsLoading: false,
     companyProfileJobsFilters: {
         sortByDate: '',
-        industryId: '',
-        jobId: '',
+        industry: '',
         remote: false,
     },
     companyProfileReviewsFilters: {
@@ -119,7 +118,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        await get().companyProfileUpdateInfo(profile);
+                        get().companyProfileUpdateInfo(profile);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -173,8 +172,21 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 },
             });
         }
-        catch (error) {
-            showErrorToast('Failed to fetch company profile info');
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyProfileFetchInfo(id);
+                    }
+                }
+                else if (err.response?.status === 404) {
+                    showErrorToast('Company not found');
+                }
+                else {
+                    showErrorToast('Failed to fetch profile info');
+                }
+            }
         }
     },
 
@@ -199,7 +211,17 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
             }));
         }
         catch (err) {
-            showErrorToast('Failed to fetch company industries');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyProfileFetchIndustries(id);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch company industries');
+                }
+            }
         }
     },
 
@@ -224,7 +246,17 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
             }));
         }
         catch (err) {
-            showErrorToast('Failed to fetch company locations');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyProfileFetchLocations(id);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch company locations');
+                }
+            }
         }
     },
 
@@ -282,10 +314,15 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }
         catch (err) {
             set({ companyProfileReviewsIsLoading: false });
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-                showErrorToast('Company not found');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyProfileFetchReviews(id);
+                    }
+                }
+                else showErrorToast('Failed to fetch company reviews');
             }
-            else showErrorToast('Failed to fetch company reviews');
         }
     },
 
@@ -312,8 +349,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         const params = {
             page: companyProfileJobsPage,
             sortByDate: companyProfileJobsFilters.sortByDate,
-            industryId: companyProfileJobsFilters.industryId,
-            jobId: companyProfileJobsFilters.jobId,
+            industry: companyProfileJobsFilters.industry,
             remote: companyProfileJobsFilters.remote ? 'true' : ''
         };
 
@@ -347,12 +383,18 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 companyProfileJobsPage: state.companyProfileJobsPage + 1,
                 companyProfileIsJobsLoading: false,
             }));
-        } catch (err) {
+        }
+        catch (err) {
             set({ companyProfileIsJobsLoading: false });
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-                showErrorToast('Company not found');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyProfileFetchJobs(id);
+                    }
+                }
+                else showErrorToast('Failed to fetch company jobs');
             }
-            else showErrorToast('Failed to fetch company jobs');
         }
     },
 
@@ -401,8 +443,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
             companyProfileIsJobsLoading: false,
             companyProfileJobsFilters: {
                 sortByDate: '',
-                industryId: '',
-                jobId: '',
+                industry: '',
                 remote: false,
             },
         });

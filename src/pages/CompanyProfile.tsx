@@ -59,8 +59,8 @@ export default function CompanyProfile() {
                   value: industry.id.toString(),
                   label: industry.name,
                 }))}
-                selectedValue={filters.industryId}
-                onSelect={(value) => setFilters({ industryId: value }, id)}
+                selectedValue={filters.industry}
+                onSelect={(value) => setFilters({ industry: value }, id)}
               />
 
               <Button

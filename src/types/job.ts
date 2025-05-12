@@ -61,7 +61,6 @@ export interface CompanyJobListFilters {
 
 export interface CompanyProfileJobsFilters {
     sortByDate: string;
-    jobId: string
-    industryId: string;
+    industry: string;
     remote: boolean;
 }
