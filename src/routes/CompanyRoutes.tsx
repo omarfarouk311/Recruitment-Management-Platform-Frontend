@@ -9,7 +9,7 @@ import RecruiterProfile from "../pages/RecruiterProfile";
 function CompanyRoutes() {
   return (
     <Routes>
-      <Route path="/assessment" element={<Assessment />} />
+      <Route path="/assessment/:assessmentId" element={<Assessment />} />
       <Route path="/dashboard" element={<CompanyDashboard />} />
       <Route path="/profile" element={<CompanyProfile />} />
       <Route path="/seekers/:id" element={<JobSeekerProfile />} />
