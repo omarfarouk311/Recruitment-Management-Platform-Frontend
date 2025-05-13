@@ -1,5 +1,5 @@
 import { Dialog } from "@headlessui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -46,7 +46,8 @@ const ProfileDialog = ({
     profileInfo,
 }: ProfileDialogProps) => {
     const updateProfile = useStore.useSeekerProfileUpdateInfo();
-
+    const [imageError, setImageError] = useState(false);
+    
     const {
         register,
         handleSubmit,
@@ -66,6 +67,12 @@ const ProfileDialog = ({
     useEffect(() => {
         reset(profileInfo);
     }, [isOpen]);
+
+    useEffect(() => {
+        if (image instanceof File) {
+            setImageError(false);
+        }
+    }, [image]);
 
     const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -120,16 +127,18 @@ const ProfileDialog = ({
                             {/* Profile Picture */}
                             <div className="flex flex-col items-center">
                                 <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                                    {image instanceof File ? (
+                                    {image instanceof File  && !imageError ? (
                                         <img
                                             src={URL.createObjectURL(image)}
                                             alt={profileInfo.name}
+                                            onError={() => setImageError(true)}
                                             className="w-36 h-36 rounded-full object-cover"
                                         />
-                                    ) : profileInfo.image ? (
+                                    ) : profileInfo.image && !imageError ? (
                                         <img
                                             src={profileInfo.image as string}
                                             alt={profileInfo.name}
+                                            onError={() => setImageError(true)}
                                             className="w-36 h-36 rounded-full object-cover"
                                         />
                                     ) : (

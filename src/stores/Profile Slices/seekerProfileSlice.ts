@@ -135,7 +135,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             } catch (err) {
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
-                        authRefreshToken();
+                        await authRefreshToken();
                     }
                 }  
             }
@@ -163,7 +163,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 } catch (err) {
                     if (axios.isAxiosError(err)) {
                         if (err.response?.status === 401) {
-                            authRefreshToken();
+                            await authRefreshToken();
                         }
                     }
                 }
@@ -503,7 +503,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             } catch (err) {
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
-                        authRefreshToken();
+                        await authRefreshToken();
                     }
                 }
             }
@@ -637,7 +637,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             } catch (err) {
                 if(axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
-                        authRefreshToken();
+                        await authRefreshToken();
                     }
                 }
                 throw err;
@@ -688,7 +688,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             } catch (err) {
                 if(axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
-                        authRefreshToken();
+                        await authRefreshToken();
                     }
                 }
                 throw err;
@@ -730,7 +730,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             } catch (err) {
                 if(axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
-                        authRefreshToken();
+                        await authRefreshToken();
                     }
                 }
                 throw err;

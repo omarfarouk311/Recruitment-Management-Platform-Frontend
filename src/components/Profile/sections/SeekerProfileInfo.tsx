@@ -14,9 +14,10 @@ export default function ProfileInfo() {
     const credentials = useStore.useSeekerCredentials();
     const fetchEmail = useStore.useSeekerProfileFetchEmail();
     const userRole = useStore.useUserRole();
-
+    
     // State for Profile Dialog
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     // State for Account Settings Dialog
     const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] =
@@ -46,10 +47,10 @@ export default function ProfileInfo() {
                 >
                     <div className="flex items-center">
                         <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
-                            {profileInfo.image ? (
+                            {profileInfo.image && !imageError ? (
                                 <img
                                     src={profileInfo.image as string}
-                                    alt={profileInfo.name}
+                                    onError={() => setImageError(true)}
                                     className="h-24 w-24 rounded-full object-cover"
                                 />
                             ) : (
