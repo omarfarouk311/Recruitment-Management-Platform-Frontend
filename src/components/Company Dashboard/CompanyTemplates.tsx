@@ -69,8 +69,13 @@ export default function CompanyTemplatesDashboard() {
             );
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
-                await authRefreshToken();
-                await handleDeleteTemplate(id);
+                const success = await authRefreshToken();
+                if (success) {
+                    await handleDeleteTemplate(id); 
+                }
+                else {
+                    showErrorToast("Error deleting template"); 
+                }
             } else {
                 showErrorToast("Error deleting template");
             }
@@ -115,8 +120,13 @@ export default function CompanyTemplatesDashboard() {
             }
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
-                await authRefreshToken();
-                await fetchTemplates();
+                const success = await authRefreshToken();
+                if (success) {
+                    await fetchTemplates(); 
+                }
+                else {
+                    showErrorToast("Error fetching templates"); 
+                }
             } else {
                 showErrorToast("Error fetching templates");
             }
@@ -179,8 +189,13 @@ export default function CompanyTemplatesDashboard() {
             setChanged(false);
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
-                await authRefreshToken();
-                await handleSaveTemplate();
+                const success = await authRefreshToken();
+                if (success) {
+                    await handleSaveTemplate(); 
+                }
+                else {
+                    showErrorToast("Error saving template"); 
+                }
             } else {
                 showErrorToast("Error saving template");
             }

@@ -39,16 +39,28 @@ export const Assessment = () => {
     return () => window.removeEventListener("resize", resizeTextareas);
   }, [assessmentData, activeQuestion]);
 
+  // Effect to open instructions modal when assessment data is loaded for seeker
   useEffect(() => {
     if (isLoading == false && assessmentData?.questions.length && userRole !== UserRole.COMPANY)
       setShowInstructionsModal(true);
     setActiveQuestion(0);
-  }, [assessmentData]);
+  }, [assessmentData?.id]);
 
+  // Effect to submit answers when time is up
   useEffect(() => {
-    if (timeIsUp) submitAnswers();
+    if (timeIsUp) {
+      async () => {
+        try{
+          await submitAnswers();
+          navigate('/seeker/home');
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    }
   }, [timeIsUp]);
 
+  // Fetch assessment data on component mount
   useEffect(() => {
     if(userRole === UserRole.SEEKER)
       fetchAssessmentData(parseInt(assessmentId!), parseInt(jobId!));
@@ -57,6 +69,7 @@ export const Assessment = () => {
 
     return reset;
   }, []);
+
 
   const handleAddAnswer = (questionId: number) => {
     modifyQuestions((questions) => {
@@ -70,6 +83,7 @@ export const Assessment = () => {
       );
     });
   };
+
 
   const handleAddQuestion = () => {
     modifyQuestions((questions) => {
@@ -87,6 +101,7 @@ export const Assessment = () => {
     });
   };
 
+
   const handleAnswerToggle = (questionId: number, answerIndex: number) => {
     modifyQuestions((questions) =>
       questions.map((q) =>
@@ -102,15 +117,16 @@ export const Assessment = () => {
     );
   };
 
+
   const handleDeleteQuestion = () => {
     modifyQuestions((questions) => {
       const newQuestions = questions
         .filter((_, i) => i !== activeQuestion)
         .map((q, i) =>
-          activeQuestion < q.id
+          activeQuestion + 1 < q.questionNum
             ? {
                 ...q,
-                id: q.id - 1,
+                questionNum: q.questionNum - 1,
               }
             : q
         );
@@ -120,9 +136,11 @@ export const Assessment = () => {
       );
       setActiveQuestion(newActiveQuestion < 0 ? 0 : newActiveQuestion);
       setShowDeleteModal(false);
+      console.log(newQuestions);
       return newQuestions;
     });
   };
+
 
   const handleDeleteAnswer = (questionId: number, answerIndex: number) => {
     modifyQuestions((questions) =>
@@ -137,6 +155,7 @@ export const Assessment = () => {
       )
     );
   };
+
 
   return (
     <>
@@ -171,7 +190,7 @@ export const Assessment = () => {
             <nav className="w-[100px] bg-[#ececec] left-0 fixed shadow-[0px_4px_4px_#00000040] h-screen overflow-y-auto z-10">
               {assessmentData?.questions.map((question, index) => (
                 <div
-                  key={question.id}
+                  key={question.questionNum}
                   className="relative cursor-pointer"
                   onClick={() => setActiveQuestion(index)}
                 >
@@ -217,7 +236,7 @@ export const Assessment = () => {
             {/* Main Content */}
             {isLoading ? (
               <div
-                className={`pl-44 pr-20 ${
+                className={`pl-44 pr-20 z-20${
                   userRole === UserRole.COMPANY ? "pt-8" : "pt-6"
                 } w-full max-w-screen relative`}
               >
@@ -264,7 +283,7 @@ export const Assessment = () => {
                         i === activeQuestion
                           ? {
                               ...q,
-                              text: e.target.value,
+                              question: e.target.value,
                             }
                           : q
                       )
@@ -286,7 +305,7 @@ export const Assessment = () => {
                     {assessmentData?.questions[activeQuestion]?.answers.map(
                       (answer, i) => (
                         <div
-                          key={i}
+                          key={`answer ${i}`}
                           className="w-1/2 min-h-[60px] bg-[#ececec] rounded-2xl p-3 cursor-pointer
                               flex items-center border-2 border-transparent hover:border-gray-400
                               justify-between group relative"
@@ -372,20 +391,24 @@ export const Assessment = () => {
                       <Button
                         variant="primary"
                         className="!w-[30%]"
-                        onClick={() => {
-                          if (
-                            assessmentData!.questions.length - 1 ===
-                            activeQuestion
-                          ) {
-                            submitAnswers();
-                            navigate('/seeker/home')
-                          } else {
-                            setActiveQuestion((prev) =>
-                              Math.min(
-                                prev + 1,
-                                assessmentData!.questions.length - 1
-                              )
-                            );
+                        onClick={async () => {
+                          try {
+                            if (
+                              assessmentData!.questions.length - 1 ===
+                              activeQuestion
+                            ) {
+                              await submitAnswers();
+                              navigate('/seeker/home');
+                            } else {
+                              setActiveQuestion((prev) =>
+                                Math.min(
+                                  prev + 1,
+                                  assessmentData!.questions.length - 1
+                                )
+                              );
+                            } 
+                          } catch(err) {
+                            console.log(err);
                           }
                         }}
                         loading = {submitionIsLoading}

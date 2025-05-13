@@ -17,8 +17,8 @@ export interface Assessment {
     assessmentModifyQuestions: (
         newQuestions: (questions: Question[]) => Question[]
     ) => void;
-    assessmentSubmitAnswers: () => void;
-    assessmentSaveData: () => void;
+    assessmentSubmitAnswers: () => Promise<void>;
+    assessmentSaveData: () => Promise<void>;
     assessmentUpdateData: (key: string, value: string | number) => void;
     clearAssessmentData: () => void;
 }
@@ -105,7 +105,7 @@ export const createAssessmentSlice: StateCreator<
                             numberOfQuestions:
                                 res.data.assessment.assessmentInfo
                                     .numberOfQuestions,
-                            questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum-b.questionNum)),
+                            questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum<b.questionNum)),
                         },
                         assessmentIsLoading: false,
                     });
@@ -148,7 +148,6 @@ export const createAssessmentSlice: StateCreator<
                         showErrorToast("Assessment not found");
                         return;
                     }
-                    [].sort()
                     set({
                         assessmentData: {
                             id: id,
@@ -206,6 +205,7 @@ export const createAssessmentSlice: StateCreator<
         } catch (err) {
             set({ assessmentSubmitionIsLoading: false });
             showErrorToast("Error submitting answers");
+            throw err;
         }
     },
 
@@ -214,23 +214,9 @@ export const createAssessmentSlice: StateCreator<
             let res
             const { assessmentData: selectedAssessment } = get();
             if (!selectedAssessment) return;
-            try {
-                res = await axios.post(
-                    `${config.API_BASE_URL}/assessments`,
-                    {
-                        name: selectedAssessment.name,
-                        assessmentTime: selectedAssessment.time,
-                        jobTitle: selectedAssessment.jobTitle,
-                        metaData: selectedAssessment.questions.map((question) => ({
-                            questions: question.question,
-                            answers: question.answers,
-                            correctAnswers: question.correctAnswers,
-                        })),
-                    }
-                )
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
+            set({ assessmentSubmitionIsLoading: true });
+            if(!selectedAssessment.id) {
+                try {
                     res = await axios.post(
                         `${config.API_BASE_URL}/assessments`,
                         {
@@ -241,18 +227,59 @@ export const createAssessmentSlice: StateCreator<
                                 questions: question.question,
                                 answers: question.answers,
                                 correctAnswers: question.correctAnswers,
+                                questionNum: question.questionNum,
                             })),
                         }
                     )
+                } catch (err) {
+                    if (axios.isAxiosError(err) && err.response?.status === 401) {
+                        const success = await authRefreshToken();
+                        if(success)
+                            await (get().assessmentSaveData());
+                        else {
+                            showErrorToast("Error saving assessment");
+                            throw err;
+                        }
+                    }
+                    else {
+                        throw err;
+                    }
                 }
-                else {
-                    throw err;
+            } else {
+                try {
+                    await axios.put(`${config.API_BASE_URL}/assessments/${selectedAssessment.id}`, {
+                        name:selectedAssessment.name,
+                        assessmentTime:selectedAssessment.time,
+                        jobTitle:selectedAssessment.jobTitle,
+                        metaData:selectedAssessment.questions.map(value => ({
+                            questions:value.question,
+                            answers:value.answers,
+                            correctAnswers:value.correctAnswers,
+                            questionNum:value.questionNum
+                        }))
+                    })
+                } catch (err) {
+                    if (axios.isAxiosError(err) && err.response?.status === 401) {
+                        let success = await authRefreshToken();
+                        if(success)
+                            await (get().assessmentSaveData());
+                        else {
+                            showErrorToast("Error saving assessment");
+                            throw err;
+                        }
+                    }
+                    else if(axios.isAxiosError(err) && err.response?.status === 400) {
+                        err.response.data.validationErrors.map((value:string) => {
+                            showErrorToast(value);
+                        });
+                        throw err;
+                    }
                 }
             }
         } catch (err) {
-            set({ assessmentSubmitionIsLoading: false });
-            showErrorToast("Error saving assessment");
             throw err;
+        } finally {
+            set({ assessmentIsLoading: true });
         }
     },
 
