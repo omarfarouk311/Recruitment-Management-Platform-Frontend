@@ -11,7 +11,8 @@ export interface Job {
         name: string;
         rating: number;
         image: string;
-    }
+    },
+    closed?: boolean;
 }
 
 export interface JobDetails {
@@ -27,6 +28,7 @@ export interface JobDetails {
     remote: boolean;
     applied: boolean;
     reported: boolean;
+    closed: boolean;
     companyData: {
         id: number;
         image: string;

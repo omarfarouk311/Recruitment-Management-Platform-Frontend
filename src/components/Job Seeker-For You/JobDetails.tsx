@@ -93,17 +93,8 @@ const JobDetails = ({
     remote,
     applied,
     reported,
-    companyData: {
-      id: companyId,
-      image,
-      type,
-      foundedIn,
-      industriesCount,
-      name,
-      rating,
-      size,
-      industries,
-    },
+    closed,
+    companyData: { id: companyId, image, type, foundedIn, industriesCount, name, rating, size, industries },
     companyReviews,
     similarJobs,
   } = job;
@@ -206,7 +197,7 @@ const JobDetails = ({
           </div>
         </div>
 
-        {userRole === UserRole.SEEKER && (
+        {userRole === UserRole.SEEKER && !closed && (
           <div className="space-y-4 w-40">
             {applied ? (
               <Button className="h-8" disabled={true} variant="outline">

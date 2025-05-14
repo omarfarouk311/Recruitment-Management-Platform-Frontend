@@ -1,11 +1,8 @@
-
 import { useEffect } from "react";
 import useStore from "../../stores/globalStore";
-import JobList from '../Job Seeker-For You/JobList'
-
+import JobList from "../Job Seeker-For You/JobList";
 
 const CompanyJobsList = () => {
-
     const useFetchJobs = useStore.useCompanyFetchJobs;
     const fetchJobs = useFetchJobs();
     const useHasMore = useStore.useCompanyJobsHasMore;
@@ -14,17 +11,12 @@ const CompanyJobsList = () => {
     const useSelectedJobId = useStore.useCompanyTabSelectJobId;
     const useSetSelectedJobId = useStore.useCompanyTabSetSelectedJobId;
     const resetCompanyJobs = useStore.useJobListClear();
-    const deleteJob = useStore.useCompanyDeleteJobs;
-    const updateJob = useStore.useCompanyUpdateJobs;
+    const closeJob = useStore.useCompanyCloseJob;
 
-
-
-  
     useEffect(() => {
-        console.log("in company jobs list");
         resetCompanyJobs();
         fetchJobs();
-    }, []);  
+    }, []);
 
     return (
         <JobList
@@ -34,11 +26,10 @@ const CompanyJobsList = () => {
             useJobs={useJobs}
             useSelectedJobId={useSelectedJobId}
             useSetSelectedJobId={useSetSelectedJobId}
-            useDeleteJob={deleteJob}
-            editJob={updateJob}
+            useDeleteJob={closeJob}
+            editJob={() => {}}
         />
     );
-
-}
+};
 
 export default CompanyJobsList;

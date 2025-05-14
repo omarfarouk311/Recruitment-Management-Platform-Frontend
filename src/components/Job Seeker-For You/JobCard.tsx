@@ -57,6 +57,7 @@ const JobCard = ({
     city,
     datePosted,
     companyData: { rating, name, image },
+    closed,
   },
   useSelectedJobId,
   useSetSelectedJobId,
@@ -71,8 +72,7 @@ const JobCard = ({
   const pushToJobDetails = usePushToJobDetails?.();
   const removeRecommendation = useRemoveRecommendation?.();
   const [removing, setRemoving] = useState(false);
-  const deleteJob = useDeleteJob?.();
-  const [deleted, setDeleted] = useState(false);
+  const closeJob = useDeleteJob?.();
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
@@ -109,7 +109,13 @@ const JobCard = ({
         )}
       </div>
 
-      {!deleted && (
+      {closed ? (
+        <div className="relative">
+          <div className="absolute right-1 hover:text-blue-500">
+            <p className="text-red-600 font-medium">Closed</p>
+          </div>
+        </div>
+      ) : (
         <div className="relative">
           {editJob && (
             <button
@@ -123,26 +129,15 @@ const JobCard = ({
               <Edit3 />
             </button>
           )}
-          {deleteJob && (
+          {closeJob && (
             <button
               className="absolute right-1 mt-12 hover:text-red-500"
-              onClick={async (e) => {
-                e.stopPropagation();
-                await deleteJob(id);
-                setDeleted(true);
-              }}
+              onClick={() => closeJob(id)}
               title="Delete job"
             >
               <Trash2 />
             </button>
           )}
-        </div>
-      )}
-      {deleted && (
-        <div className="relative">
-          <div className="absolute right-1 hover:text-blue-500">
-            <p className="text-red-600 font-medium">Closed</p>
-          </div>
         </div>
       )}
 
