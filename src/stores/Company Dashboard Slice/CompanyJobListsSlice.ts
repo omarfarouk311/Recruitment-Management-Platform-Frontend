@@ -1,16 +1,14 @@
-import { StateCreator, useStore } from 'zustand';
-import { Job as CompanyJobList, CompanyJobListFilters, JobDetails } from '../../types/job';
-import { mockDetailedJobs, mockJobs } from "../../mock data/seekerForYou";
-import { mockCompanyIndustries } from '../../mock data/seekerCompanies';
+import { StateCreator } from 'zustand';
+import { Job, CompanyJobListFilters } from '../../types/job';
 import { CombinedState } from '../storeTypes';
 import { formatDistanceToNow } from 'date-fns';
 import axios from 'axios';
 import config from '../../../config/config.ts';
-const API_BASE_URL = config.API_BASE_URL;
-
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 export interface CompanyJobListSlice {
-    companyJobs: CompanyJobList[];
+    companyJobs: Job[];
     companyJobsPage: number;
     companyJobsHasMore: boolean;
     companyJobsIsJobsLoading: boolean;
@@ -18,12 +16,10 @@ export interface CompanyJobListSlice {
     jobTitleList: string[];
     companyTabSelectJobId: number | null;
 
-    
     companyFetchJobs: () => Promise<void>;
-    companyUpdateJobs: (id: number, title:string, country:string, city:string, datePosted:string) => Promise<void>
-    companyDeleteJobs: (id: number) => Promise<void>
+    companyUpdateJob: (id: number, title: string, country: string, city: string, datePosted: string) => Promise<void>
+    companyCloseJob: (id: number) => Promise<void>
     companyTabSetSelectedJobId: (id: number) => Promise<void>;
-
 
     companyJobsSetFilters: (filters: Partial<CompanyJobListFilters>) => Promise<void>;
     jobListClear: () => void;
@@ -45,59 +41,65 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
     companyTabSelectJobId: null,
 
     companyFetchJobs: async () => {
-        const { companyJobsHasMore, companyJobsIsJobsLoading, companyJobsPage, companyJobsFilters } = get();
+        const { companyJobsHasMore, companyJobsIsJobsLoading, companyJobsPage, companyJobsFilters, userId } = get();
         if (!companyJobsHasMore || companyJobsIsJobsLoading) return;
+
         set({ companyJobsIsJobsLoading: true });
         try {
-
             const params = {
                 page: companyJobsPage,
                 sortByDate: companyJobsFilters.sortBy,
                 jobTitle: companyJobsFilters.jobs.jobTitle,
             }
+
             // Remove undefined values from params
             for (const key in params) {
                 if (params[key as keyof typeof params] === "") {
                     delete params[key as keyof typeof params];
                 }
             }
-            const { userId } = get();
-            console.log(userId)
-            let res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, { params });
-            console.log(res.data);
-            console.log("here")
 
-            // First update with basic job data
-            set((state: CombinedState) => ({
-                companyJobs: [
-                    ...state.companyJobs,
-                    ...res.data.map((apiJob: any) => ({
-                        id: apiJob.id,
-                        title: apiJob.title,
-                        country: apiJob.country,
-                        city: apiJob.city || undefined,
-                        datePosted: formatDistanceToNow(new Date(apiJob.createdAt), { addSuffix: true }),
-                        companyData: {
-                            id: apiJob.companyId,
-                            name: apiJob.companyName,
-                            rating: apiJob.companyRating,
-                            image: `${config.API_BASE_URL}/companies/${userId}/image` // Will be updated later
-                        }
-                    }))
-                ],
-                companyJobsHasMore: res.data.length > 0,
-                companyJobsIsJobsLoading: false,
-                companyJobsPage: state.companyJobsPage + 1,
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, { params });
+            const newJobs: Job[] = res.data.map((job: any) => ({
+                id: job.id,
+                title: job.title,
+                country: job.country,
+                city: job.city,
+                datePosted: formatDistanceToNow(new Date(job.createdAt), { addSuffix: true }),
+                closed: job.closed,
+                companyData: {
+                    id: job.companyId,
+                    name: job.companyName,
+                    rating: job.companyRating,
+                    image: `${config.API_BASE_URL}/companies/${userId}/image`,
+                }
             }));
 
-            console.log('here1')
-
-        } catch (err) {
-            set({ CompanyCandidatesIsLoading: false });
+            set((state) => ({
+                companyJobs: [...state.companyJobs, ...newJobs],
+                companyJobsHasMore: res.data.length === config.paginationLimit,
+                companyJobsPage: state.companyJobsPage + 1,
+            }));
         }
-
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyFetchJobs();
+                    }
+                }
+                else {
+                    showErrorToast("Error while fetching jobs");
+                }
+            }
+        }
+        finally {
+            set({ companyJobsIsJobsLoading: false });
+        }
     },
-    companyUpdateJobs: async (id, title, country, city, datePosted) => {
+
+    companyUpdateJob: async (id, title, country, city, datePosted) => {
         // const { companyJobs } = get();
         // set({ companyJobsIsJobsLoading: true });
 
@@ -123,24 +125,29 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
         // }
     },
 
-    companyDeleteJobs: async (jobId) => {
-        const { companyJobs } = get();
-        set({ companyJobsIsJobsLoading: true });
-
+    companyCloseJob: async (jobId) => {
         try {
-            // API call to delete the job
-            await axios.patch(
-                `${config.API_BASE_URL}/jobs/${jobId}`
-            );
-
-            set({ companyJobsIsJobsLoading: false });
-
-        } catch (err) {
-            set({ companyJobsIsJobsLoading: false });
-            throw err; // Re-throw the error for handling in the component
+            await axios.patch(`${config.API_BASE_URL}/jobs/${jobId}`);
+            set((state) => ({
+                companyJobs: state.companyJobs.map((job) =>
+                    job.id === jobId ? { ...job, closed: true } : job
+                )
+            }));
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyCloseJob(jobId);
+                    }
+                }
+                else {
+                    showErrorToast("Error while deleting the job");
+                }
+            }
         }
     },
-
 
     companyJobsSetFilters: async (filters) => {
         set((state) => ({
@@ -153,8 +160,6 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
         await get().companyFetchJobs();
     },
-
-
 
     jobListClear: () => {
         set({
@@ -171,19 +176,11 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
             },
             jobTitleList: [],
             companyTabSelectJobId: null,
-
         });
     },
 
     companyTabSetSelectedJobId: async (id) => {
         if (id === get().forYouTabSelectedJobId) return;
-        console.log("in companyJob list slice " + id)
         set({ companyTabSelectJobId: id });
-        console.log(get().companyTabSelectJobId)
-
-
     }
-
-
-
 });
