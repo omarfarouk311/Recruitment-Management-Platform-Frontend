@@ -186,6 +186,7 @@ const JobPostingDialog = ({ isOpen, onClose }: JobPostingDialogProps) => {
             });
 
             onClose();
+            window.location.reload();
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {

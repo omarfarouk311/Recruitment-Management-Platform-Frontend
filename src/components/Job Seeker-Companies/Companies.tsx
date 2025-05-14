@@ -17,21 +17,23 @@ const Companies = () => {
     
 
   return (
-    <div className="grid grid-cols-[1fr_2.2fr] gap-8">
+    <div className="grid grid-cols-[1fr_2.2fr] gap-10">
       <FilterSection
         useFilters={useFilters}
         useIndustryOptions={useIndustryOptions}
         useSetFilters={useSetFilters}
       />
-      <div className="bg-white space-y-6 p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-4xl border-2 border-gray-200">
-        <CompanyList
-          useCompanies={useCompanies}
-          useFetchCompanies={useFetchCompanies}
-          useHasMore={useHasMore}
-          useIsLoading={useIsLoading}
-          useFetchCompanyIndustries={useFetchCompanyIndustries}
-          useFetchCompanyLocations={useFetchCompanyLocations}
-        />
+      <div className="bg-white p-6 rounded-3xl border-2 border-gray-200 shadow">
+        <div className="space-y-6 h-[700px] overflow-y-auto p-3">
+          <CompanyList
+            useCompanies={useCompanies}
+            useFetchCompanies={useFetchCompanies}
+            useHasMore={useHasMore}
+            useIsLoading={useIsLoading}
+            useFetchCompanyIndustries={useFetchCompanyIndustries}
+            useFetchCompanyLocations={useFetchCompanyLocations}
+          />
+        </div>
       </div>
     </div>
   );

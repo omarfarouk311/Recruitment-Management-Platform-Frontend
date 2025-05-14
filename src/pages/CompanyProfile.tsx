@@ -20,13 +20,16 @@ export default function CompanyProfile() {
   const useFetchJobs = useStore.useCompanyProfileFetchJobs;
   const setSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
   const setJobDetailsDialogOpen = useStore.useJobDetailsDialogSetIsOpen();
-  const { industries } = useStore.useCompanyProfileInfo();
+  const industries = useStore.useSharedEntitiesIndustryOptions();
+  const fetchIndustries = useStore.useSharedEntitiesSetIndustryOptions();
   const clearProfile = useStore.useCompanyProfileClear();
   const fetchJobs = useFetchJobs();
   const { id } = useParams();
 
   useEffect(() => {
     fetchJobs(id);
+    fetchIndustries();
+
     return () => {
       clearProfile();
       setJobDetailsDialogOpen(false);
@@ -55,10 +58,7 @@ export default function CompanyProfile() {
 
               <FilterDropdown
                 label="Industry"
-                options={industries.map((industry) => ({
-                  value: industry.id.toString(),
-                  label: industry.name,
-                }))}
+                options={industries}
                 selectedValue={filters.industry}
                 onSelect={(value) => setFilters({ industry: value }, id)}
               />

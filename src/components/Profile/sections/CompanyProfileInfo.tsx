@@ -30,10 +30,13 @@ export function CompanyProfileInfo() {
   }, [profileInfo.image]);
 
   useEffect(() => {
-    fetchCompanyInfo(companyId);
-    fetchCompanyIndustries(companyId);
-    fetchCompanyLocations(companyId);
-    if (!companyId) fetchEmail();
+    const fetchData = async () => {
+      await fetchCompanyInfo(companyId);
+      fetchCompanyIndustries(companyId);
+      fetchCompanyLocations(companyId);
+    };
+    fetchData();
+    if (userRole === UserRole.COMPANY && userId === profileInfo.id) fetchEmail();
   }, [companyId]);
 
   const [isIndustriesDialogOpen, setIndustriesDialogOpen] = useState(false);
@@ -176,13 +179,13 @@ export function CompanyProfileInfo() {
       </div>
 
       <InfoDialog
-        header={`${name} Industries`}
+        header={`${profileInfo.name} Industries`}
         isOpen={isIndustriesDialogOpen}
         data={profileInfo.industries.map(({ name }) => name)}
         onClose={() => setIndustriesDialogOpen(false)}
       />
       <InfoDialog
-        header={`${name} Locations`}
+        header={`${profileInfo.name} Locations`}
         isOpen={isLocationsDialogOpen}
         data={profileInfo.locations.map(({ country, city }) => `${country}${city ? `, ${city}` : ""}`)}
         onClose={() => setLocationsDialogOpen(false)}

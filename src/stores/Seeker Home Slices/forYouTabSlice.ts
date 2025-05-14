@@ -52,9 +52,10 @@ async function fetchJobDetails(id: number): Promise<JobDetails> {
         city: response.jobData.city,
         datePosted: formatDistanceToNow(new Date(response.jobData.created_at), { addSuffix: true }),
         applicantsCount: response.jobData.applied_cnt,
-        matchingSkillsCount: response.skillMatches,
         jobSkillsCount: response.jobData.skills_cnt,
         remote: response.jobData.remote,
+        closed: response.jobData.closed,
+        matchingSkillsCount: response.skillMatches,
         applied: response.hasApplied,
         reported: response.hasReported,
 
@@ -161,40 +162,38 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             params['toDate'] = toDate.toISOString();
         }
 
-        else if (params['datePosted'] === 'this week') {
-            const now = new Date(); // Local time
-            const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+        else if (params['datePosted'] === 'last week') {
+            const now = new Date(); // Current date and time
 
-            // Calculate days to subtract to get to the most recent Saturday
-            const daysToSubtract = (dayOfWeek + 1) % 7; // 0 = Saturday, 1 = Sunday, etc.
+            // Calculate date 7 days ago
+            const fromDate = new Date(now);
+            fromDate.setDate(now.getDate() - 7);
+            fromDate.setHours(0, 0, 0, 0); // Start of day 7 days ago
 
-            // Start of the week (Saturday at 00:00:00)
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - daysToSubtract);
-            startOfWeek.setHours(0, 0, 0, 0);
-
-            // End of the week (Friday at 23:59:59.999)
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6); // Add 6 days to get to Friday
-            endOfWeek.setHours(23, 59, 59, 999);
+            // End of current day
+            const toDate = new Date(now);
+            toDate.setHours(23, 59, 59, 999);
 
             // Convert to UTC ISO strings
-            params['fromDate'] = startOfWeek.toISOString();
-            params['toDate'] = endOfWeek.toISOString();
+            params['fromDate'] = fromDate.toISOString();
+            params['toDate'] = toDate.toISOString();
         }
 
-        else if (params['datePosted'] === 'this month') {
-            const now = new Date(); // Local time
+        else if (params['datePosted'] === 'last month') {
+            const now = new Date(); // Current date and time
 
-            // Start of current month (1st day at 00:00:00)
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+            // Calculate date 30 days ago
+            const fromDate = new Date(now);
+            fromDate.setDate(now.getDate() - 30);
+            fromDate.setHours(0, 0, 0, 0); // Start of day 30 days ago
 
-            // End of current month (last day at 23:59:59.999)
-            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+            // End of current day
+            const toDate = new Date(now);
+            toDate.setHours(23, 59, 59, 999);
 
             // Assign to params
-            params['fromDate'] = startOfMonth.toISOString();
-            params['toDate'] = endOfMonth.toISOString();
+            params['fromDate'] = fromDate.toISOString();
+            params['toDate'] = toDate.toISOString();
         }
 
         delete params['datePosted'];

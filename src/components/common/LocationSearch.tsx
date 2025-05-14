@@ -17,12 +17,16 @@ const LocationSearch = ({
   onCityChange,
   disabled,
 }: LocationSearchProps) => {
-  const countryOptions = [
-    ...Country.getAllCountries().map((country) => ({
-      value: country.name,
-      label: country.name,
-    })),
-  ];
+  const countryOptions = Country.getAllCountries()
+      .filter((country) => {
+          const cities = City.getCitiesOfCountry(country.isoCode) ?? [];
+          return cities.length > 0;
+      })
+      .map((country) => ({
+          value: country.name,
+          label: country.name,
+      }));
+
 
   const cityOptions = [
     ...(selectedCountry
