@@ -74,7 +74,7 @@ const JobDetails = ({
 
   if (!job) {
     return (
-      <div className="bg-white p-6 rounded-3xl h-[700px] flex items-center justify-center border-2 border-gray-200">
+      <div className="bg-white p-6 rounded-3xl h-[700px] flex items-center justify-center border-2 border-gray-200 shadow">
         <p className="text-gray-500 text-lg">Select a job to show details</p>
       </div>
     );
@@ -132,7 +132,7 @@ const JobDetails = ({
   return (
     <div
       ref={containerRef}
-      className="bg-white p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar max-w-3xl border-2 border-gray-200"
+      className="bg-white p-6 rounded-3xl h-[700px] overflow-y-auto hide-scrollbar border-2 border-gray-200 shadow"
     >
       {jobs.length > 1 && (
         <div>
@@ -254,10 +254,10 @@ const JobDetails = ({
             <p>{type}</p>
           </div>
 
-          <div className="grid grid-cols-[10px_1fr]">
+          <div className="grid grid-cols-[minmax(90px,auto)_1fr]">
             <h4 className="font-medium">Industries</h4>
             <button
-              className="text-blue-600 hover:underline cursor-pointer underline-offset-2"
+              className="text-blue-600 hover:underline cursor-pointer underline-offset-2 w-fit"
               title="View industries"
               onClick={() => {
                 setIsOpen(true);

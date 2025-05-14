@@ -29,7 +29,7 @@ const ForYou = () => {
 
   return (
     <>
-      <div className="flex mb-8 items-center space-x-6 flex-nowrap">
+      <div className="flex mb-8 items-center gap-14 flex-nowrap">
         <FilterDropdown
           label="Date Posted"
           options={dateOptions}
@@ -51,6 +51,13 @@ const ForYou = () => {
           onSelect={(value) => setFilters({ industry: value })}
         />
 
+        <LocationSearch
+          selectedCountry={filters.country}
+          onCountryChange={(value) => setFilters({ country: value, city: "" })}
+          selectedCity={filters.city}
+          onCityChange={(value) => setFilters({ city: value })}
+        />
+        
         <Button
           variant={filters.remote ? "currentTab" : "outline"}
           className="h-7 text-sm !w-auto"
@@ -58,37 +65,32 @@ const ForYou = () => {
         >
           Remote
         </Button>
-
-        <LocationSearch
-          selectedCountry={filters.country}
-          onCountryChange={(value) => setFilters({ country: value, city: "" })}
-          selectedCity={filters.city}
-          onCityChange={(value) => setFilters({ city: value })}
-        />
       </div>
 
-      <div className="grid grid-cols-[1.1fr_1.7fr] gap-8">
-        <div className="h-[700px] overflow-y-auto space-y-6 bg-white p-4 rounded-3xl hide-scrollbar max-w-[500px] border-2 border-gray-200 shadow">
-          {activeTab === HomePageTabs.ForYou ? (
-            <JobList
-              useFetchJobs={useFetchJobs}
-              useHasMore={useHasMore}
-              useIsLoading={useIsLoading}
-              useJobs={useJobs}
-              useSelectedJobId={useSelectedJobId}
-              useSetSelectedJobId={useSetSelectedJobId}
-              useRemoveRecommendation={useRemoveRecommendation}
-            />
-          ) : (
-            <JobList
-              useFetchJobs={useFetchJobs}
-              useHasMore={useHasMore}
-              useIsLoading={useIsLoading}
-              useJobs={useJobs}
-              useSelectedJobId={useSelectedJobId}
-              useSetSelectedJobId={useSetSelectedJobId}
-            />
-          )}
+      <div className="grid grid-cols-[1.2fr_1.8fr] gap-10">
+        <div className="bg-white p-4 rounded-3xl border-2 border-gray-200 shadow">
+          <div className="h-[660px] overflow-y-auto space-y-6 p-3">
+            {activeTab === HomePageTabs.ForYou ? (
+              <JobList
+                useFetchJobs={useFetchJobs}
+                useHasMore={useHasMore}
+                useIsLoading={useIsLoading}
+                useJobs={useJobs}
+                useSelectedJobId={useSelectedJobId}
+                useSetSelectedJobId={useSetSelectedJobId}
+                useRemoveRecommendation={useRemoveRecommendation}
+              />
+            ) : (
+              <JobList
+                useFetchJobs={useFetchJobs}
+                useHasMore={useHasMore}
+                useIsLoading={useIsLoading}
+                useJobs={useJobs}
+                useSelectedJobId={useSelectedJobId}
+                useSetSelectedJobId={useSetSelectedJobId}
+              />
+            )}
+          </div>
         </div>
         <JobDetails
           useDetailedjobs={useDetailedjobs}
