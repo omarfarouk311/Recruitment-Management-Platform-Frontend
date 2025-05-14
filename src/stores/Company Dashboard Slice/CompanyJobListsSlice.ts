@@ -17,7 +17,6 @@ export interface CompanyJobListSlice {
     companyTabSelectJobId: number | null;
 
     companyFetchJobs: () => Promise<void>;
-    companyUpdateJob: (id: number, title: string, country: string, city: string, datePosted: string) => Promise<void>
     companyCloseJob: (id: number) => Promise<void>
     companyTabSetSelectedJobId: (id: number) => Promise<void>;
 
@@ -97,32 +96,6 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
         finally {
             set({ companyJobsIsJobsLoading: false });
         }
-    },
-
-    companyUpdateJob: async (id, title, country, city, datePosted) => {
-        // const { companyJobs } = get();
-        // set({ companyJobsIsJobsLoading: true });
-
-        // try {
-        //     // API call to update the job
-        //     const res = await axios.put(
-        //         `${config.API_BASE_URL}/companies/jobs/${jobId}`,
-        //         updatedData
-        //     );
-
-        //     // Update the local state
-        //     set({
-        //         companyJobs: companyJobs.map(job =>
-        //             job.id === jobId ? { ...job, ...res.data } : job
-        //         ),
-        //         companyJobsIsJobsLoading: false
-        //     });
-
-        //     return res.data; // Return the updated job if needed
-        // } catch (err) {
-        //     set({ companyJobsIsJobsLoading: false });
-        //     throw err; // Re-throw the error for handling in the component
-        // }
     },
 
     companyCloseJob: async (jobId) => {
