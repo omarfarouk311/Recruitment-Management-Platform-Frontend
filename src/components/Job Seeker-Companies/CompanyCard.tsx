@@ -68,7 +68,7 @@ const CompanyCard = ({
             </div>
           </div>
 
-          <div className="flex mx-5 mb-2 space-x-24">
+          <div className="flex gap-20">
             <div className="text-center">
               <div className="text-xl font-semibold text-blue-500">
                 {new Intl.NumberFormat("en-US", {
@@ -97,7 +97,7 @@ const CompanyCard = ({
           </div>
         </div>
 
-        <div className="flex mx-8 space-x-44">
+        <div className="grid grid-cols-3 justify-items-center mx-8 gap-20">
           <div className="text-center">
             <h4 className="text-lg font-semibold mb-1">Locations</h4>
             <button
@@ -114,7 +114,7 @@ const CompanyCard = ({
 
           <div className="text-center">
             <h4 className="text-lg font-semibold mb-1">Company Size</h4>
-            <p className="text-center text-black">
+            <p className="text-black">
               {new Intl.NumberFormat("en-US", {
                 notation: "compact",
                 compactDisplay: "short",
