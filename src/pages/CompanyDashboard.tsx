@@ -27,15 +27,15 @@ const CompanyDashboard = () => {
   return (
     <>
       <UserNav />
-      <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto mb-8">
+      <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-10 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto mb-8">
           <TabGroup
             tabs={[
               "Jobs",
               "Recruiters",
               "Logs",
               "Templates",
-              "Recruiter Process",
+              "Recruitement Processes",
               "Assessments",
               "Invitations",
             ]}

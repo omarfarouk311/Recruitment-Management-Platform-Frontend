@@ -9,7 +9,7 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import { CompanyAssignedCandidates as companyAssignedCandidates } from "../../types/companyDashboard";
 
 const CompanyAssignedCandidates = () => {
-       const filters = useStore.useCompanyAssignedCandidatesFilters();
+        const filters = useStore.useCompanyAssignedCandidatesFilters();
 
         const setFilters = useStore.useCompanyAssignedCandidatesSetFilters();
 
@@ -89,7 +89,7 @@ const CompanyAssignedCandidates = () => {
         ]
         return (
             recruiterId === null ? (
-                <div className="flex flex-col items-center justify-center h-[740px] bg-white rounded-3xl border-2 border-gray-200 p-8">
+                <div className="flex flex-col items-center justify-center h-[740px] bg-white rounded-3xl p-8">
                 <div className="text-center max-w-md">
                     <svg
                         className="w-16 h-16 mx-auto text-gray-400 mb-4"
@@ -106,7 +106,7 @@ const CompanyAssignedCandidates = () => {
                         />
                     </svg>
                     <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                        No Reccuiter Selected
+                        No Recruiter Selected
                     </h3>
                     <p className="text-gray-500 mb-4">
                         Please select a Recruiter from the list to view his candidates

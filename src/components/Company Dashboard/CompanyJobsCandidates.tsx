@@ -215,6 +215,7 @@ const CompanyJobsCandidates = () => {
                             options={DashboardStatusFilterOptions}
                             selectedValue={filters.status}
                             onSelect={(value) => setFilters({ ...filters, status: value })}
+                            addAnyOption={false}
                         />
                         <FilterDropdown
                             key="date_filter"
