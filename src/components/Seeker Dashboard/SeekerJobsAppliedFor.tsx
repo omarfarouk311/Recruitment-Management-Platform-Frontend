@@ -59,7 +59,7 @@ const SeekerJobsAppliedFor = () => {
                 <div>
                     {row.companyId ? (
                         <Link 
-                            to="/seeker/company-profile" 
+                            to={`/seeker/companies/${row.companyId}`}
                             className="px-2 text-blue-600 hover:underline underline-offset-2"
                             title="Click to view company profile">
                             {row.companyName}

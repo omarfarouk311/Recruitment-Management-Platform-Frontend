@@ -12,7 +12,7 @@ function CompanyRoutes() {
       <Route path="/assessment/:assessmentId" element={<Assessment />} />
       <Route path="/dashboard" element={<CompanyDashboard />} />
       <Route path="/profile" element={<CompanyProfile />} />
-      <Route path="/seekers/:id" element={<JobSeekerProfile />} />
+      <Route path="/seeker/:userId/job/:jobId" element={<JobSeekerProfile />} />
       <Route path="/recruiters/:id" element={<RecruiterProfile />} />
       <Route path="/:id" element={<CompanyProfile />} />
       <Route path="*" element={<NotFound />} />
