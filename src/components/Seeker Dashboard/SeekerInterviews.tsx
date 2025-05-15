@@ -1,6 +1,10 @@
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
-import { interview, DashboardSortByFilterOptions, DashboardStatusFilterOptions } from "../../types/seekerDashboard";
+import {
+    interview,
+    DashboardSortByFilterOptions,
+    DashboardStatusFilterOptions,
+} from "../../types/seekerDashboard";
 import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
@@ -8,7 +12,6 @@ import useStore from "../../stores/globalStore";
 import JobDetailsDialog from "../common/JobDetailsDialog";
 import { Link } from "react-router-dom";
 import Button from "../common/Button";
-
 
 const SeekerInterviews = () => {
     const filters = useStore.useSeekerInterviewsFilters(); // Update to use interviews filters
@@ -32,9 +35,6 @@ const SeekerInterviews = () => {
         return clear;
     }, []);
 
-
-
-
     const columns: ColumnDef<interview>[] = [
         {
             key: "jobTitle",
@@ -42,18 +42,20 @@ const SeekerInterviews = () => {
             render: (row) => {
                 return (
                     <div>
-                        <button onClick={() => {
-                            setDialogIsOpen(true);
-                            setSelectedJobId(row.jobId);
-                        }}
+                        <button
+                            onClick={() => {
+                                setDialogIsOpen(true);
+                                setSelectedJobId(row.jobId);
+                            }}
                             disabled={!row.jobId}
                             className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
-                            title={row.jobId ? "Click to view job details" : "No job details available"}>
+                            title={row.jobId ? "Click to view job details" : "No job details available"}
+                        >
                             {row.jobTitle}
                         </button>
                     </div>
-                )
-            }
+                );
+            },
         },
         {
             key: "companyName",
@@ -65,7 +67,8 @@ const SeekerInterviews = () => {
                             <Link
                                 to="/seeker/company-profile"
                                 className="px-2 text-blue-600 hover:underline underline-offset-2"
-                                title="Click to view company profile">
+                                title="Click to view company profile"
+                            >
                                 {row.companyName}
                             </Link>
                         ) : (
@@ -74,30 +77,53 @@ const SeekerInterviews = () => {
                             </span>
                         )}
                     </div>
-                )
-            }
+                );
+            },
         },
         { key: "country", header: "Locations" }, // Updated header to "Locations"
-        { key: "date", header: "Date" }, // Updated header to "Date"
+        {
+            key: "date",
+            header: "Date",
+            render: (row) => {
+                if (!row.date) return <span className="text-gray-400">Not scheduled</span>;
+
+                const date = new Date(row.date);
+                const formattedDate = date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                });
+
+                const formattedTime = date.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-md text-gray-500">{formattedTime}</span>
+                    </div>
+                );
+            },
+        }, // Updated header to "Date"
         { key: "recruiter", header: "recruiter" },
         {
-            key: 'actions',
-            header: 'Actions',
+            key: "actions",
+            header: "Actions",
             render: (row) => (
                 <div className="flex space-x-1">
                     <Button
-                        variant="primary"
-                        className="px-0.5 py-1 rounded-full bg-black text-white hover:bg-white hover:text-black border border-black transition-colors duration-200"
-                        onClick={() => window.open(row.meetingLink, '_blank')}
+                        variant={!row.meetingLink ? "outline" : "primary"}
+                        onClick={() => window.open(row.meetingLink, "_blank")}
+                        disabled={!row.meetingLink}
                     >
                         Join Interview
                     </Button>
                 </div>
-            )
+            ),
         },
-
-
-
     ];
 
     return (
@@ -144,10 +170,10 @@ const SeekerInterviews = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
-                <JobDetailsDialog/>
+                <JobDetailsDialog />
             </div>
         </div>
     );
-}
+};
 
 export default SeekerInterviews;

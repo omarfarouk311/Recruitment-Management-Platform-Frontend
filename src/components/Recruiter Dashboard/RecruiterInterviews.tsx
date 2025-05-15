@@ -104,7 +104,7 @@ const RecruiterInterviews = () => {
         },
         {
             key: "date",
-            header: "Date (GMT)",
+            header: "Date",
             render: (row) => {
                 if (!row.date) return <span className="text-gray-400">Not scheduled</span>;
 
@@ -113,7 +113,6 @@ const RecruiterInterviews = () => {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
-                    timeZone: 'GMT'
                 });
 
                 const formattedTime = date.toLocaleTimeString('en-US', {
@@ -126,7 +125,7 @@ const RecruiterInterviews = () => {
                 return (
                     <div className="flex flex-col">
                         <span>{formattedDate}</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-md text-gray-500">
                             {formattedTime}
                         </span>
                     </div>

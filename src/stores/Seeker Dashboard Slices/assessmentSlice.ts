@@ -3,9 +3,7 @@ import {
   assessment,
   DashboardFilters
 } from "../../types/seekerDashboard";
-
 import { CombinedState } from "../storeTypes";
-
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
@@ -85,7 +83,7 @@ export const createSeekerAssessmentsSlice: StateCreator<
             city: a.city,
             assessmentTime:a.assessment_time,
             dateAdded:formatDistanceToNow(new Date(a.date_applied), { addSuffix: true }),
-            deadline: formatDistanceToNow(new Date(a.phase_deadline), { addSuffix: true }),
+            deadline: a.phase_deadline,
             status: a.status,
           })),
         ],

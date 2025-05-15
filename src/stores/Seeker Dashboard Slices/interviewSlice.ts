@@ -3,10 +3,7 @@ import {
   DashboardFilters,
   interview
 } from "../../types/seekerDashboard";
-
 import { CombinedState } from "../storeTypes";
-
-import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
 
@@ -70,21 +67,20 @@ export const createSeekerInterviewsSlice: StateCreator<
       const res = await axios.get(`${config.API_BASE_URL}/interviews/seeker`, {
         params,
       });
-    console.log(res.data)
-      if (res.status!== 200) return;
+      if (res.status !== 200) return;
       set((state) => ({
         seekerInterviewsData: [
           ...state.seekerInterviewsData,
           ...res.data.interviews.map((i: any) => ({
-            recruiter:i.recruitername,
+            recruiter: i.recruitername ?? "------",
             jobTitle: i.job_title,
             jobId: i.job_id,
             companyName: i.companyname,
             companyId: i.company_id,
             country: i.location,
-            city: i.city,
-            date: formatDistanceToNow(new Date(i.deadline), { addSuffix: true }),
-            meetingLink: i.meetingLink,
+            city: i.job_city,
+            date: i.deadline,
+            meetingLink: i.meetingLink ?? "",
           })),
         ],
         seekerInterviewsHasMore: res.data.length > 0,
