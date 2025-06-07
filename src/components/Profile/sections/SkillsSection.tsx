@@ -47,7 +47,7 @@ export default function SkillsSection({fetchSkills, removeSkill, useSkills, addS
           )}
         </div>
         <div 
-          className={`space-y-4 overflow-hidden max-h-[200px]`}
+          className={`space-y-4`}
         >
           {isLoading ? (
             <div className="h-[120px] overflow-hidden">

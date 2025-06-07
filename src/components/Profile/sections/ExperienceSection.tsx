@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Info } from "lucide-react";
 import useStore from "../../../stores/globalStore";
 import ExperienceForm from "../forms/ExperienceForm";
 import { Experience } from "../../../types/profile";
@@ -44,6 +44,10 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
     setIsFormOpen(true);
   };
 
+  const checkMissingData = (experience: Experience) => {
+    return !experience.companyName || !experience.position || !experience.startDate || !experience.endDate || !experience.country || !experience.city;
+  }
+
   return (
     <div className="bg-white rounded-3xl shadow mb-6">
       <div className="p-6 text-center">
@@ -75,7 +79,7 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
                 key={experience.id}
                 className={`bg-gray-100 p-4 rounded-2xl ${
                   !showAll && index > 0 ? "hidden" : ""
-                }`}
+                } ${checkMissingData(experience) ? "border border-red-400" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   {/* Company Avatar */}
@@ -121,6 +125,11 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
+                        {(checkMissingData(experience)) && (
+                            <span title="Some fields are missing" className="text-red-500 ">
+                              <Info />
+                            </span>
+                        )}
                       </div>
                     )}
                   </div>

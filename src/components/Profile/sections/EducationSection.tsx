@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Info } from "lucide-react";
 import useStore from "../../../stores/globalStore";
 import EducationForm from "../forms/EducationForm";
 import { Education } from "../../../types/profile";
@@ -43,6 +43,10 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
     setEditingEducation(edu);
     setIsFormOpen(true);
   };
+  
+  const checkMissingData = (edu: Education) => {
+    return !edu.institution || !edu.degree || !edu.fieldOfStudy || !edu.startDate || !edu.endDate || !edu.grade;
+  }
 
   return (
     <div className="bg-white rounded-3xl shadow mb-6">
@@ -75,7 +79,7 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
                 key={edu.id}
                 className={`bg-gray-100 p-4 rounded-2xl ${
                   !showAll && index > 0 ? "hidden" : ""
-                }`}
+                } ${checkMissingData(edu) ? "border border-red-400" : ""}`}
               >
                 <div className="flex items-start gap-4">
                   <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center">
@@ -114,6 +118,12 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>
+                        
+                        {(checkMissingData(edu)) && (
+                          <span title="Some fields are missing" className="text-red-500 ">
+                            <Info />
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

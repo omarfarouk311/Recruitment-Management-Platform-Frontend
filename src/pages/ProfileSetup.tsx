@@ -37,9 +37,7 @@ const ProfileSetup = () => {
     } | null>(null);
     const [phoneNumber, setPhoneNumber] = useState<Value>();
     const [birthDate, setBirthDate] = useState<Date | null>(null);
-    const name = useStore.useUserName();
-    const setName = useStore.useUserSetName();
-    const userId = useStore.useUserId();
+    let [name, setName] = useState<string>("");
     const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
 
     // Calculate progress based on filled sections
@@ -107,8 +105,8 @@ const ProfileSetup = () => {
         }
     };
 
-    const handleRemoveExperience = (index: number) => {
-        setExperiences(experiences.filter((_, i) => i !== index));
+    const handleRemoveExperience = (id: number) => {
+        setExperiences((prev) => prev.filter((exp) => exp.id !== id));
     };
 
     const handleAddEducation = (edu: Education) => {
@@ -119,7 +117,7 @@ const ProfileSetup = () => {
     };
 
     const handleRemoveEducation = (id: number) => {
-        setEducations((prev) => prev.filter((_, i) => i !== id));
+        setEducations((prev) => prev.filter((edu) => edu.id !== id));
     };
 
     const handleEditEducation = (edu: Education) => {
@@ -472,6 +470,18 @@ const ProfileSetup = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Full Name Field */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Full Name
+                                    </label>
+                                    <input
+                                        value={name}
+                                        onChange={e => setName(e.target.value)}
+                                        placeholder="Enter Full Name"
+                                        className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
                                 {/* Phone Number Field */}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">
@@ -509,39 +519,12 @@ const ProfileSetup = () => {
                                         className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
                                     />
                                 </div>
-                                {/* Country Select */}
-                                <div className="flex gap-4 my-6">
-                                    <LocationSearch
-                                        onCityChange={(
-                                            selectedOption: string
-                                        ) =>
-                                            setSelectedCity({
-                                                label: selectedOption,
-                                                value: selectedOption,
-                                            })
-                                        }
-                                        onCountryChange={(
-                                            selectedOption: string
-                                        ) =>
-                                            setSelectedCountry({
-                                                label: selectedOption,
-                                                value: selectedOption,
-                                            })
-                                        }
-                                        selectedCity={selectedCity?.value || ""}
-                                        selectedCountry={
-                                            selectedCountry?.value || ""
-                                        }
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Gender Selection */}
+                                {/* Gender Selection */}
                             <div className="mt-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-4">
                                     Gender
                                 </label>
-                                <div className="flex gap-4">
+                                <div className="flex gap-6 mx-2">
                                     <label className="inline-flex items-center">
                                         <input
                                             type="radio"
@@ -578,6 +561,34 @@ const ProfileSetup = () => {
                                     </label>
                                 </div>
                             </div>
+                            </div>
+
+                            
+                            {/* Country Select */}
+                                <div className="flex gap-4 my-10">
+                                    <LocationSearch
+                                        onCityChange={(
+                                            selectedOption: string
+                                        ) =>
+                                            setSelectedCity({
+                                                label: selectedOption,
+                                                value: selectedOption,
+                                            })
+                                        }
+                                        onCountryChange={(
+                                            selectedOption: string
+                                        ) =>
+                                            setSelectedCountry({
+                                                label: selectedOption,
+                                                value: selectedOption,
+                                            })
+                                        }
+                                        selectedCity={selectedCity?.value || ""}
+                                        selectedCountry={
+                                            selectedCountry?.value || ""
+                                        }
+                                    />
+                                </div>
                         </section>
 
                         {/* Skills Section */}
