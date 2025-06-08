@@ -15,6 +15,38 @@ import axios, { AxiosResponse } from "axios";
 import { authRefreshToken } from "../util/authUtils";
 import { showErrorToast } from "../util/errorHandler";
 import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const formSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    phoneNumber: z.string(),
+    gender: z.enum(["male", "female"]),
+    birthDate: z.date(),
+    country: z.string(),
+    city: z.string(),
+    cvFile: z
+        .custom<FileList>()
+        .refine((files) => files?.length > 0, "CV is required")
+        .refine(
+            (files) => files?.[0]?.type === "application/pdf",
+            "Only PDF files are accepted"
+        )
+        .transform((files) => files?.[0]),
+    profilePhoto: z
+        .custom<FileList>()
+        .refine((files) => files?.length > 0, "Profile photo is required")
+        .refine(
+            (files) =>
+                files?.[0]?.type.startsWith("image/") &&
+                ["image/jpeg", "image/png"].includes(files?.[0]?.type),
+            "Only JPEG/PNG images are accepted"
+        )
+        .transform((files) => files?.[0]),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const ProfileSetup = () => {
     const navigate = useNavigate();
@@ -23,22 +55,39 @@ const ProfileSetup = () => {
     const allSkills = useStore.useSeekerProfileSkillsFormData();
     const [experiences, setExperiences] = useState<Experience[]>([]);
     const [progress, setProgress] = useState(0);
-    const [gender, setGender] = useState<"male" | "female" | "">("");
-    const [cvFile, setCvFile] = useState<File | null>(null);
-    const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
     const [educations, setEducations] = useState<Education[]>([]);
-    const [selectedCountry, setSelectedCountry] = useState<{
-        value: string;
-        label: string;
-    } | null>(null);
-    const [selectedCity, setSelectedCity] = useState<{
-        value: string;
-        label: string;
-    } | null>(null);
-    const [phoneNumber, setPhoneNumber] = useState<Value>();
-    const [birthDate, setBirthDate] = useState<Date | null>(null);
-    let [name, setName] = useState<string>("");
     const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
+
+    const {
+        register,
+        handleSubmit: formHandleSubmit,
+        setValue,
+        watch,
+        formState: { errors },
+        trigger,
+    } = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: "",
+            phoneNumber: undefined,
+            gender: undefined,
+            birthDate: undefined,
+            country: "",
+            city: "",
+        },
+    });
+
+    // Watch form values for progress calculation
+    const {
+        name,
+        phoneNumber,
+        gender,
+        birthDate,
+        country,
+        city,
+        cvFile,
+        profilePhoto,
+    } = watch();
 
     // Calculate progress based on filled sections
     useEffect(() => {
@@ -48,19 +97,19 @@ const ProfileSetup = () => {
         if (gender) filled++;
         if (cvFile) filled++;
         if (profilePhoto) filled++;
-        if (selectedCountry) filled++;
-        if (selectedCity) filled++;
+        if (country) filled++;
+        if (city) filled++;
         if (phoneNumber) filled++;
         setProgress(Math.round((filled / 8) * 100));
     }, [
         selectedSkills,
         experiences,
-        gender,
         cvFile,
         profilePhoto,
-        selectedCountry,
-        selectedCity,
+        country,
+        city,
         phoneNumber,
+        gender,
     ]);
 
     const handleAddSkill = (skillId: number) => {
@@ -89,7 +138,11 @@ const ProfileSetup = () => {
     };
 
     const handleEditExperience = (experience: Experience) => {
-        if (experience.position && experience.companyName && experience.id !== undefined) {
+        if (
+            experience.position &&
+            experience.companyName &&
+            experience.id !== undefined
+        ) {
             setExperiences((prev) => {
                 return prev.map((exp) => {
                     if (exp.id === experience.id) {
@@ -98,8 +151,7 @@ const ProfileSetup = () => {
                     return exp;
                 });
             });
-        }
-        else {
+        } else {
             showErrorToast("Please fill in all fields before saving.");
             throw new Error("Please fill in all fields before saving.");
         }
@@ -135,7 +187,9 @@ const ProfileSetup = () => {
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         if (event.target.files && event.target.files[0] && !parsingIsLoading) {
-            setCvFile(event.target.files[0]);
+            setValue("cvFile", event.target.files[0]);
+            await trigger("cvFile");
+
             setParsingIsLoading(true);
             let res: AxiosResponse<any, any>;
             try {
@@ -169,55 +223,59 @@ const ProfileSetup = () => {
                 if (res.data.education) {
                     setEducations((edus) => [
                         ...edus,
-                        ...res.data.education.map((edu: any, index: number) => ({
-                            id: edus.length + index,
-                            institution: edu.university,
-                            degree: edu.degree,
-                            fieldOfStudy: edu.faculty,
-                            grade: edu.grade,
-                            startDate: edu["start Year"]
-                                ? format(
-                                      new Date(edu["start Year"]),
-                                      "MMM yyyy"
-                                  )
-                                : undefined,
-                            endDate:
-                                edu["End Year"] == "present"
-                                    ? undefined
-                                    : edu["End Year"]
+                        ...res.data.education.map(
+                            (edu: any, index: number) => ({
+                                id: edus.length + index,
+                                institution: edu.university,
+                                degree: edu.degree,
+                                fieldOfStudy: edu.faculty,
+                                grade: edu.grade,
+                                startDate: edu["start Year"]
                                     ? format(
-                                          new Date(edu["End Year"]),
+                                          new Date(edu["start Year"]),
                                           "MMM yyyy"
                                       )
                                     : undefined,
-                        })),
+                                endDate:
+                                    edu["End Year"] == "present"
+                                        ? undefined
+                                        : edu["End Year"]
+                                        ? format(
+                                              new Date(edu["End Year"]),
+                                              "MMM yyyy"
+                                          )
+                                        : undefined,
+                            })
+                        ),
                     ]);
                 }
                 // set experience
                 if (res.data.workExperience) {
                     setExperiences((exps) => [
                         ...exps,
-                        ...res.data.workExperience.map((exp: any, index: number) => ({
-                            id: exps.length + index,
-                            companyName: exp.company,
-                            position: exp.title,
-                            startDate: exp["start date"]
-                                ? format(
-                                      new Date(exp["start date"]),
-                                      "MMM yyyy"
-                                  )
-                                : undefined,
-                            endDate:
-                                exp["end date"] === "present"
-                                    ? undefined
-                                    : exp["end date"]
+                        ...res.data.workExperience.map(
+                            (exp: any, index: number) => ({
+                                id: exps.length + index,
+                                companyName: exp.company,
+                                position: exp.title,
+                                startDate: exp["start date"]
                                     ? format(
-                                          new Date(exp["end date"]),
+                                          new Date(exp["start date"]),
                                           "MMM yyyy"
                                       )
                                     : undefined,
-                            description: "",
-                        })),
+                                endDate:
+                                    exp["end date"] === "present"
+                                        ? undefined
+                                        : exp["end date"]
+                                        ? format(
+                                              new Date(exp["end date"]),
+                                              "MMM yyyy"
+                                          )
+                                        : undefined,
+                                description: "",
+                            })
+                        ),
                     ]);
                 }
                 // set skills
@@ -232,11 +290,11 @@ const ProfileSetup = () => {
                 }
                 // set name
                 if (res.data.contactInformation.name) {
-                    setName(res.data.contactInformation.name);
+                    setValue("name", res.data.contactInformation.name);
                 }
                 // set phoneNumber
                 if (res.data.contactInformation.phone) {
-                    setPhoneNumber(res.data.contactInformation.phone);
+                    setValue("phoneNumber", res.data.contactInformation.phone);
                 }
                 setParsingIsLoading(false);
             } catch (err) {
@@ -256,22 +314,21 @@ const ProfileSetup = () => {
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         if (event.target.files && event.target.files[0]) {
-            setProfilePhoto(event.target.files[0]);
+            setValue("profilePhoto", event.target.files[0]);
+            trigger("profilePhoto"); // Validate immediately
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setLoading(true);
         // Add profile setup logic here
         try {
-            console.log(experiences)
             const data = {
                 name,
-                city: selectedCity?.value,
-                country: selectedCountry?.value,
-                gender: gender == "male",
-                phoneNumber: phoneNumber?.toString(),
+                city,
+                country,
+                gender: gender === "male",
+                phoneNumber,
                 dateOfBirth: birthDate?.toISOString(),
                 experiences: experiences.map((exp) => ({
                     companyName: exp.companyName,
@@ -301,10 +358,7 @@ const ProfileSetup = () => {
                 })),
             };
             const form = new FormData();
-            form.append(
-                "data",
-                JSON.stringify(data) 
-            );
+            form.append("data", JSON.stringify(data));
             if (profilePhoto) {
                 form.append("profilePhoto", profilePhoto);
             }
@@ -333,7 +387,10 @@ const ProfileSetup = () => {
                             },
                         }
                     );
-                } else if (axios.isAxiosError(err) && err.response?.status === 400) {
+                } else if (
+                    axios.isAxiosError(err) &&
+                    err.response?.status === 400
+                ) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
                             showErrorToast(`Validation Error: ${value}`)
@@ -368,7 +425,10 @@ const ProfileSetup = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-orange-500 py-8">
             <div className="container mx-auto px-4 max-w-3xl">
-                <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+                <form
+                    className="bg-white rounded-2xl shadow-xl p-6 md:p-8"
+                    onSubmit={formHandleSubmit(handleSubmit)}
+                >
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">
                             Complete your profile
@@ -476,12 +536,17 @@ const ProfileSetup = () => {
                                         Full Name
                                     </label>
                                     <input
-                                        value={name}
-                                        onChange={e => setName(e.target.value)}
+                                        {...register("name")}
                                         placeholder="Enter Full Name"
                                         className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     />
+                                    {errors.name && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.name.message}
+                                        </p>
+                                    )}
                                 </div>
+
                                 {/* Phone Number Field */}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">
@@ -491,104 +556,72 @@ const ProfileSetup = () => {
                                         international
                                         defaultCountry="US"
                                         value={phoneNumber}
-                                        onChange={setPhoneNumber}
+                                        onChange={(value) =>
+                                            setValue(
+                                                "phoneNumber",
+                                                value?.toString() || ""
+                                            )
+                                        }
                                         placeholder="Enter phone number"
                                         className="react-phone-input w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     />
                                 </div>
+
+                                {/* Date of Birth */}
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">
                                         Date Of Birth
                                     </label>
                                     <input
                                         type="date"
-                                        value={
-                                            birthDate
-                                                ? birthDate
-                                                      .toISOString()
-                                                      .slice(0, 10)
-                                                : ""
-                                        }
-                                        onChange={(e) =>
-                                            setBirthDate(
-                                                e.target.value
-                                                    ? new Date(e.target.value)
-                                                    : null
-                                            )
-                                        }
-                                        className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all`}
+                                        {...register("birthDate", {
+                                            valueAsDate: true,
+                                        })}
+                                        className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     />
                                 </div>
+
                                 {/* Gender Selection */}
-                            <div className="mt-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-4">
-                                    Gender
-                                </label>
-                                <div className="flex gap-6 mx-2">
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="radio"
-                                            className="form-radio"
-                                            name="gender"
-                                            value="male"
-                                            checked={gender === "male"}
-                                            onChange={(e) =>
-                                                setGender(
-                                                    e.target.value as
-                                                        | "male"
-                                                        | "female"
-                                                )
-                                            }
-                                        />
-                                        <span className="ml-2">Male</span>
+                                <div className="mt-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                                        Gender
                                     </label>
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="radio"
-                                            className="form-radio"
-                                            name="gender"
-                                            value="female"
-                                            checked={gender === "female"}
-                                            onChange={(e) =>
-                                                setGender(
-                                                    e.target.value as
-                                                        | "male"
-                                                        | "female"
-                                                )
-                                            }
-                                        />
-                                        <span className="ml-2">Female</span>
-                                    </label>
+                                    <div className="flex gap-6 mx-2">
+                                        <label className="inline-flex items-center">
+                                            <input
+                                                type="radio"
+                                                {...register("gender")}
+                                                value="male"
+                                                className="form-radio"
+                                            />
+                                            <span className="ml-2">Male</span>
+                                        </label>
+                                        <label className="inline-flex items-center">
+                                            <input
+                                                type="radio"
+                                                {...register("gender")}
+                                                value="female"
+                                                className="form-radio"
+                                            />
+                                            <span className="ml-2">Female</span>
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
                             </div>
 
-                            
-                            {/* Country Select */}
-                                <div className="flex gap-4 my-10">
-                                    <LocationSearch
-                                        onCityChange={(
-                                            selectedOption: string
-                                        ) =>
-                                            setSelectedCity({
-                                                label: selectedOption,
-                                                value: selectedOption,
-                                            })
-                                        }
-                                        onCountryChange={(
-                                            selectedOption: string
-                                        ) =>
-                                            setSelectedCountry({
-                                                label: selectedOption,
-                                                value: selectedOption,
-                                            })
-                                        }
-                                        selectedCity={selectedCity?.value || ""}
-                                        selectedCountry={
-                                            selectedCountry?.value || ""
-                                        }
-                                    />
-                                </div>
+                            {/* Location Search */}
+                            <div className="flex gap-4 my-10">
+                                <LocationSearch
+                                    onCountryChange={(selectedOption) =>
+                                        setValue("country", selectedOption)
+                                    }
+                                    onCityChange={(selectedOption) =>
+                                        setValue("city", selectedOption)
+                                    }
+                                    selectedCity={city || ""}
+                                    selectedCountry={country || ""}
+                                />
+                            </div>
                         </section>
 
                         {/* Skills Section */}
@@ -616,16 +649,12 @@ const ProfileSetup = () => {
 
                         {/* Submit Button */}
                         <div className="pt-6 border-t">
-                            <Button
-                                type="button"
-                                onClick={handleSubmit}
-                                loading={loading}
-                            >
+                            <Button type="submit" loading={loading}>
                                 Complete Profile
                             </Button>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );
