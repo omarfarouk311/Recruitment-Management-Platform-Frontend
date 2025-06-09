@@ -63,9 +63,9 @@ export default function EducationDialog({
       // Convert stored dates from MMM yyyy to yyyy-MM format
       const formatForInput = (dateString: string) => {
         try {
-          return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+          return format(new Date(dateString).toISOString(), "yyyy-MM");
         } catch {
-          return "";
+          return dateString;
         }
       };
 
@@ -133,7 +133,11 @@ export default function EducationDialog({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault(); // Prevent default form submission
+              e.stopPropagation(); // Stop event bubbling
+              handleSubmit(onSubmit)(e); // Trigger form validation
+            }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Institution

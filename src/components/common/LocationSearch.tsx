@@ -1,4 +1,5 @@
 // LocationSearch.tsx
+import React, { memo } from "react";
 import { Country, City } from "country-state-city";
 import FilterDropdown from "../Filters/FilterDropdown";
 
@@ -27,7 +28,7 @@ const LocationSearch = ({
           label: country.name,
       }));
 
-
+  
   const cityOptions = [
     ...(selectedCountry
       ? City.getCitiesOfCountry(
@@ -61,4 +62,4 @@ const LocationSearch = ({
   );
 };
 
-export default LocationSearch;
+export default memo(LocationSearch);

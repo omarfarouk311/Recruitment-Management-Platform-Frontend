@@ -6,7 +6,7 @@ import { z } from "zod";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import type { Experience } from "../../../types/profile";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import LocationSearch from "../../common/LocationSearch";
 import { format, parse } from "date-fns";
 
@@ -70,9 +70,9 @@ export default function ExperienceDialog({
       // Convert stored dates from MMM yyyy to yyyy-MM format
       const formatForInput = (dateString: string) => {
         try {
-          return format(parse(dateString, "MMM yyyy", new Date()), "yyyy-MM");
+          return format(new Date(dateString).toISOString(), "yyyy-MM");
         } catch {
-          return "";
+          return dateString;
         }
       };
 
@@ -97,7 +97,6 @@ export default function ExperienceDialog({
   }, [isOpen]);
 
   const onSubmit = async (data: FormData, event?: React.BaseSyntheticEvent) => {
-    event?.stopPropagation();
     const isValid = await trigger();
 
     const [startYear, startMonth] = data.startDate.split("-").map(Number);
@@ -144,7 +143,11 @@ export default function ExperienceDialog({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault(); // Prevent default form submission
+              e.stopPropagation(); // Stop event bubbling
+              handleSubmit(onSubmit)(e); // Trigger form validation
+            }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Company
@@ -185,14 +188,14 @@ export default function ExperienceDialog({
                 <div className="flex space-x-6">
                   <LocationSearch
                     selectedCountry={selectedCountry}
-                    onCountryChange={(value) => {
+                    onCountryChange={useCallback((value) => {
                       setValue("country", value, { shouldValidate: true });
                       setValue("city", "", { shouldValidate: true });
-                    }}
+                    }, [])}
                     selectedCity={selectedCity}
-                    onCityChange={(value) =>
+                    onCityChange={useCallback((value) =>
                       setValue("city", value, { shouldValidate: true })
-                    }
+                    , [])}
                   />
                 </div>
 

@@ -6,6 +6,7 @@ import { Experience } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
 import { UserRole } from "../../../stores/User Slices/userSlice";
+import { format } from "date-fns";
 
 interface ExperienceSectionProps {
   fetchExperience?: () => Promise<void>;
@@ -33,6 +34,14 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
       });
     }
   }, []);
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString).toISOString(), "MMM yyyy");
+    } catch {
+      return dateString;
+    }
+  };
 
   const handleAddExperience = () => {
     setEditingExperience(undefined);
@@ -106,12 +115,13 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
                   {/* Dates and Buttons */}
                   <div className="flex items-center gap-4 ml-auto pl-4">
                     <p className="text-md text-gray-600 whitespace-nowrap mr-2">
-                      {experience.startDate} - {experience.endDate}
+                      {formatDate(experience.startDate)} - {formatDate(experience.endDate)}
                     </p>
 
                     {userRole === UserRole.SEEKER && (
                       <div className="flex gap-4">
                         <button
+                          type="button"
                           className="text-gray-400 hover:text-gray-600"
                           onClick={() =>
                             handleEditExperience({ ...experience })
@@ -120,6 +130,7 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
                           <Edit className="h-5 w-5" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => removeExperience(experience.id!)}
                           className="text-red-400 hover:text-red-600"
                         >

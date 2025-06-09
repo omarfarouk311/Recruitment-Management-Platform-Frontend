@@ -6,6 +6,7 @@ import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { dateOptions, ratingOptions } from "../../data/filterOptions";
 import { HomePageTabs } from "../../stores/Seeker Home Slices/homePageSlice";
+import { useCallback } from "react";
 
 const ForYou = () => {
   const filters = useStore.useForYouTabFilters();
@@ -53,9 +54,9 @@ const ForYou = () => {
 
         <LocationSearch
           selectedCountry={filters.country}
-          onCountryChange={(value) => setFilters({ country: value, city: "" })}
+          onCountryChange={useCallback((value) => setFilters({ country: value, city: "" }), [])}
           selectedCity={filters.city}
-          onCityChange={(value) => setFilters({ city: value })}
+          onCityChange={useCallback((value) => setFilters({ city: value }), [])}
         />
         
         <Button

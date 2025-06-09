@@ -1,7 +1,7 @@
 import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
 import { JobOfferOverviewType } from "../../types/jobOffer";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import useStore from "../../stores/globalStore";
@@ -148,9 +148,9 @@ const SeekerJobOffers = () => {
 
                     <LocationSearch
                         selectedCountry={filters.country}
-                        onCountryChange={(value) => setFilters({ country: value, city: "" })}
+                        onCountryChange={useCallback((value) => setFilters({ country: value, city: "" }), [])}
                         selectedCity={filters.city}
-                        onCityChange={(value) => setFilters({ city: value })}
+                        onCityChange={useCallback((value) => setFilters({ city: value }), [])}
                     />
 
                     <FilterDropdown

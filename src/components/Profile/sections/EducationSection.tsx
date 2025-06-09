@@ -6,6 +6,7 @@ import { Education } from "../../../types/profile";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import Button from "../../common/Button";
 import { UserRole } from "../../../stores/User Slices/userSlice";
+import { format } from "date-fns";
 
 interface EducationSectionProps {
   fetchEducation?: () => Promise<void>;
@@ -33,6 +34,14 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
       });
     }
   }, []);
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString).toISOString(), "MMM yyyy");
+    } catch {
+      return dateString;
+    }
+  };
 
   const handleAddEducation = () => {
     setEditingEducation(undefined);
@@ -101,7 +110,7 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
                   {/* Dates and Buttons */}
                   <div className="flex items-center gap-4 ml-auto pl-4">
                     <p className="text-md text-gray-600 whitespace-nowrap mr-2">
-                      {edu.startDate} - {edu.endDate}
+                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
                     </p>
 
                     {userRole === UserRole.SEEKER && (

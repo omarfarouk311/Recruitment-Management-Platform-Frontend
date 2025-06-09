@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import { Upload, FileText, User, FileInput } from "lucide-react";
@@ -27,13 +27,11 @@ const formSchema = z.object({
     country: z.string(),
     city: z.string(),
     cvFile: z
-        .custom<FileList>()
-        .refine((files) => files?.length > 0, "CV is required")
+        .custom<File>()
         .refine(
-            (files) => files?.[0]?.type === "application/pdf",
+            (files) => files?.type === "application/pdf",
             "Only PDF files are accepted"
-        )
-        .transform((files) => files?.[0]),
+        ),
     profilePhoto: z
         .custom<FileList>()
         .refine((files) => files?.length > 0, "Profile photo is required")
@@ -43,7 +41,7 @@ const formSchema = z.object({
                 ["image/jpeg", "image/png"].includes(files?.[0]?.type),
             "Only JPEG/PNG images are accepted"
         )
-        .transform((files) => files?.[0]),
+        .transform((files) => files?.[0]).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -187,7 +185,7 @@ const ProfileSetup = () => {
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         if (event.target.files && event.target.files[0] && !parsingIsLoading) {
-            setValue("cvFile", event.target.files[0]);
+            setValue("cvFile", event.target.files[0], { shouldValidate: true });
             await trigger("cvFile");
 
             setParsingIsLoading(true);
@@ -204,7 +202,6 @@ const ProfileSetup = () => {
                             },
                         }
                     );
-                    console.log(res.data);
                 } catch (err) {
                     if (
                         axios.isAxiosError(err) &&
@@ -319,17 +316,21 @@ const ProfileSetup = () => {
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (
+        formValues: FormValues,
+        event?: React.BaseSyntheticEvent
+    ) => {
+        event?.preventDefault();
         setLoading(true);
         // Add profile setup logic here
         try {
             const data = {
-                name,
-                city,
-                country,
-                gender: gender === "male",
-                phoneNumber,
-                dateOfBirth: birthDate?.toISOString(),
+                name: formValues.name,
+                city: formValues.city,
+                country: formValues.country,
+                gender: formValues.gender === "male",
+                phoneNumber: formValues.phoneNumber,
+                dateOfBirth: formValues.birthDate?.toISOString(),
                 experiences: experiences.map((exp) => ({
                     companyName: exp.companyName,
                     jobTitle: exp.position,
@@ -357,6 +358,7 @@ const ProfileSetup = () => {
                         : undefined,
                 })),
             };
+            console.log("Submitting profile data:", data);
             const form = new FormData();
             form.append("data", JSON.stringify(data));
             if (profilePhoto) {
@@ -375,6 +377,7 @@ const ProfileSetup = () => {
                         },
                     }
                 );
+                navigate("/seeker/home");
             } catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
                     await authRefreshToken();
@@ -387,6 +390,8 @@ const ProfileSetup = () => {
                             },
                         }
                     );
+                    
+                    navigate("/seeker/home");
                 } else if (
                     axios.isAxiosError(err) &&
                     err.response?.status === 400
@@ -396,10 +401,16 @@ const ProfileSetup = () => {
                             showErrorToast(`Validation Error: ${value}`)
                     );
                 }
-                throw err;
+                else if (axios.isAxiosError(err) && err.response?.status === 409) {
+                    showErrorToast(
+                        "Phone number is already registered."
+                    );
+                }
+                else {
+                    throw err;
+                }
             }
             setLoading(false);
-            navigate("/seeker/home");
         } catch (err) {
             console.log(err);
             showErrorToast(`Something went wrong!`);
@@ -493,6 +504,11 @@ const ProfileSetup = () => {
                                     <p className="mt-2 text-sm text-gray-600">
                                         Upload Profile Photo
                                     </p>
+                                    {errors.profilePhoto && (
+                                        <p className="text-red-500 text-sm mt-2">
+                                            {errors.profilePhoto.message}
+                                        </p>
+                                    )}
                                 </div>
                                 {/* CV Upload */}
                                 <div className="text-center relative">
@@ -522,8 +538,13 @@ const ProfileSetup = () => {
                                         Upload CV
                                     </p>
                                     {cvFile && (
-                                        <p className="text-sm text-gray-600 truncate w-32 absolute left-1/2 transform -translate-x-1/2 mt-2">
+                                        <p className="mt-2 text-sm text-gray-600">
                                             {cvFile.name}
+                                        </p>
+                                    )}
+                                    {errors.cvFile && (
+                                        <p className="text-red-500 text-sm mt-2">
+                                            {errors.cvFile.message}
                                         </p>
                                     )}
                                 </div>
@@ -565,6 +586,11 @@ const ProfileSetup = () => {
                                         placeholder="Enter phone number"
                                         className="react-phone-input w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     />
+                                    {errors.phoneNumber && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.phoneNumber.message}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Date of Birth */}
@@ -579,11 +605,16 @@ const ProfileSetup = () => {
                                         })}
                                         className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                     />
+                                    {errors.birthDate && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.birthDate.message}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Gender Selection */}
-                                <div className="mt-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
                                         Gender
                                     </label>
                                     <div className="flex gap-6 mx-2">
@@ -606,22 +637,41 @@ const ProfileSetup = () => {
                                             <span className="ml-2">Female</span>
                                         </label>
                                     </div>
+                                    {errors.gender && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.gender.message}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Location Search */}
                             <div className="flex gap-4 my-10">
                                 <LocationSearch
-                                    onCountryChange={(selectedOption) =>
-                                        setValue("country", selectedOption)
-                                    }
-                                    onCityChange={(selectedOption) =>
-                                        setValue("city", selectedOption)
-                                    }
+                                    onCountryChange={useCallback(
+                                        (selectedOption) =>
+                                            setValue("country", selectedOption),
+                                        []
+                                    )}
+                                    onCityChange={useCallback(
+                                        (selectedOption) =>
+                                            setValue("city", selectedOption),
+                                        []
+                                    )}
                                     selectedCity={city || ""}
                                     selectedCountry={country || ""}
                                 />
                             </div>
+                            {errors.country && (
+                                <p className="text-red-500 text-sm">
+                                    {errors.country.message}
+                                </p>
+                            )}
+                            {errors.city && (
+                                <p className="text-red-500 text-sm">
+                                    {errors.city.message}
+                                </p>
+                            )}
                         </section>
 
                         {/* Skills Section */}
@@ -649,7 +699,11 @@ const ProfileSetup = () => {
 
                         {/* Submit Button */}
                         <div className="pt-6 border-t">
-                            <Button type="submit" loading={loading}>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                loading={loading}
+                            >
                                 Complete Profile
                             </Button>
                         </div>
