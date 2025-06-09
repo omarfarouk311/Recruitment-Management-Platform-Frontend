@@ -203,9 +203,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         const url = `${API_BASE_URL}/seekers/jobs${!forYouTabSearchQuery ? '/recommended' : ''}`
 
         try {
-            const res = await axios.get(url, {
-                params
-            });
+            const res = await axios.get(url, { params });
 
             const newJobs: Job[] = res.data.map((job: any) => ({
                 id: job.id,
@@ -225,26 +223,33 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 return {
                     forYouTabJobs: [...state.forYouTabJobs, ...newJobs],
                     forYouTabHasMore: newJobs.length === paginationLimit,
-                    forYouTabIsJobsLoading: false,
                     forYouTabPage: state.forYouTabPage + 1,
                 }
             });
         }
         catch (err) {
-            set({ forYouTabIsJobsLoading: false });
             if (axios.isAxiosError(err)) {
-                if (err.response?.status === 400) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabFetchJobs();
+                    }
+                }
+                else if (err.response?.status === 400) {
                     err.response?.data.validationErrors.map((validationError: any) => {
                         showErrorToast(validationError.message);
                     });
                 }
-                else if (err.response?.status === 500) {
-                    showErrorToast('Something went wrong');
-                }
                 else if (err.response?.status === 403) {
-                    showErrorToast('You are not authorized to access this resource');
+                    showErrorToast('Unauthorized access');
+                }
+                else {
+                    showErrorToast('Failed to fetch jobs');
                 }
             }
+        }
+        finally {
+            set({ forYouTabIsJobsLoading: false });
         }
     },
 
@@ -254,23 +259,26 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
         try {
             const transformedDetails = await fetchJobDetails(id);
-            set({
-                forYouTabDetailedJobs: [transformedDetails],
-                forYouTabIsDetailsLoading: false
-            });
+            set({ forYouTabDetailedJobs: [transformedDetails] });
         }
         catch (err) {
-            set({ forYouTabIsDetailsLoading: false });
             if (axios.isAxiosError(err)) {
-                if (err.response?.status === 404) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabSetSelectedJobId(id);
+                    }
+                }
+                else if (err.response?.status === 404) {
                     showErrorToast('Job not found');
-                } else if (err.response?.status === 500) {
-                    showErrorToast('Something went wrong');
+                }
+                else {
+                    showErrorToast('Failed to fetch job details');
                 }
             }
-            else {
-                showErrorToast('Something went wrong');
-            }
+        }
+        finally {
+            set({ forYouTabIsDetailsLoading: false });
         }
     },
 
@@ -286,7 +294,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             forYouTabIsDetailsLoading: false,
         }));
 
-        await get().forYouTabFetchJobs();
+        get().forYouTabFetchJobs();
     },
 
     forYouTabSetSearchQuery: (query: string) => {
@@ -308,34 +316,35 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             homePageActiveTab: HomePageTabs.JobSearch
         });
 
-        await get().forYouTabFetchJobs();
+        get().forYouTabFetchJobs();
     },
 
     forYouTabPushToDetailedJobs: async (id: number) => {
         set({ forYouTabIsDetailsLoading: true });
-        // mock API call
         try {
             const transformedDetails = await fetchJobDetails(id);
             set((state) => ({
-                forYouTabDetailedJobs: [
-                    transformedDetails,
-                    ...state.forYouTabDetailedJobs
-                ],
-                forYouTabIsDetailsLoading: false
+                forYouTabDetailedJobs: [transformedDetails, ...state.forYouTabDetailedJobs]
             }));
         }
         catch (err) {
-            set({ forYouTabIsDetailsLoading: false });
             if (axios.isAxiosError(err)) {
-                if (err.response?.status === 404) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabPushToDetailedJobs(id);
+                    }
+                }
+                else if (err.response?.status === 404) {
                     showErrorToast('Job not found');
-                } else if (err.response?.status === 500) {
-                    showErrorToast('Something went wrong');
+                }
+                else {
+                    showErrorToast('Failed to fetch job details');
                 }
             }
-            else {
-                showErrorToast('Something went wrong');
-            }
+        }
+        finally {
+            set({ forYouTabIsDetailsLoading: false });
         }
     },
 
@@ -358,78 +367,107 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             }));
         }
         catch (err) {
-            showErrorToast('Something went wrong');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabRemoveRecommendation(id);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to remove recommended job');
+                }
+            }
         }
     },
 
     forYouTabApplyToJob: async (id, cvId) => {
         try {
-            try {
-                await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
-                    jobId: id,
-                    cvId: cvId
-                });
-            }
-            catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                    await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
-                        jobId: id,
-                        cvId: cvId
-                    })
-                }
-                else throw err;
-            }
+            await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
+                jobId: id,
+                cvId: cvId
+            });
+
             set((state) => ({
-                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, applied: true } : job)
+                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map(
+                    (job) => job.id === id ? { ...job, applied: true } : job
+                )
             }))
         }
         catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.map((validationError: any) => {
-                    showErrorToast(validationError.message);
-                });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabApplyToJob(id, cvId);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    if (err.response?.data.validationErrors.length > 0) {
+                        err.response.data.validationErrors.map((validationError: any) => {
+                            showErrorToast(validationError.message);
+                        });
+                    }
+                    else showErrorToast('Job is closed');
+                    throw err;
+                }
+                else if (err.response?.status === 404) {
+                    showErrorToast('Job or CV not found');
+                    throw err;
+                }
+                else if (err.response?.status === 409) {
+                    showErrorToast("You have already applied on this job");
+                    throw err;
+                }
+                else {
+                    showErrorToast('Failed to apply on the job');
+                    throw err;
+                }
             }
-            else {
-                showErrorToast('Something went wrong!')
-            }
-            throw err;
         }
     },
 
     forYouTabReportJob: async (id, title, message) => {
         try {
-            try {
-                await axios.post(`${config.API_BASE_URL}/reports`, {
-                    jobId: id,
-                    title,
-                    description: message
-                });
-            }
-            catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                    await axios.post(`${config.API_BASE_URL}/reports`, {
-                        jobId: id,
-                        message: message
-                    });
-                }
-                else throw err;
-            }
+            await axios.post(`${config.API_BASE_URL}/reports`, {
+                jobId: id,
+                title,
+                description: message
+            });
+
             set((state) => ({
-                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map((job) => job.id === id ? { ...job, reported: true } : job)
+                forYouTabDetailedJobs: state.forYouTabDetailedJobs.map(
+                    (job) => job.id === id ? { ...job, reported: true } : job
+                )
             }));
         }
         catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 400) {
-                err.response?.data.validationErrors.map((validationError: any) => {
-                    showErrorToast(validationError.message);
-                });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabReportJob(id, title, message);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    err.response?.data.validationErrors.map((validationError: any) => {
+                        showErrorToast(validationError.message);
+                    });
+                    throw err;
+                }
+                else if (err.response?.status === 404) {
+                    showErrorToast('Job not found');
+                    throw err;
+                }
+                else if (err.response?.status === 409) {
+                    showErrorToast("You have already reported this job");
+                    throw err;
+                }
+                else {
+                    showErrorToast('Failed to report the job');
+                    throw err;
+                }
             }
-            else {
-                showErrorToast('Something went wrong!');
-            }
-            throw err;
         }
     },
 
@@ -448,7 +486,17 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             });
         }
         catch (err) {
-            showErrorToast('Something went wrong');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().forYouTabFetchCompanyIndustries(companyId, jobId);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch company industries');
+                }
+            }
         }
     },
 
