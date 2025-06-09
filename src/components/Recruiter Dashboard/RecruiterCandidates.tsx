@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useStore from "../../stores/globalStore";
 import Dashboard from "../common/Dashboard";
@@ -166,12 +166,12 @@ const RecruiterCandidates = () => {
                     <LocationSearch
                         selectedCountry={filters.candidateCountry}
                         selectedCity={filters.candidateCity}
-                        onCountryChange={useCallback((value) =>
+                        onCountryChange={(value) =>
                             setFilters({ candidateCountry: value })
-                        , [])}
-                        onCityChange={useCallback((value) =>
+                        }
+                        onCityChange={(value) =>
                             setFilters({ candidateCity: value })
-                        , [])}
+                        }
                     />
 
                     <FilterDropdown

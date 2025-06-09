@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import { Upload, FileText, User, FileInput } from "lucide-react";
@@ -29,19 +29,17 @@ const formSchema = z.object({
     cvFile: z
         .custom<File>()
         .refine(
-            (files) => files?.type === "application/pdf",
+            (file) => file?.type === "application/pdf",
             "Only PDF files are accepted"
         ),
     profilePhoto: z
-        .custom<FileList>()
-        .refine((files) => files?.length > 0, "Profile photo is required")
+        .custom<File>()
         .refine(
-            (files) =>
-                files?.[0]?.type.startsWith("image/") &&
-                ["image/jpeg", "image/png"].includes(files?.[0]?.type),
+            (file) =>
+                file?.type.startsWith("image/") &&
+                ["image/jpeg", "image/png"].includes(file?.type),
             "Only JPEG/PNG images are accepted"
-        )
-        .transform((files) => files?.[0]).optional(),
+        ).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -298,7 +296,7 @@ const ProfileSetup = () => {
                 if (axios.isAxiosError(err) && err.response?.status === 400) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
-                            showErrorToast(`Validation Error: ${value}`)
+                            showErrorToast(`${value}`)
                     );
                 }
             }
@@ -398,12 +396,12 @@ const ProfileSetup = () => {
                 ) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
-                            showErrorToast(`Validation Error: ${value}`)
+                            showErrorToast(`${value}`)
                     );
                 }
                 else if (axios.isAxiosError(err) && err.response?.status === 409) {
                     showErrorToast(
-                        "Phone number is already registered."
+                        err.response?.data.message
                     );
                 }
                 else {
@@ -648,16 +646,14 @@ const ProfileSetup = () => {
                             {/* Location Search */}
                             <div className="flex gap-4 my-10">
                                 <LocationSearch
-                                    onCountryChange={useCallback(
+                                    onCountryChange={
                                         (selectedOption) =>
-                                            setValue("country", selectedOption),
-                                        []
-                                    )}
-                                    onCityChange={useCallback(
+                                            setValue("country", selectedOption)
+                                    }
+                                    onCityChange={
                                         (selectedOption) =>
-                                            setValue("city", selectedOption),
-                                        []
-                                    )}
+                                            setValue("city", selectedOption)
+                                    }
                                     selectedCity={city || ""}
                                     selectedCountry={country || ""}
                                 />

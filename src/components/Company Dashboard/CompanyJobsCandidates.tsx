@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { Link } from "react-router-dom";
 import useStore from "../../stores/globalStore";
@@ -196,9 +196,9 @@ const CompanyJobsCandidates = () => {
                     <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
                     <LocationSearch
                         selectedCountry={filters.candidateCountry}
-                        onCountryChange={useCallback((value) => setFilters({ candidateCountry: value }), [])}
+                        onCountryChange={(value) => setFilters({ candidateCountry: value })}
                         selectedCity={filters.candidateCity}
-                        onCityChange={useCallback((value) => setFilters({ candidateCity: value }), [])}
+                        onCityChange={(value) => setFilters({ candidateCity: value })}
                     />
 
                         <FilterDropdown

@@ -5,7 +5,7 @@ import {
     DashboardSortByFilterOptions,
     DashboardStatusFilterOptions,
 } from "../../types/seekerDashboard";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import useStore from "../../stores/globalStore";
@@ -135,9 +135,9 @@ const SeekerInterviews = () => {
 
                     <LocationSearch
                         selectedCountry={filters.country}
-                        onCountryChange={useCallback((value) => setFilters({ country: value, city: "" }), [])}
+                        onCountryChange={(value) => setFilters({ country: value, city: "" })}
                         selectedCity={filters.city}
-                        onCityChange={useCallback((value) => setFilters({ city: value }), [])}
+                        onCityChange={(value) => setFilters({ city: value })}
                     />
 
                     <FilterDropdown
