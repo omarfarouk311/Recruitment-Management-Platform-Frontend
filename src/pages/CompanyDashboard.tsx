@@ -9,6 +9,7 @@ import CompanyLogs from "../components/Company Dashboard/CompanyLogs";
 import CompanyJobs from "../components/Company Dashboard/CompanyJobs";
 import CompanyRecruiters from "../components/Company Dashboard/CompanyRecruitersParent";import CompanyAssessments from "../components/Company Dashboard/CompanyAssessments";
 import CompanyTemplatesDashboard from "../components/Company Dashboard/CompanyTemplates";
+import CompanyRecruitmentDashboardParent from "../components/Company Dashboard/CompanyRecruitmentDashboardPraent";
 
 const CompanyDashboard = () => {
   const activeTab = useStore.useCompanyDashboardActiveTab();
@@ -58,6 +59,8 @@ const CompanyDashboard = () => {
             <CompanyAssessments/>
         ): activeTab == companyDashboardTabs.recruiters? (
           <CompanyRecruiters />
+        ): activeTab == companyDashboardTabs.recruiterProcess ? (
+          <CompanyRecruitmentDashboardParent />
         ): activeTab == companyDashboardTabs.templates ? (
           <CompanyTemplatesDashboard />
         ) : null}  

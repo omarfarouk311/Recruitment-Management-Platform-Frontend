@@ -42,6 +42,8 @@ import { createCompanyRecruitersSlice } from "./Company Dashboard Slice/CompanyR
 
 import { createCompanyAssignedCandidatesSlice } from "./Company Dashboard Slice/CompanyAssignedCandidatesSlice";
 
+import { createCompanyRecruitmentProcessesSlice } from "./Company Dashboard Slice/CompanyRecruitmentProcessesSlice";
+
 const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSlice>]]>(
     persist(
         (...a) => ({
@@ -79,6 +81,7 @@ const useGlobalStore = create<CombinedState, [["zustand/persist", Partial<userSl
             ...createCompanyRecruitersSlice(...a),
             ...createCompanyAssignedCandidatesSlice(...a),
             ...createCompanyAssessmentsSlice(...a),
+            ...createCompanyRecruitmentProcessesSlice(...a),
             
         }),
         {

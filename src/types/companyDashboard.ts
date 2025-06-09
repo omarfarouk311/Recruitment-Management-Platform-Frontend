@@ -96,3 +96,11 @@ export interface CompanyAssignedCandidatesFilters {
   phaseType: string;
   jobTitle: string;
 }
+
+
+
+export interface CompanyRecruitmentProcesses {
+  id: number;
+  name: string;
+  num_of_phases: number;
+}
