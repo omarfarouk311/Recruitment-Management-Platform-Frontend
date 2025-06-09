@@ -3,6 +3,8 @@ import { CompanyCard, CompaniesTabFilters } from '../../types/company';
 import { CombinedState } from '../storeTypes';
 import config from '../../../config/config';
 import axios from "axios";
+import { showErrorToast } from '../../util/errorHandler';
+import { authRefreshToken } from '../../util/authUtils';
 
 export interface CompaniesTabSlice {
     companiesTabCompanies: CompanyCard[];
@@ -36,68 +38,87 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
     companiesTabSearchQuery: '',
 
     companiesTabFetchCompanies: async () => {
-        const { companiesTabPage, 
-                companiesTabHasMore, 
-                companiesTabIsCompaniesLoading,
-                companiesTabSearchQuery,
-                companiesTabFilters:{country, city, industry, type, size, rating},
-             } = get();
+        const {
+            companiesTabPage,
+            companiesTabHasMore,
+            companiesTabIsCompaniesLoading,
+            companiesTabSearchQuery,
+            companiesTabFilters: { country, city, industry, type, size, rating },
+        } = get();
+
         if (!companiesTabHasMore || companiesTabIsCompaniesLoading) return;
         set({ companiesTabIsCompaniesLoading: true });
 
-        // mock API call, don't forget to include the filters in the query string if they are populated
-        
         try {
             let params = Object.fromEntries(
-              Object.entries({
-                page:companiesTabPage,
-                companyCountry: country || undefined,
-                companyCity: city || undefined,
-                companyIndustry: industry || undefined,
-                companyType: type || undefined,
-                size: size || undefined,
-                companyRating: rating || undefined,
-                companyName: companiesTabSearchQuery || undefined,
-              }).filter(([_, value]) => value !== undefined)
+                Object.entries({
+                    page: companiesTabPage,
+                    companyCountry: country || undefined,
+                    companyCity: city || undefined,
+                    companyIndustry: industry || undefined,
+                    companyType: type || undefined,
+                    size: size || undefined,
+                    companyRating: rating || undefined,
+                    companyName: companiesTabSearchQuery || undefined,
+                }).filter(([_, value]) => value !== undefined)
             );
 
-            if(params.size) {
-              params.companyMinSize = size.split('-')[0];
-              params.companyMaxSize = size.split('-')[1];
-              delete params.size;
+            if (params.size) {
+                params.companyMinSize = size.split('-')[0];
+                params.companyMaxSize = size.split('-')[1];
+                delete params.size;
             }
-            
+
             let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
-              params,
+                params,
             });
-            
+
             set((state) => ({
                 companiesTabCompanies: [
-                ...state.companiesTabCompanies,
-                ...res.data.map((obj: any) => ({
-                    id: obj.id,
-                    image: `${config.API_BASE_URL}/companies/${obj.id}/image`,
-                    name: obj.name,
-                    overview: obj.overview || 'No overview available',
-                    size: obj.size ,
-                    rating: obj.rating,
-                    reviewsCount: obj.reviewsCount ,
-                    jobsCount: obj.jobsCount ,
-                    locationsCount: obj.locationsCount,
-                    industriesCount: obj.industriesCount ,
-                    locations: [...obj.locations||[]],
-                    industries: [...obj.industries||[]],
-                })),
-              ],
-              companiesTabHasMore:  res.data.length ===config.paginationLimit,
-              companiesTabIsCompaniesLoading: false,
-              companiesTabPage: state.companiesTabPage + 1,
+                    ...state.companiesTabCompanies,
+                    ...res.data.map((obj: any) => ({
+                        id: obj.id,
+                        image: `${config.API_BASE_URL}/companies/${obj.id}/image`,
+                        name: obj.name,
+                        overview: obj.overview,
+                        size: obj.size,
+                        rating: obj.rating,
+                        reviewsCount: obj.reviewsCount,
+                        jobsCount: obj.jobsCount,
+                        locationsCount: obj.locationsCount,
+                        industriesCount: obj.industriesCount,
+                        locations: [],
+                        industries: [],
+                    })),
+                ],
+                companiesTabHasMore: res.data.length === config.paginationLimit,
+                companiesTabPage: state.companiesTabPage + 1,
             }));
-      
-          }
-          catch (err) {
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companiesTabFetchCompanies();
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    err.response?.data.validationErrors.map((validationError: any) => {
+                        showErrorToast(validationError.message);
+                    });
+                }
+                else if (err.response?.status === 403) {
+                    showErrorToast('Unauthorized access');
+                }
+                else {
+                    showErrorToast('Failed to fetch companies');
+                }
+            }
+        }
+        finally {
             set({ companiesTabIsCompaniesLoading: false });
-          }
+        }
     },
 
     companiesTabSetFilters: async (filters) => {
@@ -133,70 +154,75 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
     companiesTabFetchCompanyIndustries: async (id) => {
         if (get().companiesTabCompanies.find((company) => company.id === id)?.industries.length) return;
 
-        // mock API call
         try {
             const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/industries`);
-            const data:{id:number, name:string}[] = res.data;
-           
-                set((state) => ({
-                    companiesTabCompanies: state.companiesTabCompanies.map((company) => {
-                        if (company.id === id) {
-                            return {
-                                ...company,
-                                industries: data.map((val)=> val.name),
-                                locations: [...company.locations]
-                            }
-                        }
+            const data: { id: number, name: string }[] = res.data;
 
+            set((state) => ({
+                companiesTabCompanies: state.companiesTabCompanies.map((company) => {
+                    if (company.id === id) {
                         return {
                             ...company,
-                            industries: [...company.industries],
+                            industries: data.map((val) => val.name),
                             locations: [...company.locations]
                         }
-                    })
-                }));
+                    }
 
-
-           
+                    return company;
+                })
+            }));
         }
         catch (err) {
-            console.error(err);
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companiesTabFetchCompanyIndustries(id);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch company industries');
+                }
+            }
         }
     },
 
     companiesTabFetchCompanyLocations: async (id) => {
         if (get().companiesTabCompanies.find((company) => company.id === id)?.locations.length) return;
 
-        // mock API call
         try {
             const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/locations`);
-            const data:{country:string, city:string}[] = res.data;
-           
-                set((state) => ({
-                    companiesTabCompanies: state.companiesTabCompanies.map((company) => {
-                        if (company.id === id) {
-                            return {
-                                ...company,
-                                industries: [...company.industries],
-                                locations: [...data],
-                            }
-                        }
+            const data: { country: string, city: string }[] = res.data;
 
+            set((state) => ({
+                companiesTabCompanies: state.companiesTabCompanies.map((company) => {
+                    if (company.id === id) {
                         return {
                             ...company,
                             industries: [...company.industries],
-                            locations: [...company.locations]
+                            locations: [...data],
                         }
-                    })
-                }));
+                    }
 
-
-           
+                    return company;
+                })
+            }));
         }
         catch (err) {
-            console.error(err);
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companiesTabFetchCompanyLocations(id);
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch company locations');
+                }
+            }
         }
     },
+
     companiesTabClear: () => {
         set({
             companiesTabCompanies: [],
