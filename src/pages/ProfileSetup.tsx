@@ -39,7 +39,7 @@ const formSchema = z.object({
                 file?.type.startsWith("image/") &&
                 ["image/jpeg", "image/png"].includes(file?.type),
             "Only JPEG/PNG images are accepted"
-        )
+        ).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -296,7 +296,7 @@ const ProfileSetup = () => {
                 if (axios.isAxiosError(err) && err.response?.status === 400) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
-                            showErrorToast(`Validation Error: ${value}`)
+                            showErrorToast(`${value}`)
                     );
                 }
             }
@@ -396,12 +396,12 @@ const ProfileSetup = () => {
                 ) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
-                            showErrorToast(`Validation Error: ${value}`)
+                            showErrorToast(`${value}`)
                     );
                 }
                 else if (axios.isAxiosError(err) && err.response?.status === 409) {
                     showErrorToast(
-                        "Phone number is already registered."
+                        err.response?.data.message
                     );
                 }
                 else {
