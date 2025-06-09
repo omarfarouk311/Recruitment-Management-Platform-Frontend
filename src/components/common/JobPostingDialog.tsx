@@ -1,5 +1,5 @@
 import { Dialog } from "@headlessui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -282,14 +282,14 @@ const JobPostingDialog = ({ isOpen, onClose }: JobPostingDialogProps) => {
                                 <div className="flex gap-8">
                                     <LocationSearch
                                         selectedCountry={selectedCountry}
-                                        onCountryChange={useCallback((value) => {
+                                        onCountryChange={(value) => {
                                             setValue("country", value, { shouldValidate: true });
                                             setValue("city", "", { shouldValidate: true });
-                                        }, [])}
+                                        }}
                                         selectedCity={selectedCity}
-                                        onCityChange={useCallback((value) =>
+                                        onCityChange={(value) =>
                                             setValue("city", value, { shouldValidate: true })
-                                        , [])}
+                                        }
                                     />
                                 </div>
                                 <div className="flex space-x-6">

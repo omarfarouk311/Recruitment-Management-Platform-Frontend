@@ -3,7 +3,6 @@ import FilterDropdown from "./FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import { ratingOptions, typeOptions, sizeOptions } from "../../data/filterOptions";
 import { CompaniesTabFilters } from "../../types/company";
-import { useCallback } from "react";
 
 interface FilterSectionProps {
   useFilters: () => CompaniesTabFilters;
@@ -32,9 +31,9 @@ const FilterSection = ({ useFilters, useIndustryOptions, useSetFilters }: Filter
           <div className="flex-col space-y-4">
             <LocationSearch
               selectedCountry={filters.country}
-              onCountryChange={useCallback((value) => setFilters({ country: value, city: "" }), [])}
+              onCountryChange={(value) => setFilters({ country: value, city: "" })}
               selectedCity={filters.city}
-              onCityChange={useCallback((value) => setFilters({ city: value }), [])}
+              onCityChange={(value) => setFilters({ city: value })}
             />
           </div>
         </div>

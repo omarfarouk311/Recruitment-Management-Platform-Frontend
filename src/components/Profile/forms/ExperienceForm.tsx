@@ -6,7 +6,7 @@ import { z } from "zod";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
 import type { Experience } from "../../../types/profile";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import LocationSearch from "../../common/LocationSearch";
 import { format, parse } from "date-fns";
 
@@ -188,14 +188,14 @@ export default function ExperienceDialog({
                 <div className="flex space-x-6">
                   <LocationSearch
                     selectedCountry={selectedCountry}
-                    onCountryChange={useCallback((value) => {
+                    onCountryChange={(value) => {
                       setValue("country", value, { shouldValidate: true });
                       setValue("city", "", { shouldValidate: true });
-                    }, [])}
+                    }}
                     selectedCity={selectedCity}
-                    onCityChange={useCallback((value) =>
+                    onCityChange={(value) =>
                       setValue("city", value, { shouldValidate: true })
-                    , [])}
+                    }
                   />
                 </div>
 

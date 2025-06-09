@@ -1,5 +1,5 @@
 // LocationSearch.tsx
-import React, { memo } from "react";
+
 import { Country, City } from "country-state-city";
 import FilterDropdown from "../Filters/FilterDropdown";
 
@@ -11,14 +11,7 @@ interface LocationSearchProps {
   disabled?: boolean;
 }
 
-const LocationSearch = ({
-  selectedCountry,
-  onCountryChange,
-  selectedCity,
-  onCityChange,
-  disabled,
-}: LocationSearchProps) => {
-  const countryOptions = Country.getAllCountries()
+const countryOptions = Country.getAllCountries()
       .filter((country) => {
           const cities = City.getCitiesOfCountry(country.isoCode) ?? [];
           return cities.length > 0;
@@ -28,6 +21,13 @@ const LocationSearch = ({
           label: country.name,
       }));
 
+const LocationSearch = ({
+  selectedCountry,
+  onCountryChange,
+  selectedCity,
+  onCityChange,
+  disabled,
+}: LocationSearchProps) => {
   
   const cityOptions = [
     ...(selectedCountry
@@ -62,4 +62,4 @@ const LocationSearch = ({
   );
 };
 
-export default memo(LocationSearch);
+export default LocationSearch;

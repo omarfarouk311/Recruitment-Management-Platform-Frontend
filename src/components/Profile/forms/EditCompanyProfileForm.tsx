@@ -274,9 +274,9 @@ const CompanyProfileDialog = ({ isOpen, onClose, profileInfo }: ProfileDialogPro
                 <div className="flex gap-8">
                   <LocationSearch
                     selectedCountry={tempCountry}
-                    onCountryChange={useCallback(setTempCountry, [])}
+                    onCountryChange={setTempCountry}
                     selectedCity={tempCity}
-                    onCityChange={useCallback(setTempCity, [])}
+                    onCityChange={setTempCity}
                   />
 
                   <button
