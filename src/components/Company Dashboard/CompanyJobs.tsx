@@ -1,14 +1,24 @@
 import { useState } from "react";
 import CompanyJobsCandidates from "./CompanyJobsCandidates";
-import JobList from "./CompanyJobsList";
+import CompanyJobsList from "./CompanyJobsList";
 import CompanyJobsRecruiters from "./CompanyJobsRecruiters";
 import { PlusCircle } from "lucide-react";
 import JobPostingDialog from "../common/JobPostingDialog";
+import useStore from "../../stores/globalStore";
 
 const CompanyJobs = () => {
     const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
+    const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+    const addJob = useStore.useCompanyAddJob();
+    const editJob = useStore.useCompanyEditJob();
 
     const handleAddJob = () => {
+        setSelectedJobId(null); // Reset selected job ID for new job creation
+        setIsJobDialogOpen(true);
+    };
+
+    const handleEditJob = (jobId: number) => {
+        setSelectedJobId(jobId); // Set the selected job ID for editing
         setIsJobDialogOpen(true);
     };
 
@@ -30,7 +40,7 @@ const CompanyJobs = () => {
                     </button>
                 </div>
                 <div className="overflow-y-auto space-y-6 h-[680px] p-2">
-                    <JobList />
+                    <CompanyJobsList editJob={handleEditJob} />
                 </div>
             </div>
 
@@ -40,7 +50,13 @@ const CompanyJobs = () => {
             </div>
 
             {/* Job Posting Dialog */}
-            <JobPostingDialog isOpen={isJobDialogOpen} onClose={handleCloseDialog} />
+            <JobPostingDialog
+                isOpen={isJobDialogOpen}
+                onClose={handleCloseDialog}
+                jobId={selectedJobId}
+                addJob={addJob}
+                updateJob={editJob}
+            />
         </div>
     );
 };

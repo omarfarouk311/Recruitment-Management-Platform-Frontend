@@ -18,7 +18,7 @@ interface JobListPropsWithRemoveRecommendation extends BaseJobListProps {
 }
 
 interface JobListPropsWithEditDelete extends BaseJobListProps {
-  editJob: () => void;
+  editJob: (jobId: number) => void;
   useDeleteJob: () => (id: number) => Promise<void>;
   useRemoveRecommendation?: never;
 }

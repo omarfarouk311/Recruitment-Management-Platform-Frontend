@@ -7,6 +7,21 @@ import config from '../../../config/config.ts';
 import { showErrorToast } from '../../util/errorHandler.ts';
 import { authRefreshToken } from '../../util/authUtils.ts';
 
+interface jobData {
+    jobTitle: string,
+    jobDescription: string,
+    processId: number,
+    industryId: number,
+    appliedCntLimit: number,
+    country: string,
+    city: string,
+    remote: number,
+    skills: {
+        skillId: number,
+        importance: number,
+    }[]
+};
+
 export interface CompanyJobListSlice {
     companyJobs: Job[];
     companyJobsPage: number;
@@ -17,7 +32,9 @@ export interface CompanyJobListSlice {
     companyTabSelectJobId: number | null;
 
     companyFetchJobs: () => Promise<void>;
-    companyCloseJob: (id: number) => Promise<void>
+    companyAddJob: (job: jobData) => Promise<void>;
+    companyEditJob: (job: jobData, jobId: number) => Promise<void>;
+    companyCloseJob: (id: number) => Promise<void>;
     companyTabSetSelectedJobId: (id: number) => Promise<void>;
 
     companyJobsSetFilters: (filters: Partial<CompanyJobListFilters>) => Promise<void>;
@@ -95,6 +112,71 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
         }
         finally {
             set({ companyJobsIsJobsLoading: false });
+        }
+    },
+
+    companyAddJob: async (job) => {
+        try {
+            await axios.post(`${config.API_BASE_URL}/jobs`, job);
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyAddJob(job);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    const validationErrors: string[] = err.response.data.validationErrors;
+                    validationErrors.forEach((error) => {
+                        showErrorToast(error);
+                    });
+                    throw err;
+                }
+                else {
+                    showErrorToast("Error while creating the job");
+                    throw err;
+                }
+            }
+        }
+    },
+
+    companyEditJob: async (job, jobId) => {
+        try {
+            await axios.put(`${config.API_BASE_URL}/jobs/${jobId}`, job);
+            set((state) => ({
+                companyJobs: state.companyJobs.map((j) =>
+                    j.id === jobId ? {
+                        ...j,
+                        title: job.jobTitle,
+                        description: job.jobDescription,
+                        country: job.country,
+                        city: job.city,
+                    } : j
+                )
+            }));
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().companyEditJob(job, jobId);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    const validationErrors: string[] = err.response.data.validationErrors;
+                    validationErrors.forEach((error) => {
+                        showErrorToast(error);
+                    });
+                    throw err;
+                }
+                else {
+                    showErrorToast("Error while editing the job");
+                    throw err;
+                }
+            }
         }
     },
 
