@@ -104,3 +104,22 @@ export interface CompanyRecruitmentProcesses {
   name: string;
   num_of_phases: number;
 }
+
+
+export interface Process {
+  id: number;
+  name: string;
+  num_of_phases: number;
+  phases?: Phase[];
+}
+
+export interface Phase {
+  id: number;
+  phase_num: number;
+  phasename: string;
+  type: number;
+  deadline?: string;
+  assessmentname?: string;
+  assessment_time?: string;
+  assessmentId?: number | null;
+}
