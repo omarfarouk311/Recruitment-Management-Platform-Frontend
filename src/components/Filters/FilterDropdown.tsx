@@ -101,7 +101,7 @@ const FilterDropdown = ({
         <div
           ref={dropdownMenuRef}
           tabIndex={-1}
-          className="absolute top-8 bg-white border rounded-lg shadow-lg z-10 min-w-48 max-w-76 max-h-72 overflow-y-auto outline-none"
+          className="absolute top-8 bg-white border rounded-lg shadow-lg z-10 min-w-48 max-w-76 max-h-60 overflow-y-auto outline-none"
           onKeyDown={handleKeyDown}
         >
           {options.map((option) => (

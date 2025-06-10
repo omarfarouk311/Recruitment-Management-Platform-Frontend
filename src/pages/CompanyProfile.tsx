@@ -45,7 +45,7 @@ export default function CompanyProfile() {
         <div className="grid grid-cols-[1.2fr_1.7fr] gap-8 mt-8">
           <div className="bg-white p-4 rounded-3xl border-2 border-gray-200 shadow">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold">Jobs</h1>
+              <h1 className="text-2xl font-bold">Jobs</h1>
             </div>
 
             <div className="flex mb-6 items-center justify-between flex-nowrap mt-6">

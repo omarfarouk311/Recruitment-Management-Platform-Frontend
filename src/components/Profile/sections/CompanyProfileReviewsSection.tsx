@@ -21,7 +21,7 @@ export default function ReviewsSection() {
   return (
     <div className="p-6 bg-white rounded-3xl shadow border-2 border-gray-200">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Reviews</h1>
+        <h1 className="text-2xl font-bold">Reviews</h1>
         <div className="flex space-x-12">
           <FilterDropdown
             label="Sort By Date"

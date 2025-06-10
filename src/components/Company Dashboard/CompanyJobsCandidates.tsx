@@ -161,7 +161,7 @@ const CompanyJobsCandidates = () => {
 
     return (
         jobId == null ? (
-            <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-3xl border-2 border-gray-200 p-8">
+            <div className="flex flex-col items-center justify-center h-[400px] bg-white rounded-3xl border-2 border-gray-200 p-8 shadow">
                 <div className="text-center max-w-md">
                     <svg
                         className="w-16 h-16 mx-auto text-gray-400 mb-4"

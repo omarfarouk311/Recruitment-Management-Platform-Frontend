@@ -31,8 +31,6 @@ const CompanyJobsRecruiters = () => {
 
     useEffect(() => {
         clear();
-        console.log("in company jobs recruiters");
-
         fetchRecruiterNames();
         fetchDepartments();
         fetchRecruitersData();
@@ -70,7 +68,7 @@ const CompanyJobsRecruiters = () => {
     ];
 
     return (
-        <div className="h-[350px] bg-white p-4 rounded-3xl border-2 border-gray-200 flex flex-col">
+        <div className="h-[350px] bg-white p-4 rounded-3xl border-2 border-gray-200 flex flex-col shadow">
             {/* Non-scrollable header */}
             <div className="flex justify-between items-center mb-4 shrink-0">
                 <h1 className="px-6 py-2 text-3xl font-bold">Recruiters</h1>

@@ -1,4 +1,4 @@
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import Button from "../common/Button";
 import { useEffect, useState } from "react";
@@ -8,16 +8,17 @@ import axios from "axios";
 import { authRefreshToken } from "../../util/authUtils";
 import { showErrorToast } from "../../util/errorHandler";
 import config from "../../../config/config";
+import { PlusCircle } from "lucide-react";
+import { sortByDateOptions } from "../../data/filterOptions";
 
 export default function CompanyTemplatesDashboard() {
     const [changed, setChanged] = useState(false);
     const [templatesData, setTemplatesData] = useState<TemplateData[]>([]);
-    const [selectedTemplate, setSelectedTemplate] =
-        useState<TemplateData | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<TemplateData | null>(null);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
-    const [sortBy, setSortBy] = useState<string>();
+    const [sortBy, setSortBy] = useState<string>("");
 
     async function handleOpenTemplate(id: number) {
         setChanged(false);
@@ -26,14 +27,11 @@ export default function CompanyTemplatesDashboard() {
         let res;
         try {
             try {
-                res = await axios.get(
-                    `${config.API_BASE_URL}/templates/template-details/${id}`,
-                    {
-                        params: {
-                            simplified: true,
-                        },
-                    }
-                );
+                res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${id}`, {
+                    params: {
+                        simplified: true,
+                    },
+                });
             } catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
                     await authRefreshToken();
@@ -64,17 +62,14 @@ export default function CompanyTemplatesDashboard() {
     async function handleDeleteTemplate(id: number) {
         try {
             await axios.delete(`${config.API_BASE_URL}/templates/${id}`);
-            setTemplatesData((prev) =>
-                prev.filter((template) => template.id !== id)
-            );
+            setTemplatesData((prev) => prev.filter((template) => template.id !== id));
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await handleDeleteTemplate(id); 
-                }
-                else {
-                    showErrorToast("Error deleting template"); 
+                    await handleDeleteTemplate(id);
+                } else {
+                    showErrorToast("Error deleting template");
                 }
             } else {
                 showErrorToast("Error deleting template");
@@ -85,9 +80,9 @@ export default function CompanyTemplatesDashboard() {
     async function fetchTemplates(curPage?: number) {
         setLoading(true);
         try {
-            let params: {page: number, sortBy?: string} = { page: curPage || page };
+            let params: { page: number; sortBy?: string } = { page: curPage || page };
             if (sortBy) {
-                params = {...params, sortBy};
+                params = { ...params, sortBy };
             }
             const res = await axios.get(`${config.API_BASE_URL}/templates`, {
                 params,
@@ -95,23 +90,15 @@ export default function CompanyTemplatesDashboard() {
             if (res.status === 200) {
                 setTemplatesData((prev) => [
                     ...prev,
-                    ...res.data.map(
-                        (template: {
-                            id: number;
-                            name: string;
-                            updated_at: string;
-                        }) => ({
-                            id: template.id,
-                            name: template.name,
-                            updatedAt: new Date(
-                                template.updated_at
-                            ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "2-digit",
-                                day: "2-digit",
-                            }),
-                        })
-                    ),
+                    ...res.data.map((template: { id: number; name: string; updated_at: string }) => ({
+                        id: template.id,
+                        name: template.name,
+                        updatedAt: new Date(template.updated_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                        }),
+                    })),
                 ]);
                 if (res.data.length === 0) {
                     setHasMore(false);
@@ -122,10 +109,9 @@ export default function CompanyTemplatesDashboard() {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await fetchTemplates(); 
-                }
-                else {
-                    showErrorToast("Error fetching templates"); 
+                    await fetchTemplates();
+                } else {
+                    showErrorToast("Error fetching templates");
                 }
             } else {
                 showErrorToast("Error fetching templates");
@@ -142,27 +128,21 @@ export default function CompanyTemplatesDashboard() {
         setLoading(true);
         try {
             if (selectedTemplate.id) {
-                let res = await axios.put(
-                    `${config.API_BASE_URL}/templates/${selectedTemplate.id}`,
-                    {
-                        name: selectedTemplate.name,
-                        description: selectedTemplate.content,
-                    }
-                );
+                let res = await axios.put(`${config.API_BASE_URL}/templates/${selectedTemplate.id}`, {
+                    name: selectedTemplate.name,
+                    description: selectedTemplate.content,
+                });
                 setTemplatesData((prev) =>
                     prev.map((template) => {
                         if (template.id === selectedTemplate.id) {
                             return {
                                 ...template,
                                 name: selectedTemplate.name,
-                                updatedAt: new Date(res.data.data.updated_at).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                    }
-                                ),
+                                updatedAt: new Date(res.data.data.updated_at).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                }),
                             };
                         }
                         return template;
@@ -191,10 +171,9 @@ export default function CompanyTemplatesDashboard() {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await handleSaveTemplate(); 
-                }
-                else {
-                    showErrorToast("Error saving template"); 
+                    await handleSaveTemplate();
+                } else {
+                    showErrorToast("Error saving template");
                 }
             } else {
                 showErrorToast("Error saving template");
@@ -268,25 +247,21 @@ export default function CompanyTemplatesDashboard() {
     return (
         <div className="mx-auto grid grid-cols-1 gap-6 px-6 md:grid-cols-2 max-h-[700px]">
             {/* Left Panel - Templates List */}
-            <div className="rounded-3xl border border-[#e7e7e7] bg-white px-6 pt-6 shadow-sm">
+            <div className="rounded-3xl border border-gray bg-white px-6 pt-6 shadow-xl">
                 <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-[#000000]">
-                        Templates
-                    </h1>
-                    <div className="flex items-center gap-4">
+                    <h1 className="text-3xl font-bold">Templates</h1>
+                    <div className="flex items-center gap-16">
                         <FilterDropdown
-                            selectedValue={sortBy || ""}
+                            selectedValue={sortBy}
                             label="Sort By"
-                            options={[
-                                { value: "-1", label: "Newer" },
-                                { value: "1", label: "Older" },
-                            ]}
-                            onSelect={async (value) => {
-                                setSortBy(value);
-                            }}
+                            options={sortByDateOptions}
+                            onSelect={setSortBy}
                         />
-                        <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f2f2f2]" onClick={handleAddTemplate}>
-                            <Plus className="h-5 w-5 text-[#292d32]" />
+                        <button
+                            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f2f2f2]"
+                            onClick={handleAddTemplate}
+                        >
+                            <PlusCircle size={30} />
                         </button>
                     </div>
                 </div>
@@ -302,7 +277,7 @@ export default function CompanyTemplatesDashboard() {
             </div>
 
             {/* Right Panel - New Template Form */}
-            <div className="rounded-3xl border min-h-[600px] border-[#e7e7e7] bg-white px-6 pt-6 shadow-sm h-full">
+            <div className="rounded-3xl border min-h-[600px] border-gray bg-white px-6 pt-6 shadow-xl h-full">
                 {selectedTemplate ? (
                     <>
                         <div className="mb-6">
@@ -323,10 +298,9 @@ export default function CompanyTemplatesDashboard() {
 
                         <div className="mb-6">
                             <p className="text-[#292d32]">
-                                Enter your job offer template here, note that
-                                you must place placeholders between{" "}
-                                <span className="font-medium">{"{{}}"}</span>{" "}
-                                and the recruiter will fill them
+                                Enter your job offer template here, note that you must place placeholders
+                                between <span className="font-medium">{"{{}}"}</span> and the recruiter will
+                                fill them
                             </p>
                             <textarea
                                 className="w-full rounded-lg border border-[#e7e7e7] p-4 text-[#292d32] font-sans"
@@ -346,9 +320,7 @@ export default function CompanyTemplatesDashboard() {
                         <div>
                             <Button
                                 className={`w-full ${
-                                    !changed
-                                        ? "opacity-50 cursor-not-allowed pointer-events-none"
-                                        : ""
+                                    !changed ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
                                 }`}
                                 disabled={!changed}
                                 onClick={async () => {
@@ -362,9 +334,7 @@ export default function CompanyTemplatesDashboard() {
                     </>
                 ) : (
                     <div className="flex h-full items-center justify-center">
-                        <p className="text-[#292d32]">
-                            Select a template to edit
-                        </p>
+                        <p className="text-[#292d32]">Select a template to edit</p>
                     </div>
                 )}
             </div>
