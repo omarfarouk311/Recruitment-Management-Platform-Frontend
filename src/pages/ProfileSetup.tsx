@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-toastify";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -185,7 +186,7 @@ const ProfileSetup = () => {
         if (event.target.files && event.target.files[0] && !parsingIsLoading) {
             setValue("cvFile", event.target.files[0], { shouldValidate: true });
             await trigger("cvFile");
-
+            toast.info("Parsing your CV. Please wait...");
             setParsingIsLoading(true);
             let res: AxiosResponse<any, any>;
             try {
@@ -299,6 +300,8 @@ const ProfileSetup = () => {
                             showErrorToast(`${value}`)
                     );
                 }
+                else
+                    showErrorToast("Failed to parse CV. Please try again or fill the data manually.")
             }
         } else if (parsingIsLoading) {
             showErrorToast("Parsing is already in progress. Please wait.");
