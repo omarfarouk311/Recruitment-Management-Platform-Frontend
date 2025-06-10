@@ -170,7 +170,7 @@ const JobDialog = ({ type, cvs, onClose, onApplySubmit, onReportSubmit }: JobDia
                     onClick={handleSubmit}
                     disabled={!isValid}
                     variant={isValid ? (type === "apply" ? "primary" : "report") : "outline"}
-                    className="!w-[30%]"
+                    className="!w-[30%] !h-[40px]"
                     loading={isLoading}
                   >
                     {type === "apply" ? "Submit Application" : "Submit Report"}

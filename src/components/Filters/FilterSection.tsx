@@ -59,6 +59,7 @@ const FilterSection = ({ useFilters, useIndustryOptions, useSetFilters }: Filter
             options={sizeOptions}
             selectedValue={filters.size}
             onSelect={(value) => setFilters({ size: value })}
+            sort={false}
           />
         </div>
 

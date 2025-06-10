@@ -1,4 +1,4 @@
-import { Star, Dot, Edit3, Trash2 } from "lucide-react";
+import { Star, Dot, Edit3, Trash2, Loader } from "lucide-react";
 import { Job } from "../../types/job";
 import { ThumbsDown } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -15,7 +15,7 @@ interface BaseSelectionHandlers extends BaseJobCardProps {
 
 // Case 1: With edit/delete actions
 interface SelectionWithEditDelete extends BaseSelectionHandlers {
-  editJob: () => void;
+  editJob: (jobId: number) => void;
   useDeleteJob: () => (id: number) => Promise<void>;
   useRemoveRecommendation?: never;
 }
@@ -74,6 +74,7 @@ const JobCard = ({
   const [removing, setRemoving] = useState(false);
   const closeJob = useDeleteJob?.();
   const [imageError, setImageError] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     // Reset error state when image URL changes
@@ -120,10 +121,7 @@ const JobCard = ({
           {editJob && (
             <button
               className="absolute right-1 hover:text-blue-500"
-              onClick={(e) => {
-                e.stopPropagation();
-                editJob();
-              }}
+              onClick={() => editJob(id)}
               title="Edit job"
             >
               <Edit3 />
@@ -132,10 +130,14 @@ const JobCard = ({
           {closeJob && (
             <button
               className="absolute right-1 mt-12 hover:text-red-500"
-              onClick={() => closeJob(id)}
+              onClick={async () => {
+                setClosing(true);
+                await closeJob(id);
+                setClosing(false);
+              }}
               title="Delete job"
             >
-              <Trash2 />
+              {closing ? <Loader className="animate-spin" /> : <Trash2 />}
             </button>
           )}
         </div>

@@ -11,6 +11,7 @@ interface FilterDropdownProps {
   className?: string;
   disabled?: boolean;
   addAnyOption?: boolean;
+  sort?: boolean;
 }
 
 const FilterDropdown = ({
@@ -22,24 +23,26 @@ const FilterDropdown = ({
   className = "",
   disabled = false,
   addAnyOption = true,
+  sort = true,
 }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedValue, setHighlightedValue] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownMenuRef = useRef<HTMLDivElement>(null);
-  options = addAnyOption? [
-    { value: "", label: "Any" },
-    ...options.sort((a, b) => a.label.localeCompare(b.label)),
-  ]: [...options.sort((a, b) => a.label.localeCompare(b.label))];
-  const selectedLabel =
-    options.find((o) => o.value === selectedValue)?.label || "";
+
+  if (sort) {
+    options.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  if (addAnyOption) {
+    options = [{ value: "", label: "Any" }, ...options];
+  }
+
+  const selectedLabel = options.find((o) => o.value === selectedValue)?.label || "";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -56,9 +59,7 @@ const FilterDropdown = ({
 
   useEffect(() => {
     if (highlightedValue !== null) {
-      const element = dropdownMenuRef.current?.querySelector(
-        `[data-value="${highlightedValue}"]`
-      );
+      const element = dropdownMenuRef.current?.querySelector(`[data-value="${highlightedValue}"]`);
       if (element) {
         element.scrollIntoView({ block: "nearest" });
         const timeout = setTimeout(() => {
@@ -72,9 +73,7 @@ const FilterDropdown = ({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const key = event.key.toLowerCase();
     if (key.length === 1 && key >= "a" && key <= "z") {
-      const foundOption = options.find((option) =>
-        option.label.toLowerCase().startsWith(key)
-      );
+      const foundOption = options.find((option) => option.label.toLowerCase().startsWith(key));
       if (foundOption) {
         setHighlightedValue(foundOption.value);
         event.preventDefault();
