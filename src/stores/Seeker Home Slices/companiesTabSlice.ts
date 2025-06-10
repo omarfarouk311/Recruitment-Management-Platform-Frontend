@@ -104,8 +104,9 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                     }
                 }
                 else if (err.response?.status === 400) {
-                    err.response?.data.validationErrors.map((validationError: any) => {
-                        showErrorToast(validationError.message);
+                    const validationErrors: string[] = err.response?.data.validationErrors;
+                    validationErrors.forEach((validationError) => {
+                        showErrorToast(validationError);
                     });
                 }
                 else if (err.response?.status === 403) {

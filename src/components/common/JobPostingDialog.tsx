@@ -113,12 +113,14 @@ const JobPostingDialog = ({ isOpen, onClose, jobId, addJob, updateJob }: JobPost
                     setIndustryOptions(),
                 ]);
 
-                setRecruitmentProcessOptions(
-                    processesResponse.data.recruitment_process.map((p: { id: number; name: string }) => ({
-                        value: p.id.toString(),
-                        label: p.name,
-                    }))
-                );
+                if (processesResponse.data.recruitment_process !== undefined) {
+                    setRecruitmentProcessOptions(
+                        processesResponse.data.recruitment_process.map((p: { id: number; name: string }) => ({
+                            value: p.id.toString(),
+                            label: p.name,
+                        }))
+                    );
+                }
 
                 setSkillOptions(
                     skillsResponse.data.map((s: { id: number; name: string }) => ({

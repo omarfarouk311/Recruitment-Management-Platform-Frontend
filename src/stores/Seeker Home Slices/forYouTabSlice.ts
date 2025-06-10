@@ -236,8 +236,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                     }
                 }
                 else if (err.response?.status === 400) {
-                    err.response?.data.validationErrors.map((validationError: any) => {
-                        showErrorToast(validationError.message);
+                    const validationErrors: string[] = err.response?.data.validationErrors;
+                    validationErrors.forEach((validationError) => {
+                        showErrorToast(validationError);
                     });
                 }
                 else if (err.response?.status === 403) {
@@ -450,8 +451,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                     }
                 }
                 else if (err.response?.status === 400) {
-                    err.response?.data.validationErrors.map((validationError: any) => {
-                        showErrorToast(validationError.message);
+                    const validationErrors: string[] = err.response?.data.validationErrors;
+                    validationErrors.forEach((validationError) => {
+                        showErrorToast(validationError);
                     });
                     throw err;
                 }
