@@ -1,10 +1,13 @@
 import React from "react";
 import Button from "../components/common/Button";
 import { useNavigate } from "react-router-dom";
+import useStore from "../stores/globalStore";
 import background from "../assets/gradient-background.png";
+import { UserRole } from "../stores/User Slices/userSlice";
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const setUserRole = useStore.useUserSetRole();
 
   return (
     <div
@@ -28,14 +31,17 @@ const LandingPage: React.FC = () => {
         </h2>
 
         <div className="flex flex-wrap justify-center gap-8 mb-12 w-full">
+          {/* Seeker Card */}
           <div className="flex-1 min-w-[300px] max-w-[400px] p-8 bg-white/50 rounded-xl shadow-md border border-gray-200 backdrop-blur-sm">
             <h2 className="text-2xl font-bold mb-4 text-black">Job Seeker</h2>
             <p className="text-black mb-6 font-semibold leading-relaxed">
-              Track your recruitment journey with ease, from CV submission to
-              job offer.
+              Track your recruitment journey with ease, from CV submission to job offer.
             </p>
             <Button
-              onClick={() => navigate("/signup")}
+              onClick={() => {
+                setUserRole(UserRole.SEEKER);
+                navigate("/signup");
+              }}
               className="rounded-lg py-3"
             >
               Join as a job seeker
@@ -49,7 +55,10 @@ const LandingPage: React.FC = () => {
               Reduce administrative burden and focus on finding the best talent.
             </p>
             <Button
-              onClick={() => navigate("/signup")}
+              onClick={() => {
+                setUserRole(UserRole.RECRUITER);
+                navigate("/signup");
+              }}
               className="rounded-lg py-3"
             >
               Join as a recruiter
@@ -63,7 +72,10 @@ const LandingPage: React.FC = () => {
               Efficiently manage your recruitment process from start to finish.
             </p>
             <Button
-              onClick={() => navigate("/signup")}
+              onClick={() => {
+                setUserRole(UserRole.COMPANY);
+                navigate("/signup");
+              }}
               className="rounded-lg py-3"
             >
               Join as a company
