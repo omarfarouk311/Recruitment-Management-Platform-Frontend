@@ -14,7 +14,7 @@ import config from "../../config/config";
 import axios, { AxiosResponse } from "axios";
 import { authRefreshToken } from "../util/authUtils";
 import { showErrorToast } from "../util/errorHandler";
-import { format } from "date-fns";
+import { format, set } from 'date-fns';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -55,6 +55,8 @@ const ProfileSetup = () => {
     const [educations, setEducations] = useState<Education[]>([]);
     const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
     const userId = useStore.useUserId();
+    const setUserName = useStore.useUserSetName();
+    const setUserImage = useStore.useUserSetImage();
 
     const {
         register,
@@ -379,10 +381,8 @@ const ProfileSetup = () => {
                     }
                 );
 
-                useStore.setState({
-                    userName: data.name,
-                    userImage: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`,
-                });
+                setUserName(data.name);
+                setUserImage(`${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`);
 
                 window.scrollTo(0, 0);
                 navigate("/seeker/home", { replace: true });
@@ -399,10 +399,8 @@ const ProfileSetup = () => {
                         }
                     );
 
-                    useStore.setState({
-                        userName: data.name,
-                        userImage: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`,
-                    });
+                    setUserName(data.name);
+                    setUserImage(`${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`);
                     
                     window.scrollTo(0, 0);
                     navigate("/seeker/home", { replace: true });

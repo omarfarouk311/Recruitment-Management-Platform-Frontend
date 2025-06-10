@@ -1,15 +1,13 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import config from "../../config/config";
 
 export async function authRefreshToken() {
-    const navigate = useNavigate();
-
     try {
-        await axios.post("/auth/refresh-token", {});
+        await axios.post(`${config.API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
         return true;
     }
     catch (err) {
-        navigate('/login');
+        window.location.href = "/login";
         return false;
     }
 }

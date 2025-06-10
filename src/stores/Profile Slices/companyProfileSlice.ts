@@ -85,23 +85,32 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     companyProfileUpdateInfo: async (profile) => {
         const { userId } = get();
         try {
-            await axios.put(`${config.API_BASE_URL}/companies/profile/`, {
-                name: profile.name,
-                overview: profile.overview,
-                type: profile.type === 'Public',
-                foundedIn: profile.foundedIn,
-                size: profile.size,
-                locations: profile.locations,
-                industriesIds: profile.industries.map((industry) => industry.id),
-            });
+            await axios.put(
+                `${config.API_BASE_URL}/companies/profile/`,
+                {
+                    name: profile.name,
+                    overview: profile.overview,
+                    type: profile.type === 'Public',
+                    foundedIn: profile.foundedIn,
+                    size: profile.size,
+                    locations: profile.locations,
+                    industriesIds: profile.industries.map((industry) => industry.id),
+                },
+                { withCredentials: true }
+            );
 
             if (profile.image instanceof File) {
-                await axios.post(`${config.API_BASE_URL}/companies/${userId}/image`, profile.image, {
-                    headers: {
-                        'Content-Type': profile.image.type,
-                        'File-Name': profile.image.name,
+                await axios.post(
+                    `${config.API_BASE_URL}/companies/${userId}/image`,
+                    profile.image,
+                    {
+                        headers: {
+                            'Content-Type': profile.image.type,
+                            'File-Name': profile.image.name,
+                        },
+                        withCredentials: true
                     }
-                });
+                );
             }
 
             set({
@@ -150,7 +159,10 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         const targetId = id || userId;
 
         try {
-            const response = await axios.get(`${config.API_BASE_URL}/companies/${targetId}`);
+            const response = await axios.get(
+                `${config.API_BASE_URL}/companies/${targetId}`,
+                { withCredentials: true }
+            );
             const companyData = response.data;
 
             set({
@@ -195,7 +207,10 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         const targetId = id || userId;
 
         try {
-            const response = await axios.get(`${config.API_BASE_URL}/companies/${targetId}/industries`);
+            const response = await axios.get(
+                `${config.API_BASE_URL}/companies/${targetId}/industries`,
+                { withCredentials: true }
+            );
             const industriesData = response.data;
 
             const industries = industriesData.map((industry: { id: number, name: string }) => ({
@@ -230,7 +245,10 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         const targetId = id || userId;
 
         try {
-            const rest = await axios.get(`${config.API_BASE_URL}/companies/${targetId}/locations`);
+            const rest = await axios.get(
+                `${config.API_BASE_URL}/companies/${targetId}/locations`,
+                { withCredentials: true }
+            );
             const locationsData = rest.data;
 
             const locations = locationsData.map((location: { country: string, city: string }) => ({
@@ -289,7 +307,10 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }
 
         try {
-            const response = await axios.get(`${config.API_BASE_URL}/companies/${targetId}/reviews`, { params });
+            const response = await axios.get(
+                `${config.API_BASE_URL}/companies/${targetId}/reviews`,
+                { params, withCredentials: true }
+            );
             const reviewsData = response.data;
 
             const reviews = reviewsData.map((review: any): Review => ({
@@ -360,7 +381,10 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }
 
         try {
-            const response = await axios.get(`${config.API_BASE_URL}/companies/${targetId}/jobs`, { params });
+            const response = await axios.get(
+                `${config.API_BASE_URL}/companies/${targetId}/jobs`,
+                { params, withCredentials: true }
+            );
             const jobsData = response.data;
 
             const jobs = jobsData.map((job: any): Job => ({

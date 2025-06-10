@@ -53,6 +53,8 @@ const CompanyFinishProfile = () => {
     const [imageError, setImageError] = useState(false);
     const [progress, setProgress] = useState(0);
     const userId = useStore.useUserId();
+    const setUserName = useStore.useUserSetName();
+    const setUserImage = useStore.useUserSetImage();
     const navigate = useNavigate();
 
     const {
@@ -146,15 +148,19 @@ const CompanyFinishProfile = () => {
 
     const onSubmit = async (data: FormData) => {
         try {
-            await axios.post(`${config.API_BASE_URL}/companies/finish-profile`, {
-                name: data.name,
-                overview: data.overview,
-                type: data.type === "Public",
-                foundedIn: data.foundedIn,
-                size: data.size,
-                locations: data.locations,
-                industriesIds: data.industries.map((industry) => industry.id),
-            });
+            await axios.post(
+                `${config.API_BASE_URL}/companies/finish-profile`,
+                {
+                    name: data.name,
+                    overview: data.overview,
+                    type: data.type === "Public",
+                    foundedIn: data.foundedIn,
+                    size: data.size,
+                    locations: data.locations,
+                    industriesIds: data.industries.map((industry) => industry.id),
+                },
+                { withCredentials: true }
+            );
 
             if (data.image instanceof File) {
                 await axios.post(`${config.API_BASE_URL}/companies/${userId}/image`, data.image, {
@@ -162,13 +168,12 @@ const CompanyFinishProfile = () => {
                         "Content-Type": data.image.type,
                         "File-Name": data.image.name,
                     },
+                    withCredentials: true,
                 });
             }
 
-            useStore.setState({
-                userName: data.name,
-                userImage: `${config.API_BASE_URL}/companies/${userId}/image?t=${Date.now()}`,
-            });
+            setUserName(data.name);
+            setUserImage(`${config.API_BASE_URL}/companies/${userId}/image?t=${Date.now()}`);
 
             window.scrollTo(0, 0);
             navigate("/company/profile", { replace: true });

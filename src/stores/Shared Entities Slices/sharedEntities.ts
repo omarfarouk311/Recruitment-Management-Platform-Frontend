@@ -15,7 +15,7 @@ export const createSharedEntitiesSlice: StateCreator<CombinedState, [], [], Shar
 
     sharedEntitiesSetIndustryOptions: async () => {
         try {
-            const res = await axios.get(`${config.API_BASE_URL}/industries/`);
+            const res = await axios.get(`${config.API_BASE_URL}/industries/`, { withCredentials: true });
             set({
                 sharedEntitiesIndustryOptions: res.data.map((obj: any) => ({
                     value: obj.id.toString(),
