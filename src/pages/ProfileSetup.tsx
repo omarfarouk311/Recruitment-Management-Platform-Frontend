@@ -1,8 +1,8 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import { Upload, FileText, User, FileInput } from "lucide-react";
-import PhoneInput, { Value } from "react-phone-number-input"; // Import Value type
+import PhoneInput from "react-phone-number-input"; // Import Value type
 import "react-phone-number-input/style.css"; // Import the styles
 import ExperienceSection from "../components/Profile/sections/ExperienceSection";
 import EducationSection from "../components/Profile/sections/EducationSection";
@@ -54,6 +54,7 @@ const ProfileSetup = () => {
     const [progress, setProgress] = useState(0);
     const [educations, setEducations] = useState<Education[]>([]);
     const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
+    const userId = useStore.useUserId();
 
     const {
         register,
@@ -359,7 +360,6 @@ const ProfileSetup = () => {
                         : undefined,
                 })),
             };
-            console.log("Submitting profile data:", data);
             const form = new FormData();
             form.append("data", JSON.stringify(data));
             if (profilePhoto) {
@@ -378,7 +378,14 @@ const ProfileSetup = () => {
                         },
                     }
                 );
-                navigate("/seeker/home");
+
+                useStore.setState({
+                    userName: data.name,
+                    userImage: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`,
+                });
+
+                window.scrollTo(0, 0);
+                navigate("/seeker/home", { replace: true });
             } catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
                     await authRefreshToken();
@@ -391,23 +398,24 @@ const ProfileSetup = () => {
                             },
                         }
                     );
+
+                    useStore.setState({
+                        userName: data.name,
+                        userImage: `${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`,
+                    });
                     
-                    navigate("/seeker/home");
-                } else if (
-                    axios.isAxiosError(err) &&
-                    err.response?.status === 400
-                ) {
+                    window.scrollTo(0, 0);
+                    navigate("/seeker/home", { replace: true });
+                } else if (axios.isAxiosError(err) && err.response?.status === 400) {
                     err.response?.data.validationErrors.forEach(
                         (value: string) =>
                             showErrorToast(`${value}`)
                     );
-                }
-                else if (axios.isAxiosError(err) && err.response?.status === 409) {
+                } else if (axios.isAxiosError(err) && err.response?.status === 409) {
                     showErrorToast(
                         err.response?.data.message
                     );
-                }
-                else {
+                } else {
                     throw err;
                 }
             }
