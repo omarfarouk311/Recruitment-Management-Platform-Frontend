@@ -176,7 +176,7 @@ const CompanyFinishProfile = () => {
             setUserImage(`${config.API_BASE_URL}/companies/${userId}/image?t=${Date.now()}`);
 
             window.scrollTo(0, 0);
-            navigate("/company/profile", { replace: true });
+            navigate("/company/dashboard", { replace: true });
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {

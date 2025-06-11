@@ -10,6 +10,7 @@ import config from "../../config/config";
 import useStore from "../stores/globalStore";
 import { showErrorToast } from "../util/errorHandler";
 import { UserRole } from "../stores/User Slices/userSlice";
+import { useEffect } from "react";
 // import googleLogo from "../assets/google-logo.png";
 // import facebookLogo from "../assets/facebook-logo.png";
 
@@ -26,6 +27,9 @@ const Login = () => {
     const setRole = useStore.useUserSetRole();
     const setName = useStore.useUserSetName();
     const setImage = useStore.useUserSetImage();
+    const clearUserInfo = useStore.useClearUserInfo();
+
+    useEffect(clearUserInfo, []);
 
     const {
         register,
@@ -95,7 +99,7 @@ const Login = () => {
             subtitle="New to the platform?"
             link={
                 <span
-                    onClick={() => navigate("/signup")}
+                    onClick={() => navigate("/")}
                     role="button"
                     className="text-purple-600 underline underline-offset-4 hover:text-purple-400 cursor-pointer transition-colors"
                 >
