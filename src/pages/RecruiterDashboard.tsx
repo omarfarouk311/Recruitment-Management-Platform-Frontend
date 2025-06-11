@@ -24,7 +24,7 @@ const SeekerDashboard = () => {
     return (
         <>
             <UserNav />
-            <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-20 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-10 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto">
                     <TabGroup
                         tabs={[

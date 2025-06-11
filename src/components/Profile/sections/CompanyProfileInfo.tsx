@@ -8,11 +8,13 @@ import CredentialsDialog from "../../common/AccountSettingDialog";
 import EditProfileDialog from "../forms/EditCompanyProfileForm";
 import { useParams } from "react-router-dom";
 import { UserRole } from "../../../stores/User Slices/userSlice";
+import SkeletonLoader from "../../common/SkeletonLoader";
 
 export function CompanyProfileInfo() {
   const profileInfo = useStore.useCompanyProfileInfo();
   const userId = useStore.useUserId();
   const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { id: companyId } = useParams();
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] = useState(false);
@@ -31,9 +33,11 @@ export function CompanyProfileInfo() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       await fetchCompanyInfo(companyId);
       fetchCompanyIndustries(companyId);
       fetchCompanyLocations(companyId);
+      setIsLoading(false);
     };
     fetchData();
     if (userRole === UserRole.COMPANY && userId === profileInfo.id) fetchEmail();
@@ -42,23 +46,26 @@ export function CompanyProfileInfo() {
   const [isIndustriesDialogOpen, setIndustriesDialogOpen] = useState(false);
   const [isLocationsDialogOpen, setLocationsDialogOpen] = useState(false);
 
-  return (
+  return isLoading ? (
+    <div className="h-[240px] overflow-hidden">
+      <SkeletonLoader />
+    </div>
+  ) : (
     <div className="bg-white rounded-3xl p-6 space-y-6 border-2 border-gray-200 shadow">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-5">
-          <div className="w-12 h-12 flex items-center justify-center">
             {!imageError && profileInfo.image ? (
               <img
                 src={profileInfo.image as string}
                 onError={() => setImageError(true)}
                 alt="Profile Image"
+                className="w-24 h-24 rounded-full object-cover"
               />
             ) : (
-              <div className="h-12 w-12 bg-gray-300 rounded flex items-center justify-center">
+              <div className="h-24 w-24 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-xl text-gray-500">{profileInfo.name.charAt(0)}</span>
               </div>
             )}
-          </div>
 
           <div className="flex justify-between items-center gap-4">
             <h3 className="text-2xl font-bold">{profileInfo.name}</h3>
@@ -70,7 +77,7 @@ export function CompanyProfileInfo() {
         </div>
 
         {userRole === UserRole.COMPANY && userId === profileInfo.id && (
-          <div className="flex gap-8 ml-auto">
+          <div className="flex gap-12 ml-auto mt-1">
             <Button
               variant="outline"
               className="w-[150px] !py-1"
