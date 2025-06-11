@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button.tsx";
-import { XCircle, Upload, X, PlusCircle } from "lucide-react";
+import { XCircle, Upload, X } from "lucide-react";
 import type { CompanyProfileInfo } from "../../../types/profile.ts";
 import useStore from "../../../stores/globalStore.ts";
 import LocationSearch from "../../common/LocationSearch.tsx";
@@ -49,7 +49,6 @@ interface ProfileDialogProps {
 const CompanyProfileDialog = ({ isOpen, onClose, profileInfo }: ProfileDialogProps) => {
   const updateProfile = useStore.useCompanyProfileUpdateInfo();
   const [tempCountry, setTempCountry] = useState("");
-  const [tempCity, setTempCity] = useState("");
   const fetchIndustryOptions = useStore.useSharedEntitiesSetIndustryOptions();
   const industryOptions = useStore.useSharedEntitiesIndustryOptions();
   const [imageError, setImageError] = useState(false);
@@ -109,18 +108,13 @@ const CompanyProfileDialog = ({ isOpen, onClose, profileInfo }: ProfileDialogPro
     window.location.reload();
   };
 
-  const addLocation = () => {
-    if (
-      !tempCountry ||
-      !tempCity ||
-      locations.some((loc) => loc.country === tempCountry && loc.city === tempCity)
-    ) {
+  const addLocation = (city: string) => {
+    if (!tempCountry || !city || locations.some((loc) => loc.country === tempCountry && loc.city === city)) {
       return;
     }
 
-    setValue("locations", [...locations, { country: tempCountry, city: tempCity }]);
+    setValue("locations", [...locations, { country: tempCountry, city }]);
     setTempCountry("");
-    setTempCity("");
   };
 
   const removeLocation = (index: number) => {
@@ -271,21 +265,13 @@ const CompanyProfileDialog = ({ isOpen, onClose, profileInfo }: ProfileDialogPro
               {/* Locations Section */}
               <div className="space-y-4">
                 <label className="text-sm font-medium text-gray-700">Locations</label>
-                <div className="flex gap-8">
+                <div className="flex gap-16">
                   <LocationSearch
                     selectedCountry={tempCountry}
                     onCountryChange={setTempCountry}
-                    selectedCity={tempCity}
-                    onCityChange={setTempCity}
+                    selectedCity={""}
+                    onCityChange={addLocation}
                   />
-
-                  <button
-                    onClick={addLocation}
-                    disabled={!tempCountry || !tempCity}
-                    className="rounded-full disabled:opacity-50"
-                  >
-                    <PlusCircle className="h-6 w-6" />
-                  </button>
                 </div>
 
                 {/* Location Chips */}
