@@ -1,6 +1,6 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import { RecruiterProfileInfo, UserCredentials } from '../../types/profile.ts';
+import type { RecruiterProfileInfo, UserCredentials, RecruiterCompanyInfo } from '../../types/profile.ts';
 import { authRefreshToken } from '../../util/authUtils.ts';
 import { showErrorToast } from '../../util/errorHandler.ts';
 import config from '../../../config/config.ts';
@@ -9,9 +9,9 @@ import axios from 'axios';
 export interface RecruiterProfileSlice {
     recruiterProfileInfo: RecruiterProfileInfo;
     recruiterCredentials: UserCredentials;
+    recruiterCompanyInfo: RecruiterCompanyInfo;
     recruiterProfileFetchInfo: () => Promise<void>;
     recruiterProfileUpdateInfo: (profileData: RecruiterProfileInfo) => Promise<void>;
-    recruiterProfileClear: () => void;
     recruiterProfileUpdateCredentials: (credentials: UserCredentials) => Promise<void>;
 }
 
@@ -24,6 +24,15 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
         email: '',
         password: ''
     },
+    recruiterCompanyInfo: {
+        company: {
+            id: null,
+            image: '',
+            name: ''
+        },
+        department: '',
+        assignedCandidatesCnt: 0
+    },
 
     recruiterProfileFetchInfo: async () => {
         const { userId } = get();
@@ -34,10 +43,26 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
                 { withCredentials: true }
             );
 
+            const data = res.data.recruiterData;
+            for (let key in data) {
+                if (data[key] === null && key !== 'companyId') {
+                    data[key] = '';
+                }
+            }
+
             set({
                 recruiterProfileInfo: {
-                    name: res.data.recruiterData.recruiterName,
+                    name: data.recruiterName,
                     image: `${config.API_BASE_URL}/recruiters/${userId}/profile-pic?t=${Date.now()}`
+                },
+                recruiterCompanyInfo: {
+                    company: {
+                        id: data.companyId,
+                        image: `${config.API_BASE_URL}/companies/${data.companyId}/image?t=${Date.now()}`,
+                        name: data.companyName
+                    },
+                    department: data.department,
+                    assignedCandidatesCnt: data.assignedCandidatesCnt
                 }
             });
         }
@@ -117,15 +142,6 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
     },
 
     recruiterProfileUpdateCredentials: async (credentials) => {
-    },
-
-    recruiterProfileClear: () => {
-        set({
-            recruiterProfileInfo: {
-                name: '',
-                image: ''
-            }
-        });
     }
 });
 

@@ -66,3 +66,13 @@ export interface RecruiterProfileInfo {
   image?: string | File;
   name: string;
 }
+
+export interface RecruiterCompanyInfo {
+  company: {
+    id: number | null,
+    name: string,
+    image: string,
+  },
+  department: string,
+  assignedCandidatesCnt: number
+}
