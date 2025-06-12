@@ -51,7 +51,6 @@ const CompanyFinishProfile = () => {
     const fetchIndustryOptions = useStore.useSharedEntitiesSetIndustryOptions();
     const industryOptions = useStore.useSharedEntitiesIndustryOptions();
     const [imageError, setImageError] = useState(false);
-    const [progress, setProgress] = useState(0);
     const userId = useStore.useUserId();
     const setUserName = useStore.useUserSetName();
     const setUserImage = useStore.useUserSetImage();
@@ -88,19 +87,18 @@ const CompanyFinishProfile = () => {
         fetchIndustryOptions();
     }, []);
 
-    // Calculate progress based on filled sections
-    useEffect(() => {
-        let filled = 0;
-        if (locations.length > 0) filled++;
-        if (industries.length > 0) filled++;
-        if (name) filled++;
-        if (overview) filled++;
-        if (foundedIn) filled++;
-        if (size) filled++;
-        if (type) filled++;
-        if (image) filled++;
-        setProgress(Math.round((filled / 8) * 100));
-    }, [locations, industries, name, overview, foundedIn, size, type, image]);
+    const filled = [
+        name.trim() !== "",
+        overview.trim() !== "",
+        !isNaN(foundedIn) && foundedIn > 0,
+        !isNaN(size) && size > 0,
+        type === "Public" || type === "Private",
+        !!image,
+        locations.length > 0,
+        industries.length > 0,
+    ].filter(Boolean).length;
+
+    const progress = Math.round((filled / 8) * 100);
 
     const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

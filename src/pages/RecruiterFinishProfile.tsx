@@ -23,7 +23,6 @@ type FormData = z.infer<typeof schema>;
 
 const RecruiterFinishProfile = () => {
     const [imageError, setImageError] = useState(false);
-    const [progress, setProgress] = useState(0);
     const userId = useStore.useUserId();
     const setUserName = useStore.useUserSetName();
     const setUserImage = useStore.useUserSetImage();
@@ -50,13 +49,8 @@ const RecruiterFinishProfile = () => {
         setImageError(false);
     }, [image]);
 
-    // Calculate progress based on filled sections
-    useEffect(() => {
-        let filled = 0;
-        if (name) filled++;
-        if (image) filled++;
-        setProgress(Math.round((filled / 2) * 100));
-    }, [name, image]);
+    const filled = [name, image].filter(Boolean).length;
+    const progress = Math.round((filled / 2) * 100);
 
     const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

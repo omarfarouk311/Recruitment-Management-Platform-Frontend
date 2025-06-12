@@ -3,7 +3,6 @@ import { StateCreator } from 'zustand';
 import { Experience, Education, Skill, SeekerProfileInfo, UserCredentials } from '../../types/profile.ts';
 import { CV } from '../../types/profile.ts';
 import { Review } from '../../types/review.ts';
-import { mockSeekerCredentials } from '../../mock data/seekerProfile.ts';
 import config from "../../../config/config.ts";
 import { formatDistanceToNow, formatDate } from 'date-fns';
 import axios from 'axios';
@@ -198,12 +197,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchEmail: async () => {
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                set({ seekerCredentials: { ...mockSeekerCredentials } });
-                resolve();
-            }, 1000);
-        });
     },
 
     seekerProfileUpdateCredentials: async (credentials: UserCredentials) => {
