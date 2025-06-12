@@ -110,22 +110,23 @@ const JobDetails = ({
 
   const handleApply = async () => {
     try {
-      let res;
-      try {
-        res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${id}`);
-      } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-          await authRefreshToken();
-          res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${job.id}`);
-        } else {
-          throw err;
-        }
-      }
-
+      const res = await axios.get(`${config.API_BASE_URL}/seekers/cvs/job/${id}`, {
+        withCredentials: true,
+      });
       useSetCvs([...res.data.cvs]);
       setDialogType("apply");
     } catch (err) {
-      showErrorToast("Something went wrong!");
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            handleApply();
+          }
+        } else {
+          showErrorToast("Failed to fetch CVs");
+          throw err;
+        }
+      }
     }
   };
 

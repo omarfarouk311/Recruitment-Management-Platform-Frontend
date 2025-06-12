@@ -6,7 +6,6 @@ import {
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { Transition } from "@headlessui/react";
-import { mockSeekerStats } from "../../mock data/Stats";
 import SkeletonLoader from "../common/SkeletonLoader";
 import axios from "axios";
 import config from "../../../config/config";
@@ -15,9 +14,7 @@ import { showErrorToast } from "../../util/errorHandler";
 
 function SeekerStats() {
   type StatKey = "jobsAppliedFor" | "jobOffers" | "assessments" | "interviews";
-  let [stats, setStats] = useState<
-    { key: StatKey; label: string; value: number; icon: any }[]
-  >([
+  let [stats, setStats] = useState<{ key: StatKey; label: string; value: number; icon: any }[]>([
     {
       key: "jobsAppliedFor",
       label: "Pending Jobs Applied For",
@@ -49,30 +46,27 @@ function SeekerStats() {
 
   async function loadStats() {
     setIsLoading(true);
-    let res;
     try {
-      try {
-        res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          if (err.response?.status === 401) {
-            authRefreshToken();
-          }
-        }
-      }
-      if (!res) {
-        res = await axios.get(`${config.API_BASE_URL}/seekers/stats`);
-      }
+      const res = await axios.get(`${config.API_BASE_URL}/seekers/stats`, { withCredentials: true });
       setStats((prevValue) =>
         prevValue.map((stat) => ({
           ...stat,
-          value: res!.data[stat.key as StatKey],
+          value: res.data[stat.key as StatKey],
         }))
       );
-      setIsLoading(false);
       setTimeout(() => setIsVisible(true), 50);
     } catch (err) {
-      showErrorToast("Error loading stats. Please try again later.");
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            loadStats();
+          }
+        } else {
+          showErrorToast("Error loading stats. Please try again.");
+        }
+      }
+    } finally {
       setIsLoading(false);
     }
   }
@@ -90,10 +84,7 @@ function SeekerStats() {
           </div>
         ) : (
           stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className="flex items-center justify-center gap-4 relative"
-            >
+            <div key={stat.label} className="flex items-center justify-center gap-4 relative">
               <Transition
                 as="div"
                 show={isVisible}
@@ -104,12 +95,8 @@ function SeekerStats() {
               >
                 <stat.icon className="h-8 w-8 text-black-500" />
                 <div>
-                  <p className="text-lg text-black-500 font-semibold">
-                    {stat.label}
-                  </p>
-                  <p className="text-xl font-semibold text-black-900">
-                    {stat.value}
-                  </p>
+                  <p className="text-lg text-black-500 font-semibold">{stat.label}</p>
+                  <p className="text-xl font-semibold text-black-900">{stat.value}</p>
                 </div>
               </Transition>
 

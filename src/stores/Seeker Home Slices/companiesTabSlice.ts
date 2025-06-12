@@ -69,9 +69,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                 delete params.size;
             }
 
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, {
-                params,
-            });
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/companies`, { params, withCredentials: true });
 
             set((state) => ({
                 companiesTabCompanies: [
@@ -156,7 +154,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         if (get().companiesTabCompanies.find((company) => company.id === id)?.industries.length) return;
 
         try {
-            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/industries`);
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/industries`, { withCredentials: true });
             const data: { id: number, name: string }[] = res.data;
 
             set((state) => ({
@@ -192,7 +190,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         if (get().companiesTabCompanies.find((company) => company.id === id)?.locations.length) return;
 
         try {
-            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/locations`);
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${id}/locations`, { withCredentials: true });
             const data: { country: string, city: string }[] = res.data;
 
             set((state) => ({
