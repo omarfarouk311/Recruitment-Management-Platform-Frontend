@@ -1,149 +1,100 @@
 import { useState, useEffect } from "react";
-import { Settings, Edit } from "lucide-react";
+import { Edit, Settings } from "lucide-react";
 import Button from "../../common/Button";
 import useStore from "../../../stores/globalStore";
-import ProfileDialog from "../../common/RecruiterEditProfileDialog"; // Import the ProfileDialog component
-import CredentialsDialog from "../../common/AccountSettingDialog"; // Import the CredentialsDialog component
-import { RecruiterProfileInfo as UserProfile } from "../../../types/profile";
-import axios from 'axios';
-import SkeletonLoader from "../../common/SkeletonLoader";
+import EditProfileDialog from "../forms/EditRecruiterProfileForm";
+import CredentialsDialog from "../../common/AccountSettingDialog";
 
+const ProfileHeaderSkeleton = () => (
+    <div className="bg-white rounded-3xl shadow p-12 w-full flex mx-auto animate-pulse">
+        {/* Left Side Skeleton */}
+        <div className="flex-1 flex flex-col items-center justify-center space-y-6 pr-8">
+            <div className="w-32 h-32 bg-gray-300 rounded-full" />
+            <div className="h-4 bg-gray-300 rounded w-24" />
+        </div>
 
-export default function ProfileHeader() {
-    const [isLoading, setIsLoading] = useState(true);
+        {/* Vertical Line */}
+        <div className="h-48 border-l border-gray-300" />
 
-    const profile = useStore.useRecruiterProfile();
-    const fetchRecruiterProfile = useStore.useFetchRecruiterProfile();
-    const updateProfile = useStore.useUpdateRecruiterProfile();
+        {/* Right Side Skeleton */}
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8 pl-16">
+            <div className="h-12 w-full bg-gray-300 rounded-3xl" />
+            <div className="h-12 w-full bg-gray-300 rounded-3xl" />
+        </div>
+    </div>
+);
 
-    const credentials = useStore.useRecruiterCredentials(); // Get credentials from the store
+interface ProfileHeaderProps {
+    isLoading: boolean;
+}
 
-    // State for Profile Dialog
+export default function ProfileHeader({ isLoading }: ProfileHeaderProps) {
+    const profileInfo = useStore.useRecruiterProfileInfo();
+    const [imageError, setImageError] = useState(false);
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-
-    // State for Account Settings Dialog
     const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] = useState(false);
-
-    // Handle saving profile updates
-    const handleSaveProfile = async (data: UserProfile) => {
-        let cleanup: () => void;
-
-        try {
-            console.log(data)
-            cleanup = await updateProfile(data);
-            alert("Profile saved!");
-        } catch (error) {
-            if (!axios.isCancel(error)) {
-                alert(`Error`)
-                console.log(error)
-            }
-        }
-
-        return () => {
-            // Cancel request if component unmounts
-            cleanup?.();
-        };
-    }
+    const credentials = useStore.useRecruiterCredentials();
+    const updateCredentials = useStore.useRecruiterProfileUpdateCredentials();
 
     useEffect(() => {
-        let cleanup: () => void;
+        setImageError(false);
+    }, [profileInfo.image]);
 
-        const loadData = async () => {
-            try {
-                setIsLoading(true);
-                cleanup = await fetchRecruiterProfile(); // Get cleanup function
-            } catch (error) {
-                if (!axios.isCancel(error)) {
-                    console.error("Failed to load profile:", error);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-
-        loadData();
-
-        return () => {
-            // Cancel request if component unmounts
-            cleanup?.();
-        };
-    }, []);
-
+    if (isLoading) {
+        return <ProfileHeaderSkeleton />;
+    }
 
     return (
-        isLoading ? (
-            <div className="h-[230px] overflow-hidden">
-                <SkeletonLoader />
-            </div>
-        ) :
-         ( <div className="pt-40 bg-gray-100 min-h-screen">
-            <div className="bg-white rounded-2xl shadow p-12 w-full max-w-2xl flex mx-auto">
-                {/* Left Side: Profile Photo and Name */}
-                <div className="flex-1 flex flex-col items-center justify-center space-y-6 pr-8">
-                    <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                        {!profile.avatar && (
-                            <span className="text-4xl text-gray-400">
-                                {profile.recruitername}
-                            </span>
-                        )}
-                        {profile.avatar && (
-                            <img
-                                src={profile.avatar}
-                                alt={profile.recruitername}
-                                className="h-full w-full object-cover"
-                            />
-                        )}
+        <div className="bg-white rounded-3xl shadow p-12 w-full flex mx-auto border-2 border-gray-200">
+            {/* Left Side: Profile Photo and Name */}
+            <div className="flex-1 flex flex-col items-center justify-center space-y-6 pr-8">
+                {!imageError && profileInfo.image ? (
+                    <img
+                        src={profileInfo.image as string}
+                        onError={() => setImageError(true)}
+                        alt="Profile"
+                        className="w-32 h-32 rounded-full object-cover"
+                    />
+                ) : (
+                    <div className="h-32 w-32 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-xl text-gray-500">{profileInfo.name.charAt(0)}</span>
                     </div>
-                    {/* User Name */}
-                    <h2 className="text-xl font-medium text-gray-700">{profile.recruitername}</h2>
-                </div>
-
-                {/* Vertical Line */}
-                <div className="h-40 border-l border-gray-200"></div>
-
-                {/* Right Side: Buttons */}
-                <div className="flex-1 flex flex-col items-center justify-center space-y-6 pl-8">
-                    {/* Account Settings Button */}
-                    <Button
-                        variant="outline"
-                        className="w-full flex items-center justify-center rounded-lg py-3"
-                        onClick={() => setIsAccountSettingsDialogOpen(true)} // Open the account settings dialog
-                    >
-                        <Settings className="h-5 w-5 mr-2" />
-                        Account Settings
-                    </Button>
-
-                    {/* Edit Profile Button */}
-                    <Button
-                        variant="outline"
-                        className="w-full flex items-center justify-center rounded-lg py-3"
-                        onClick={() => setIsProfileDialogOpen(true)} // Open the profile dialog
-                    >
-                        <Edit className="h-5 w-5 mr-2" />
-                        Edit Profile
-                    </Button>
-                </div>
+                )}
+                <h2 className="text-xl font-medium text-gray-800">{profileInfo.name}</h2>
             </div>
 
-            {/* Profile Dialog */}
-            <ProfileDialog
+            <div className="h-48 border-l border-gray-300"></div>
+
+            <div className="flex-1 flex flex-col items-center justify-center space-y-8 pl-16">
+                <Button
+                    variant="outline"
+                    className="w-[150px] !p-1"
+                    onClick={() => setIsProfileDialogOpen(true)}
+                >
+                    <Edit className="mr-2" size={20} />
+                    Edit Profile
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="w-[150px] !p-1"
+                    onClick={() => setIsAccountSettingsDialogOpen(true)}
+                >
+                    <Settings className="mr-2" size={20} />
+                    Account Settings
+                </Button>
+            </div>
+            <EditProfileDialog
                 isOpen={isProfileDialogOpen}
                 onClose={() => setIsProfileDialogOpen(false)}
-                onSubmit={handleSaveProfile}
-                profile={profile}
+                profileInfo={profileInfo}
             />
-
-            {/* Account Settings Dialog */}
             <CredentialsDialog
                 isOpen={isAccountSettingsDialogOpen}
                 onClose={() => setIsAccountSettingsDialogOpen(false)}
                 credentials={credentials}
-                updateCredentials={async (data) => {
-                    useStore.getState().updateRecruiterCredentials(data);
-                }}
+                updateCredentials={updateCredentials}
             />
         </div>
-            )
     );
 }

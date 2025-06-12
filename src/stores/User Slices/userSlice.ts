@@ -2,40 +2,50 @@ import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 
 export enum UserRole {
-  SEEKER = 0,
-  COMPANY = 1,
-  RECRUITER = 2
+    SEEKER = 0,
+    COMPANY = 1,
+    RECRUITER = 2
 }
 export interface userSlice {
-  userId: number | null;
-  userName: string | null;
-  userRole: UserRole | null;
-  userImage: string | null;
-  userSetId: (id: number) => void;
-  userSetName: (name: string) => void;
-  userSetRole: (role: UserRole) => void;
-  userSetImage: (image: string) => void;
+    userId: number | null;
+    userName: string | null;
+    userRole: UserRole | null;
+    userImage: string | null;
+    userSetId: (id: number) => void;
+    userSetName: (name: string) => void;
+    userSetRole: (role: UserRole) => void;
+    userSetImage: (image: string) => void;
+    clearUserInfo: () => void
 }
 
 export const createUserSlice: StateCreator<CombinedState, [], [], userSlice> = (set, get) => ({
-  userId: null,
-  userName: null,
-  userRole: null,
-  userImage: null,
+    userId: null,
+    userName: null,
+    userRole: null,
+    userImage: null,
 
-  userSetId: (id) => {
-    set({ userId: id });
-  },
+    userSetId: (id) => {
+        set({ userId: id });
+    },
 
-  userSetName: (name) => {
-    set({ userName: name });
-  },
+    userSetName: (name) => {
+        set({ userName: name });
+    },
 
-  userSetRole: (role) => {
-    set({ userRole: role });
-  },
+    userSetRole: (role) => {
+        set({ userRole: role });
+    },
 
-  userSetImage: (image) => {
-    set({ userImage: image });
-  }
+    userSetImage: (image) => {
+        set({ userImage: image });
+    },
+
+    clearUserInfo: () => {
+        set({
+            userId: null,
+            userName: null,
+            userRole: null,
+            userImage: null
+        })
+    }
 });

@@ -36,8 +36,8 @@ export interface ForYouTabSlice {
 
 async function fetchJobDetails(id: number): Promise<JobDetails> {
     const [resDetails, resSimilar] = await Promise.all([
-        axios.get(`${API_BASE_URL}/jobs/${id}`),
-        axios.get(`${API_BASE_URL}/jobs/${id}/similar`)
+        axios.get(`${API_BASE_URL}/jobs/${id}`, { withCredentials: true }),
+        axios.get(`${API_BASE_URL}/jobs/${id}/similar`, { withCredentials: true })
     ]);
 
     const response = resDetails.data;
@@ -203,7 +203,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         const url = `${API_BASE_URL}/seekers/jobs${!forYouTabSearchQuery ? '/recommended' : ''}`
 
         try {
-            const res = await axios.get(url, { params });
+            const res = await axios.get(url, { params, withCredentials: true });
 
             const newJobs: Job[] = res.data.map((job: any) => ({
                 id: job.id,
@@ -362,7 +362,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
 
     forYouTabRemoveRecommendation: async (id: number) => {
         try {
-            await axios.delete(`${API_BASE_URL}/seekers/jobs/recommended/${id}`);
+            await axios.delete(`${API_BASE_URL}/seekers/jobs/recommended/${id}`, { withCredentials: true });
             set((state) => ({
                 forYouTabJobs: state.forYouTabJobs.filter((job) => job.id !== id)
             }));
@@ -387,7 +387,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             await axios.post(`${config.API_BASE_URL}/seekers/jobs/apply`, {
                 jobId: id,
                 cvId: cvId
-            });
+            }, { withCredentials: true });
 
             set((state) => ({
                 forYouTabDetailedJobs: state.forYouTabDetailedJobs.map(
@@ -434,7 +434,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 jobId: id,
                 title,
                 description: message
-            });
+            }, { withCredentials: true });
 
             set((state) => ({
                 forYouTabDetailedJobs: state.forYouTabDetailedJobs.map(
@@ -477,7 +477,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
         if (get().forYouTabDetailedJobs.find((job) => job.id === jobId)?.companyData.industries.length) return;
 
         try {
-            const res = await axios.get(`${API_BASE_URL}/companies/${companyId}/industries`);
+            const res = await axios.get(`${API_BASE_URL}/companies/${companyId}/industries`, { withCredentials: true });
             const industries = res.data.map((industry: any) => industry.name);
 
             set((state) => {

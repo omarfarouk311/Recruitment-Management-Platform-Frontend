@@ -105,8 +105,9 @@ const JobPostingDialog = ({ isOpen, onClose, jobId, addJob, updateJob }: JobPost
                 // Fetch recruitment processes, skills, and industries
                 const processesPromise = axios.get(`${config.API_BASE_URL}/recruitment_processes`, {
                     params: { page: 1 },
+                    withCredentials: true,
                 });
-                const skillsPromise = axios.get(`${config.API_BASE_URL}/skills`);
+                const skillsPromise = axios.get(`${config.API_BASE_URL}/skills`, { withCredentials: true });
                 const [processesResponse, skillsResponse] = await Promise.all([
                     processesPromise,
                     skillsPromise,
@@ -169,7 +170,9 @@ const JobPostingDialog = ({ isOpen, onClose, jobId, addJob, updateJob }: JobPost
         const fetchJobData = async () => {
             setIsLoadingJobData(true);
             try {
-                const response = await axios.get(`${config.API_BASE_URL}/jobs/${jobId}/edit`);
+                const response = await axios.get(`${config.API_BASE_URL}/jobs/${jobId}/edit`, {
+                    withCredentials: true,
+                });
                 const jobData = response.data.jobData[0];
                 const skillsData = response.data.skillsData;
 
