@@ -15,7 +15,6 @@ export interface userSlice {
     userSetName: (name: string) => void;
     userSetRole: (role: UserRole) => void;
     userSetImage: (image: string) => void;
-    clearUserInfo: () => void
 }
 
 export const createUserSlice: StateCreator<CombinedState, [], [], userSlice> = (set, get) => ({
@@ -39,13 +38,4 @@ export const createUserSlice: StateCreator<CombinedState, [], [], userSlice> = (
     userSetImage: (image) => {
         set({ userImage: image });
     },
-
-    clearUserInfo: () => {
-        set({
-            userId: null,
-            userName: null,
-            userRole: null,
-            userImage: null
-        })
-    }
 });

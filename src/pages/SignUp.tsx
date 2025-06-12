@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,8 +7,8 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import axios from "axios";
 import config from "../../config/config";
-import useStore from "../stores/globalStore";
 import { showErrorToast } from "../util/errorHandler";
+import { useEffect } from "react";
 // import googleLogo from "../assets/google-logo.png";
 // import facebookLogo from "../assets/facebook-logo.png";
 
@@ -33,7 +33,8 @@ type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const SignUp = () => {
     const navigate = useNavigate();
-    const userRole = useStore.useUserRole();
+    const [searchParams] = useSearchParams();
+    const signUpRole = searchParams.get("role");
 
     const {
         register,
@@ -43,13 +44,21 @@ const SignUp = () => {
         resolver: zodResolver(signUpSchema),
     });
 
+    useEffect(() => {
+        if (!signUpRole) {
+            navigate("/");
+            showErrorToast("User role is not set, you must select a role first from the landing page.");
+            return;
+        }
+    }, []);
+
     const onSubmit = async (data: SignUpFormData) => {
         try {
             await axios.post(`${config.API_BASE_URL}/auth/signup`, {
                 email: data.email,
                 password: data.password,
                 confirmationPassword: data.confirmPassword,
-                role: userRole,
+                role: parseInt(signUpRole!),
             });
             navigate("/login", { replace: true });
         } catch (err: any) {

@@ -1,13 +1,74 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../components/common/Button";
 import { useNavigate } from "react-router-dom";
 import useStore from "../stores/globalStore";
 import background from "../assets/gradient-background.png";
 import { UserRole } from "../stores/User Slices/userSlice";
+import axios from "axios";
+import config from "../../config/config";
+import { Loader2 } from "lucide-react";
+
+async function refreshToken() {
+  try {
+    await axios.post(`${config.API_BASE_URL}/auth/refresh-token`, {}, { withCredentials: true });
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const setUserRole = useStore.useUserSetRole();
+  const userRole = useStore.useUserRole();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  const checkAuth = async () => {
+    try {
+      const res = await axios.get(`${config.API_BASE_URL}/auth/check-auth`, { withCredentials: true });
+
+      if (!res.data.isProfileFinished) {
+        if (userRole === UserRole.SEEKER) {
+          navigate("/seeker/finish-profile", { replace: true });
+        } else if (userRole === UserRole.COMPANY) {
+          navigate("/company/finish-profile", { replace: true });
+        } else if (userRole === UserRole.RECRUITER) {
+          navigate("/recruiter/finish-profile", { replace: true });
+        }
+      } else {
+        if (userRole === UserRole.SEEKER) {
+          navigate("/seeker/home", { replace: true });
+        } else if (userRole === UserRole.COMPANY) {
+          navigate("/company/dashboard", { replace: true });
+        } else if (userRole === UserRole.RECRUITER) {
+          navigate("/recruiter/dashboard", { replace: true });
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          const succeeded = await refreshToken();
+          if (succeeded) await checkAuth();
+        }
+      }
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${background})`, backgroundSize: "cover" }}
+      >
+        <Loader2 className="animate-spin" size={50} />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -24,7 +85,7 @@ const LandingPage: React.FC = () => {
           <span
             onClick={() => navigate("/login")}
             role="button"
-            className="underline underline-offset-4 hover:text-blue-700 cursor-pointer transition-colors"
+            className="underline underline-offset-8 hover:text-blue-700 cursor-pointer transition-colors"
           >
             Login
           </span>
@@ -39,8 +100,7 @@ const LandingPage: React.FC = () => {
             </p>
             <Button
               onClick={() => {
-                setUserRole(UserRole.SEEKER);
-                navigate("/signup");
+                navigate(`/signup?role=${UserRole.SEEKER}`);
               }}
               className="rounded-lg py-3"
             >
@@ -56,8 +116,7 @@ const LandingPage: React.FC = () => {
             </p>
             <Button
               onClick={() => {
-                setUserRole(UserRole.RECRUITER);
-                navigate("/signup");
+                navigate(`/signup?role=${UserRole.RECRUITER}`);
               }}
               className="rounded-lg py-3"
             >
@@ -73,8 +132,7 @@ const LandingPage: React.FC = () => {
             </p>
             <Button
               onClick={() => {
-                setUserRole(UserRole.COMPANY);
-                navigate("/signup");
+                navigate(`/signup?role=${UserRole.COMPANY}`);
               }}
               className="rounded-lg py-3"
             >

@@ -10,7 +10,6 @@ import config from "../../config/config";
 import useStore from "../stores/globalStore";
 import { showErrorToast } from "../util/errorHandler";
 import { UserRole } from "../stores/User Slices/userSlice";
-import { useEffect } from "react";
 // import googleLogo from "../assets/google-logo.png";
 // import facebookLogo from "../assets/facebook-logo.png";
 
@@ -27,9 +26,6 @@ const Login = () => {
     const setRole = useStore.useUserSetRole();
     const setName = useStore.useUserSetName();
     const setImage = useStore.useUserSetImage();
-    const clearUserInfo = useStore.useClearUserInfo();
-
-    useEffect(clearUserInfo, []);
 
     const {
         register,
