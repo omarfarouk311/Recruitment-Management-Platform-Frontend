@@ -63,6 +63,6 @@ export interface UserCredentials {
 }
 
 export interface RecruiterProfileInfo {
-  avatar?: string;
-  recruitername: string;
+  image?: string | File;
+  name: string;
 }

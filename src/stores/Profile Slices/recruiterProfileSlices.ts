@@ -1,199 +1,131 @@
 import { CombinedState } from '../storeTypes.ts';
 import { StateCreator } from 'zustand';
-import { RecruiterProfileInfo as UserProfile, UserCredentials } from '../../types/profile.ts';
+import { RecruiterProfileInfo, UserCredentials } from '../../types/profile.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
+import { showErrorToast } from '../../util/errorHandler.ts';
+import config from '../../../config/config.ts';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
-
 export interface RecruiterProfileSlice {
-    loading: boolean;
-    error: string | null;
-    recruiterProfile: UserProfile;
+    recruiterProfileInfo: RecruiterProfileInfo;
     recruiterCredentials: UserCredentials;
-
-    // Synchronous setters
-    recruiterProfileSetProfile: (profile: UserProfile) => void;
-    recruiterSetCredentials: (credentials: UserCredentials) => void;
-
-    // Async methods with cancellation support
-    fetchRecruiterProfile: () => Promise<() => void>;  
-    fetchRecruiterCredentials: () => Promise<() => void>;
-    updateRecruiterProfile: (profileData: Partial<UserProfile>) => Promise<() => void>;
-    updateRecruiterCredentials: (credentialsData: Partial<UserCredentials>) => Promise<() => void>;
+    recruiterProfileFetchInfo: () => Promise<void>;
+    recruiterProfileUpdateInfo: (profileData: RecruiterProfileInfo) => Promise<void>;
+    recruiterProfileClear: () => void;
+    recruiterProfileUpdateCredentials: (credentials: UserCredentials) => Promise<void>;
 }
 
 export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], RecruiterProfileSlice> = (set, get) => ({
-    recruiterProfile: {
-        id: '1',
-        recruitername: 'User 1',
-        country: '',
-        city: '',
-        phone: '1234567890',
-        gender: 'Male',
-        birthDate: new Date().toISOString(),
-        avatar: '',
-        role: ''
+    recruiterProfileInfo: {
+        name: '',
+        image: ''
     },
     recruiterCredentials: {
-        id: '1',
-        email: 'boody@gmail.com',
-        password: '12345678'
+        email: '',
+        password: ''
     },
-    loading: false,
-    error: null,
 
-    // Synchronous setters
-    recruiterProfileSetProfile: (profile) => set({ recruiterProfile: profile }),
-    recruiterSetCredentials: (credentials) => set({ recruiterCredentials: credentials }),
+    recruiterProfileFetchInfo: async () => {
+        const { userId } = get();
 
-    // Async API methods with cancellation
-    fetchRecruiterProfile: async () => {
-        const source = axios.CancelToken.source();
-        let isActive = true;
-        console.log('Fetching recruiter profile...');
         try {
-            if (isActive) set({ loading: true, error: null });
-            const response = await axios.get(`${API_BASE_URL}/recruiters/profile-data`, {
-                cancelToken: source.token
-            });
+            const res = await axios.get(
+                `${config.API_BASE_URL}/recruiters/profile-data`,
+                { withCredentials: true }
+            );
 
-            if (isActive) {
-                console.log('Recruiter profile data fetched:', response.data);
-                set({ recruiterProfile: response.data.recruiterData });
-                const { has_image } = response.data.recruiterData;
-                if (has_image) {
-                    console.log('Fetching profile image...');
-                    const profileImage = await axios.get(`${API_BASE_URL}/recruiters/profile-pic`, {
-                        responseType: 'blob', // Tell Axios to expect binary data (Blob)
-                    });
-                    const blobUrl = URL.createObjectURL(profileImage.data); // Convert Blob to a URL
-                    set({
-                        recruiterProfile: {
-                            ...response.data.recruiterData,
-                            avatar: blobUrl, // Use the Blob URL in <img>
-                        }
-                    });
+            set({
+                recruiterProfileInfo: {
+                    name: res.data.recruiterData.recruiterName,
+                    image: `${config.API_BASE_URL}/recruiters/${userId}/profile-pic?t=${Date.now()}`
+                }
+            });
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().recruiterProfileFetchInfo();
+                    }
+                }
+                else {
+                    showErrorToast('Failed to fetch profile info');
                 }
             }
-            console.log('Finished fetching recruiter profile data')
-        } catch (error) {
-            console.log('Error fetching recruiter profile:', error);
-            if (isActive && !axios.isCancel(error)) {
-                set({
-                    error: axios.isAxiosError(error)
-                        ? error.response?.data?.message || error.message
-                        : 'Failed to fetch profile'
-                });
-            }
-        } finally {
-            if (isActive) set({ loading: false });
         }
-
-        return () => {
-            isActive = false;
-            source.cancel('Request canceled due to component unmount');
-        };
     },
 
-    fetchRecruiterCredentials: async () => {
-        const source = axios.CancelToken.source();
-        let isActive = true;
-
+    recruiterProfileUpdateInfo: async (profileData) => {
+        const { userId } = get();
         try {
-            if (isActive) set({ loading: true, error: null });
-            // call the end point that will return email and password
-            // const response = await axios.get(`${API_BASE_URL}/recruiters/credentials`, {
-            //     cancelToken: source.token
-            // });
-
-            // if (isActive) set({ recruiterCredentials: response.data });
-        } catch (error) {
-            if (isActive && !axios.isCancel(error)) {
-                set({
-                    error: axios.isAxiosError(error)
-                        ? error.response?.data?.message || error.message
-                        : 'Failed to fetch credentials'
-                });
-            }
-        } finally {
-            if (isActive) set({ loading: false });
-        }
-
-        return () => {
-            isActive = false;
-            source.cancel('Request canceled due to component unmount');
-        };
-    },
-
-    updateRecruiterProfile: async (profileData) => {
-        const source = axios.CancelToken.source();
-        let isActive = true;
-
-        try {
-            if (isActive) set({ loading: true, error: null });
-            const response = await axios.patch(
-                `${API_BASE_URL}/recruiters/profile-data`,
-                profileData,
-                { cancelToken: source.token }
+            await axios.put(
+                `${config.API_BASE_URL}/recruiters/profile-data`,
+                { recruiterName: profileData.name },
+                { withCredentials: true }
             );
-            if (isActive) set({
-                recruiterProfile: { ...get().recruiterProfile, ...response.data }
-            });
-        } catch (error) {
-            if (isActive && !axios.isCancel(error)) {
-                set({
-                    error: axios.isAxiosError(error)
-                        ? error.response?.data?.message || error.message
-                        : 'Failed to update profile'
-                });
-                throw error;
-            }
-        } finally {
-            if (isActive) set({ loading: false });
-        }
 
-        return () => {
-            isActive = false;
-            source.cancel('Request canceled due to component unmount');
-        };
+            if (profileData.image instanceof File) {
+                await axios.put(`${config.API_BASE_URL}/recruiters/profile-pic`, profileData.image, {
+                    headers: {
+                        "Content-Type": profileData.image.type,
+                        "File-Name": profileData.image.name,
+                    },
+                    withCredentials: true,
+                });
+            }
+
+            set({
+                recruiterProfileInfo: {
+                    name: profileData.name,
+                    image: `${config.API_BASE_URL}/recruiters/${userId}/profile-pic?t=${Date.now()}`
+                },
+                userName: profileData.name,
+                userImage: `${config.API_BASE_URL}/recruiters/${userId}/profile-pic?t=${Date.now()}`
+            });
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) {
+                        get().recruiterProfileUpdateInfo(profileData);
+                    }
+                }
+                else if (err.response?.status === 400) {
+                    if (err.response.data.message !== 'Validation Error') {
+                        showErrorToast(err.response.data.message);
+                    }
+                    else {
+                        const validationErrors: string[] = err.response.data.validationErrors;
+                        validationErrors.forEach((error) => {
+                            showErrorToast(error);
+                        });
+                    }
+                    throw err;
+                }
+                else if (err.response?.status === 413) {
+                    showErrorToast('Image size exceeded 10MB');
+                    throw err;
+                }
+                else {
+                    showErrorToast('Failed to update the profile');
+                    throw err;
+                }
+            }
+        }
     },
 
-    updateRecruiterCredentials: async (credentialsData) => {
-        const source = axios.CancelToken.source();
-        let isActive = true;
+    recruiterProfileUpdateCredentials: async (credentials) => {
+    },
 
-        try {
-            if (isActive) set({ loading: true, error: null });
-            // const response = await axios.patch(
-            //     `${API_BASE_URL}/recruiters/credentials`,
-            //     credentialsData,
-            //     { cancelToken: source.token }
-            // );
-
-            // // Only update non-sensitive fields
-            // if (isActive) set({
-            //     recruiterCredentials: {
-            //         ...get().recruiterCredentials,
-            //         ...response.data
-            //     }
-            // });
-        } catch (error) {
-            if (isActive && !axios.isCancel(error)) {
-                set({
-                    error: axios.isAxiosError(error)
-                        ? error.response?.data?.message || error.message
-                        : 'Failed to update credentials'
-                });
-                throw error;
+    recruiterProfileClear: () => {
+        set({
+            recruiterProfileInfo: {
+                name: '',
+                image: ''
             }
-        } finally {
-            if (isActive) set({ loading: false });
-        }
-
-        return () => {
-            isActive = false;
-            source.cancel('Request canceled due to component unmount');
-        };
+        });
     }
 });
 
