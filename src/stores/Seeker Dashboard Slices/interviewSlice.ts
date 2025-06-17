@@ -6,12 +6,15 @@ import {
 import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 export interface SeekerInterviewsSlice {
   seekerInterviewsData: interview[];
   seekerInterviewsPage: number;
   seekerInterviewsHasMore: boolean;
   seekerInterviewsIsLoading: boolean;
+  seekerInterviewsError: string | null;
   seekerInterviewsFilters: DashboardFilters;
   seekerInterviewsCompanyNames: { value: string; label: string }[];
   seekerInterviewsFetchData: () => Promise<void>;
@@ -20,6 +23,7 @@ export interface SeekerInterviewsSlice {
   ) => Promise<void>;
   seekerInterviewsSetCompanyNames: () => Promise<void>;
   clearSeekerInterviews: () => void;
+  seekerInterviewsSetError: (error: string | null) => void;
 }
 
 export const createSeekerInterviewsSlice: StateCreator<
@@ -32,6 +36,7 @@ export const createSeekerInterviewsSlice: StateCreator<
   seekerInterviewsPage: 1,
   seekerInterviewsHasMore: true,
   seekerInterviewsIsLoading: false,
+  seekerInterviewsError: null,
   seekerInterviewsFilters: {
     country: "",
     city: "",
@@ -51,7 +56,10 @@ export const createSeekerInterviewsSlice: StateCreator<
 
     if (!seekerInterviewsHasMore || seekerInterviewsIsLoading) return;
 
-    set({ seekerInterviewsIsLoading: true });
+    set({ 
+      seekerInterviewsIsLoading: true,
+      seekerInterviewsError: null 
+    });
 
     try {
       let params = Object.fromEntries(
@@ -64,14 +72,15 @@ export const createSeekerInterviewsSlice: StateCreator<
         }).filter(([_, value]) => value !== undefined)
       );
 
-      const res = await axios.get(`${config.API_BASE_URL}/interviews/seeker`, {
+      const response = await axios.get(`${config.API_BASE_URL}/interviews/seeker`, {
         params,
+        withCredentials: true
       });
-      if (res.status !== 200) return;
+
       set((state) => ({
         seekerInterviewsData: [
           ...state.seekerInterviewsData,
-          ...res.data.interviews.map((i: any) => ({
+          ...response.data.interviews.map((i: any) => ({
             recruiter: i.recruitername ?? "------",
             jobTitle: i.job_title,
             jobId: i.job_id,
@@ -83,25 +92,60 @@ export const createSeekerInterviewsSlice: StateCreator<
             meetingLink: i.meetingLink ?? "",
           })),
         ],
-        seekerInterviewsHasMore: res.data.length > 0,
+        seekerInterviewsHasMore: response.data.length > 0,
         seekerInterviewsIsLoading: false,
         seekerInterviewsPage: state.seekerInterviewsPage + 1,
       }));
     } catch (err) {
       set({ seekerInterviewsIsLoading: false });
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().seekerInterviewsFetchData();
+          } else {
+            set({ seekerInterviewsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ seekerInterviewsError: "Failed to fetch interviews data" });
+          showErrorToast('Failed to fetch interviews data');
+        }
+      } else {
+        set({ seekerInterviewsError: "An unexpected error occurred" });
+        showErrorToast('An unexpected error occurred');
+      }
     }
   },
 
   seekerInterviewsSetCompanyNames: async () => {
-    const res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
-    if (res.status !== 200) return;
+    try {
+      const response = await axios.get(
+        `${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`,
+        { withCredentials: true }
+      );
 
-    set({
-      seekerInterviewsCompanyNames: res.data.map((company: string) => ({
-        value: company,
-        label: company,
-      })),
-    });
+      set({
+        seekerInterviewsCompanyNames: response.data.map((company: string) => ({
+          value: company,
+          label: company,
+        })),
+      });
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().seekerInterviewsSetCompanyNames();
+          } else {
+            set({ seekerInterviewsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ seekerInterviewsError: "Failed to fetch company names" });
+          showErrorToast('Failed to fetch company names');
+        }
+      }
+    }
   },
 
   seekerInterviewsSetFilters: async (filters) => {
@@ -113,6 +157,7 @@ export const createSeekerInterviewsSlice: StateCreator<
       seekerInterviewsData: [],
       seekerInterviewsPage: 1,
       seekerInterviewsHasMore: true,
+      seekerInterviewsError: null,
     }));
 
     await get().seekerInterviewsFetchData();
@@ -124,6 +169,7 @@ export const createSeekerInterviewsSlice: StateCreator<
       seekerInterviewsPage: 1,
       seekerInterviewsHasMore: true,
       seekerInterviewsIsLoading: false,
+      seekerInterviewsError: null,
       seekerInterviewsFilters: {
         country: "",
         city: "",
@@ -133,5 +179,9 @@ export const createSeekerInterviewsSlice: StateCreator<
       },
       seekerInterviewsCompanyNames: [],
     });
+  },
+
+  seekerInterviewsSetError: (error: string | null) => {
+    set({ seekerInterviewsError: error });
   },
 });

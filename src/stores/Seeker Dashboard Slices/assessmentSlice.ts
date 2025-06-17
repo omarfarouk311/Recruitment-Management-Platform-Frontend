@@ -7,6 +7,8 @@ import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 export interface SeekerAssessmentsSlice {
   seekerAssessmentsData: assessment[];
@@ -15,6 +17,8 @@ export interface SeekerAssessmentsSlice {
   seekerAssessmentsIsLoading: boolean;
   seekerAssessmentsFilters: DashboardFilters;
   seekerAssessmentsCompanyNames: { value: string; label: string }[];
+  seekerAssessmentsError: string | null;
+  seekerAssessmentsSetError: (error: string | null) => void;
   seekerAssessmentsFetchData: () => Promise<void>;
   seekerAssessmentsSetFilters: (
     filters: Partial<SeekerAssessmentsSlice["seekerAssessmentsFilters"]>
@@ -31,6 +35,7 @@ export const createSeekerAssessmentsSlice: StateCreator<
 > = (set, get, _api) => ({
   seekerAssessmentsData: [],
   seekerAssessmentsPage: 1,
+  seekerAssessmentsError: null,
   seekerAssessmentsHasMore: true,
   seekerAssessmentsIsLoading: false,
   seekerAssessmentsFilters: {
@@ -47,12 +52,15 @@ export const createSeekerAssessmentsSlice: StateCreator<
       seekerAssessmentsPage,
       seekerAssessmentsHasMore,
       seekerAssessmentsIsLoading,
-      seekerAssessmentsFilters:{country,city,status,company,sortBy}
+      seekerAssessmentsFilters: { country, city, status, company, sortBy }
     } = get();
+    
     if (!seekerAssessmentsHasMore || seekerAssessmentsIsLoading) return;
-    set({ seekerAssessmentsIsLoading: true });
-
-    // Mock API call, don't forget to include the filters in the query string if they are populated
+    
+    set({ 
+      seekerAssessmentsIsLoading: true,
+      seekerAssessmentsError: null 
+    });
 
     try {
       let params = Object.fromEntries(
@@ -62,18 +70,22 @@ export const createSeekerAssessmentsSlice: StateCreator<
           city: city || undefined,
           status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
           companyName: company || undefined,
-          sortByDate: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
+          sorted: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
         }).filter(([_, value]) => value !== undefined)
       );
 
-      let res = await axios.get(`${config.API_BASE_URL}/assessments/seeker-assessment-dashboard`, {
-        params,
-      });
+      const response = await axios.get(
+        `${config.API_BASE_URL}/assessments/seeker-assessment-dashboard`, 
+        {
+          params,
+          withCredentials: true
+        }
+      );
       
       set((state) => ({
         seekerAssessmentsData: [
           ...state.seekerAssessmentsData,
-          ...res.data.result.map((a: any) => ({
+          ...response.data.result.map((a: any) => ({
             assessmentId: a.assessment_id,
             jobTitle: a.title,
             jobId: a.jobid,
@@ -81,36 +93,71 @@ export const createSeekerAssessmentsSlice: StateCreator<
             companyId: a.companyid,
             country: a.country,
             city: a.city,
-            assessmentTime:a.assessment_time,
-            dateAdded:formatDistanceToNow(new Date(a.date_applied), { addSuffix: true }),
+            assessmentTime: a.assessment_time,
+            dateAdded: formatDistanceToNow(new Date(a.date_applied), { addSuffix: true }),
             deadline: a.phase_deadline,
             status: a.status,
           })),
         ],
-        seekerAssessmentsHasMore:  res.data.length > 0,
+        seekerAssessmentsHasMore: response.data.length > 0,
         seekerAssessmentsIsLoading: false,
         seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
       }));
 
-    }catch (err) {
+    } catch (err) {
       set({ seekerAssessmentsIsLoading: false });
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().seekerAssessmentsFetchData();
+          } else {
+            set({ seekerAssessmentsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ seekerAssessmentsError: "Failed to fetch assessments data" });
+          showErrorToast('Failed to fetch assessments data');
+        }
+      } else {
+        set({ seekerAssessmentsError: "An unexpected error occurred" });
+        showErrorToast('An unexpected error occurred');
+      }
     }
-
-
-
   },
 
   seekerAssessmentsSetCompanyNames: async () => {
-    let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
-    if(res.status !== 200) return;
-    set({
-      seekerAssessmentsCompanyNames: [
-        ...res.data.map((company:string) => ({
-          value: company,
-          label: company,
-        })),
-      ],
-    });
+    try {
+      const response = await axios.get(
+        `${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`,
+        { withCredentials: true }
+      );
+      
+      if (response.status !== 200) return;
+      
+      set({
+        seekerAssessmentsCompanyNames: [
+          ...response.data.map((company: string) => ({
+            value: company,
+            label: company,
+          })),
+        ],
+      });
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().seekerAssessmentsSetCompanyNames();
+          } else {
+            set({ seekerAssessmentsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ seekerAssessmentsError: "Failed to fetch company names" });
+          showErrorToast('Failed to fetch company names');
+        }
+      }
+    }
   },
 
   seekerAssessmentsSetFilters: async (filters) => {
@@ -122,9 +169,14 @@ export const createSeekerAssessmentsSlice: StateCreator<
       seekerAssessmentsData: [],
       seekerAssessmentsPage: 1,
       seekerAssessmentsHasMore: true,
+      seekerAssessmentsError: null,
     }));
 
     await get().seekerAssessmentsFetchData();
+  },
+  
+  seekerAssessmentsSetError: (error: string | null) => {
+    set({ seekerAssessmentsError: error });
   },
   
   clearSeekerAssessment: () => {
@@ -141,6 +193,7 @@ export const createSeekerAssessmentsSlice: StateCreator<
         company: "",
       },
       seekerAssessmentsCompanyNames: [],
+      seekerAssessmentsError: null,
     });
   },
 });
