@@ -127,7 +127,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileUpdateInfo(profile);
+                        await get().companyProfileUpdateInfo(profile);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -189,7 +189,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileFetchInfo(id);
+                        await get().companyProfileFetchInfo(id);
                     }
                 }
                 else if (err.response?.status === 404) {
@@ -230,7 +230,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileFetchIndustries(id);
+                        await get().companyProfileFetchIndustries(id);
                     }
                 }
                 else {
@@ -268,7 +268,7 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileFetchLocations(id);
+                        await get().companyProfileFetchLocations(id);
                     }
                 }
                 else {
@@ -286,10 +286,9 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     },
 
     companyProfileFetchReviews: async (id) => {
-        const { companyProfileReviewsIsLoading, companyProfileReviewsHasMore, companyProfileReviewsPage,
-            companyProfileReviewsFilters, userId } = get();
+        const { companyProfileReviewsHasMore, companyProfileReviewsPage, companyProfileReviewsFilters, userId } = get();
 
-        if (!companyProfileReviewsHasMore || companyProfileReviewsIsLoading) return;
+        if (!companyProfileReviewsHasMore) return;
 
         const targetId = id || userId;
         set({ companyProfileReviewsIsLoading: true });
@@ -329,21 +328,22 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
             set((state) => ({
                 companyProfileReviews: [...state.companyProfileReviews, ...reviews],
                 companyProfileReviewsHasMore: reviews.length === paginationLimit,
-                companyProfileReviewsPage: state.companyProfileReviewsPage + 1,
-                companyProfileReviewsIsLoading: false
+                companyProfileReviewsPage: state.companyProfileReviewsPage + 1
             }));
         }
         catch (err) {
-            set({ companyProfileReviewsIsLoading: false });
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileFetchReviews(id);
+                        await get().companyProfileFetchReviews(id);
                     }
                 }
                 else showErrorToast('Failed to fetch company reviews');
             }
+        }
+        finally {
+            set({ companyProfileReviewsIsLoading: false });
         }
     },
 
@@ -360,9 +360,8 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
     },
 
     companyProfileFetchJobs: async (id) => {
-        const { companyProfileIsJobsLoading, companyProfileJobsHasMore, companyProfileJobsPage,
-            companyProfileJobsFilters, userId } = get();
-        if (!companyProfileJobsHasMore || companyProfileIsJobsLoading) return;
+        const { companyProfileJobsHasMore, companyProfileJobsPage, companyProfileJobsFilters, userId } = get();
+        if (!companyProfileJobsHasMore) return;
 
         const targetId = id || userId;
         set({ companyProfileIsJobsLoading: true });
@@ -404,21 +403,22 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
             set((state) => ({
                 companyProfileJobs: [...state.companyProfileJobs, ...jobs],
                 companyProfileJobsHasMore: jobs.length === paginationLimit,
-                companyProfileJobsPage: state.companyProfileJobsPage + 1,
-                companyProfileIsJobsLoading: false,
+                companyProfileJobsPage: state.companyProfileJobsPage + 1
             }));
         }
         catch (err) {
-            set({ companyProfileIsJobsLoading: false });
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyProfileFetchJobs(id);
+                        await get().companyProfileFetchJobs(id);
                     }
                 }
                 else showErrorToast('Failed to fetch company jobs');
             }
+        }
+        finally {
+            set({ companyProfileIsJobsLoading: false });
         }
     },
 

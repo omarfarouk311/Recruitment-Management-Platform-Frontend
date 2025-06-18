@@ -133,9 +133,7 @@ const JobPostingDialog = ({ isOpen, onClose, jobId, addJob, updateJob }: JobPost
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
                         const succeeded = await authRefreshToken();
-                        if (succeeded) {
-                            fetchOptions();
-                        }
+                        if (succeeded) await fetchOptions();
                     } else {
                         showErrorToast("Failed to fetch recruitment processes, skills, or industries");
                     }
@@ -194,9 +192,7 @@ const JobPostingDialog = ({ isOpen, onClose, jobId, addJob, updateJob }: JobPost
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
                         const succeeded = await authRefreshToken();
-                        if (succeeded) {
-                            fetchJobData();
-                        }
+                        if (succeeded) await fetchJobData();
                     } else if (err.response?.status === 404) {
                         showErrorToast("Job not found");
                         onClose();

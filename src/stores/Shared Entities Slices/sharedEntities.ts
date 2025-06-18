@@ -28,7 +28,7 @@ export const createSharedEntitiesSlice: StateCreator<CombinedState, [], [], Shar
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().sharedEntitiesSetIndustryOptions();
+                        await get().sharedEntitiesSetIndustryOptions();
                     }
                 }
                 else {

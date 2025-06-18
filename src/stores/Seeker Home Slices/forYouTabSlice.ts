@@ -123,10 +123,9 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
     forYouTabSearchQuery: '',
 
     forYouTabFetchJobs: async () => {
-        const { forYouTabHasMore, forYouTabIsJobsLoading, forYouTabFilters, forYouTabSearchQuery,
-            forYouTabPage } = get();
-        if (!forYouTabHasMore || forYouTabIsJobsLoading) return;
+        const { forYouTabHasMore, forYouTabFilters, forYouTabSearchQuery, forYouTabPage } = get();
 
+        if (!forYouTabHasMore) return;
         set({ forYouTabIsJobsLoading: true });
 
         const params: any = { page: forYouTabPage };
@@ -232,7 +231,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabFetchJobs();
+                        await get().forYouTabFetchJobs();
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -267,7 +266,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabSetSelectedJobId(id);
+                        await get().forYouTabSetSelectedJobId(id);
                     }
                 }
                 else if (err.response?.status === 404) {
@@ -295,7 +294,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             forYouTabIsDetailsLoading: false,
         }));
 
-        get().forYouTabFetchJobs();
+        await get().forYouTabFetchJobs();
     },
 
     forYouTabSetSearchQuery: (query: string) => {
@@ -317,7 +316,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
             homePageActiveTab: HomePageTabs.JobSearch
         });
 
-        get().forYouTabFetchJobs();
+        await get().forYouTabFetchJobs();
     },
 
     forYouTabPushToDetailedJobs: async (id: number) => {
@@ -333,7 +332,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabPushToDetailedJobs(id);
+                        await get().forYouTabPushToDetailedJobs(id);
                     }
                 }
                 else if (err.response?.status === 404) {
@@ -372,7 +371,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabRemoveRecommendation(id);
+                        await get().forYouTabRemoveRecommendation(id);
                     }
                 }
                 else {
@@ -400,7 +399,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabApplyToJob(id, cvId);
+                        await get().forYouTabApplyToJob(id, cvId);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -447,7 +446,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabReportJob(id, title, message);
+                        await get().forYouTabReportJob(id, title, message);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -492,7 +491,7 @@ export const createForYouTabSlice: StateCreator<CombinedState, [], [], ForYouTab
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().forYouTabFetchCompanyIndustries(companyId, jobId);
+                        await get().forYouTabFetchCompanyIndustries(companyId, jobId);
                     }
                 }
                 else {
