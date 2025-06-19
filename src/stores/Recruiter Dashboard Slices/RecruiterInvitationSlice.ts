@@ -8,11 +8,14 @@ import { showErrorToast } from '../../util/errorHandler';
 
 const API_BASE_URL = config.API_BASE_URL;
 
+import { authRefreshToken } from '../../util/authUtils.ts';
+
+
 export enum JobOfferDecision {
     Rejected = 0,
     Accepted = 1
 }
-// Interface for Invitations Slice
+
 export interface RecruiterInvitationsSlice {
     recruiterInvitationsData: Invitations[];
     recruiterInvitationsPage: number;
@@ -23,14 +26,10 @@ export interface RecruiterInvitationsSlice {
     recruiterInvitationsFetchData: () => Promise<void>;
     recruiterInvitationsSetFilters: (filters: Partial<RecruiterInvitationsSlice['recruiterInvitationsFilters']>) => void;
     recruiterInvitationsMakeDecision: (invitationId: number, decision: number) => Promise<void>;
-
     recruiterInvitationsCancelRequests: () => void;
     recruiterInvitationsCancelToken?: CancelTokenSource;
-
-
 }
 
-// Create Invitations Slice
 export const createInvitationsSlice: StateCreator<
     CombinedState,
     [],
@@ -56,7 +55,6 @@ export const createInvitationsSlice: StateCreator<
         }
     },
 
-    // Fetch data function
     recruiterInvitationsFetchData: async () => {
         const {
             recruiterInvitationsPage,
@@ -65,23 +63,18 @@ export const createInvitationsSlice: StateCreator<
             recruiterInvitationsFilters,
         } = get();
 
-        // Return early if no more data or already loading
         if (!recruiterInvitationsHasMore || recruiterInvitationsIsLoading) return;
 
-        // Cancel previous request if it exists
         get().recruiterInvitationsCancelRequests();
 
-        // Create new cancel token
         const cancelToken = axios.CancelToken.source();
         set({ recruiterInvitationsIsLoading: true, recruiterInvitationsCancelToken: cancelToken });
-        console.log("fetching recruiter data")
-        console.log(recruiterInvitationsFilters.sortByDateReceived)
-        const currentStatus = DashboardStatusFilterOptions.find(
-            option => option.value === recruiterInvitationsFilters.status
-        );
 
         try {
-            // Make API call with filters and pagination
+            const currentStatus = DashboardStatusFilterOptions.find(
+                option => option.value === recruiterInvitationsFilters.status
+            );
+
             const response = await axios.get(`${API_BASE_URL}/invitations/`, {
                 params: Object.fromEntries(
                     Object.entries({
@@ -91,21 +84,20 @@ export const createInvitationsSlice: StateCreator<
                         sortByDeadline: recruiterInvitationsFilters.sortByDeadline == "" ? "" : (recruiterInvitationsFilters.sortByDeadline == "2" ? "1" : "-1")
                     }).filter(([_, value]) => value !== '' && value !== undefined && value !== null)
                 ),
-                cancelToken: cancelToken.token
+                cancelToken: cancelToken.token,
+                withCredentials: true
             });
-            console.log(response.data)
+
             const newRows = response.data;
-            const hasMore = response.data.length > 0;
             set((state) => ({
                 recruiterInvitationsData: [
-                    ...state.recruiterInvitationsData, // Existing data after
-                    ...newRows.map((invitation: Invitations) => ({   // New data first
+                    ...state.recruiterInvitationsData,
+                    ...newRows.map((invitation: Invitations) => ({
                         ...invitation,
                         dateReceived: formatDistanceToNow(new Date(invitation.dateReceived)),
                     })),
-
                 ],
-                recruiterInvitationsHasMore: hasMore,
+                recruiterInvitationsHasMore: newRows.length > 0,
                 recruiterInvitationsIsLoading: false,
                 recruiterInvitationsPage: state.recruiterInvitationsPage + 1,
                 recruiterInvitationsCancelToken: undefined,
@@ -114,40 +106,45 @@ export const createInvitationsSlice: StateCreator<
         } catch (err) {
             if (!axios.isCancel(err)) {
                 set({ recruiterInvitationsIsLoading: false, recruiterInvitationsCancelToken: undefined });
+                
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        const success = await authRefreshToken();
+                        if (success) {
+                            return get().recruiterInvitationsFetchData();
+                        }
+                    }
+                }
                 console.error('Failed to fetch invitations:', err);
-                // Handle error appropriately (e.g., show notification)
             }
         }
     },
 
-    // Set filters function
     recruiterInvitationsSetFilters: (filters) => {
         const currentFilters = get().recruiterInvitationsFilters;
         let tmp = 0;
-        // Check if both sort filters are being set simultaneously
+        
         if (filters.sortByDateReceived && filters.sortByDeadline) {
             tmp = 1;
-            // Keep the existing sort filter that was already set
             if (currentFilters.sortByDateReceived) {
-                filters.sortByDeadline = ""; // Clear the other sort
+                filters.sortByDeadline = "";
             } else if (currentFilters.sortByDeadline) {
-                filters.sortByDateReceived = ""; // Clear the other sort
+                filters.sortByDateReceived = "";
             } 
             showErrorToast("Please sort by either date received or deadline, not both");
         }
+        
         if (!tmp) {
             set((state) => ({
                 recruiterInvitationsFilters: { ...state.recruiterInvitationsFilters, ...filters },
-                recruiterInvitationsData: [], // Reset data when filters change
-                recruiterInvitationsPage: 1, // Reset pagination
-                recruiterInvitationsHasMore: true, // Reset hasMore flag
+                recruiterInvitationsData: [],
+                recruiterInvitationsPage: 1,
+                recruiterInvitationsHasMore: true,
             }));
+            get().recruiterInvitationsFetchData();
         }
-        // Fetch new data after updating filters
-        get().recruiterInvitationsFetchData();
     },
 
-    // Make decision function
     recruiterInvitationsMakeDecision: async (invitationId, decision) => {
         const cancelToken = axios.CancelToken.source();
         set({ recruiterInvitationsIsLoading: true, recruiterInvitationsCancelToken: cancelToken });
@@ -157,7 +154,8 @@ export const createInvitationsSlice: StateCreator<
                 status: decision,
                 date: new Date().toISOString()
             }, {
-                cancelToken: cancelToken.token
+                cancelToken: cancelToken.token,
+                withCredentials: true
             });
 
             set((state) => ({
@@ -177,22 +175,28 @@ export const createInvitationsSlice: StateCreator<
             if (!axios.isCancel(err)) {
                 let errorMessage = "Something went wrong. Please try again.";
 
-                if (axios.isAxiosError(err) && err.response?.status === 409) {
-                    errorMessage = "You're already hired in a company, so you cannot accept this invitation.";
+                if (axios.isAxiosError(err)) {
+                    if (err.response?.status === 401) {
+                        const success = await authRefreshToken();
+                        if (success) {
+                            return get().recruiterInvitationsMakeDecision(invitationId, decision);
+                        }
+                    }
+                    if (err.response?.status === 409) {
+                        errorMessage = "You're already hired in a company, so you cannot accept this invitation.";
+                    }
+                    else if (err.response?.status === 400) {
+                        errorMessage = "The invitation has expired.";
+                    }
                 }
-                else if (axios.isAxiosError(err) && err.response?.status === 400) {
-                    errorMessage = "The invitation has expired.";
-                }
-
 
                 set({
                     recruiterInvitationsIsLoading: false,
                     recruiterInvitationsCancelToken: undefined,
                 });
-                const error =  new Error(errorMessage); // Throw error to be caught by component
-                showErrorToast(
-                    error.message
-                );
+                
+                await showErrorToast(errorMessage);
+                throw new Error(errorMessage);
             }
         }
     },

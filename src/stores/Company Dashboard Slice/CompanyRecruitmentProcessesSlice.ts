@@ -3,12 +3,11 @@ import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
 const API_BASE_URL = config.API_BASE_URL;
-import { Phase, Process as processes} from "../../types/companyDashboard";
+import { Phase, Process as processes } from "../../types/companyDashboard";
 import { showErrorToast } from '../../util/errorHandler';
-
+import { authRefreshToken } from '../../util/authUtils';
 
 export interface CompanyRecruitmentProcessesSlice {
-    // processes: processes[];
     processesPage: number;
     processesHasMore: boolean;
     processesIsLoading: boolean;
@@ -18,11 +17,9 @@ export interface CompanyRecruitmentProcessesSlice {
     fetchProcessById?: (processId: number) => Promise<processes | null>;
     setProcessId: (processId: number | null) => void;
     resetProcesses: () => void;
-    deleteProcess: (processId: number, processesArray:processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => Promise<void>;
-    // addProcess: (name: string, numOfPhases: number) => Promise<void>;
-    updateProcess: (processId:number, name: string, phases: Phase[]) => Promise<void>;
+    deleteProcess: (processId: number, processesArray: processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => Promise<void>;
+    updateProcess: (processId: number, name: string, phases: Phase[]) => Promise<void>;
     addProcess: (name: string, phases: Phase[]) => Promise<void>;
-
 }
 
 export const createCompanyRecruitmentProcessesSlice: StateCreator<
@@ -31,11 +28,11 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
     [],
     CompanyRecruitmentProcessesSlice
 > = (set, get) => ({
-    processes: [],
     processesPage: 1,
     processesHasMore: true,
     processesIsLoading: false,
     processId: null,
+
     fetchProcesses: async () => {
         const { processesPage, processesHasMore, processesIsLoading } = get();
         if (processesIsLoading || !processesHasMore) return [];
@@ -48,160 +45,180 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                     page: processesPage,
                     limit: 10
                 },
+                withCredentials: true
             });
 
-            console.log("Fetched processes:", response.data.recruitment_process);
             // Then fetch phases for each process in parallel
-         const processesWithPhases = await Promise.all(
-            response.data.recruitment_process.map(async (process: processes) => {
-                try {
-                // Fetch phases for this specific process
-                const phasesResponse = await axios.get(
-                    `${API_BASE_URL}/recruitment_processes/${process.id}`
-                );
-                
-                return {
-                    ...process,
-                    phases: phasesResponse.data.recruitment_process.map((phase: any) => ({
-                    ...phase,
-                    // Ensure each phase has a unique ID
-                    id: phase.id || `phase-${process.id}-${crypto.randomUUID()}`
-                    }))
-                };
-
-                } catch (error) {
-                console.error(`Error fetching phases for process ${process.id}:`, error);
-                return {
-                    ...process,
-                    phases: [] // Return empty array if phases fetch fails
-                };
-                }
-            })
+            const processesWithPhases = await Promise.all(
+                response.data.recruitment_process.map(async (process: processes) => {
+                    try {
+                        const phasesResponse = await axios.get(
+                            `${API_BASE_URL}/recruitment_processes/${process.id}`,
+                            { withCredentials: true }
+                        );
+                        
+                        return {
+                            ...process,
+                            phases: phasesResponse.data.recruitment_process.map((phase: any) => ({
+                                ...phase,
+                                id: phase.id || `phase-${process.id}-${crypto.randomUUID()}`
+                            }))
+                        };
+                    } catch (err) {
+                        if (axios.isAxiosError(err) && err.response?.status === 401) {
+                            const success = await authRefreshToken();
+                            if (success) {
+                                return await get().fetchProcesses();
+                            }
+                        }
+                        console.error(`Error fetching phases for process ${process.id}:`, err);
+                        return {
+                            ...process,
+                            phases: []
+                        };
+                    }
+                })
             );
 
-            console.log("Processes with phases:", processesWithPhases);
             return processesWithPhases;
-        } catch (error) {
-            console.error('Error fetching processes:', error);
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().fetchProcesses();
+                }
+            }
+            console.error('Error fetching processes:', err);
             return [];
         } finally {
-            set({processesIsLoading: false });
+            set({ processesIsLoading: false });
         }
     },
+
     setProcessId: (processId: number | null) => {
         set({ processId });
     },
+
     resetProcesses: () => {
         set({
-            // processes: [],
             processesPage: 1,
             processesHasMore: true,
             processesIsLoading: false,
             processId: null
         });
     },
-    deleteProcess: async (processId: number, processesArray:processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => {
+
+    deleteProcess: async (processId: number, processesArray: processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => {
+        set({ processesIsLoading: true });
         try {
-            set({ processesIsLoading: true });
-            await axios.delete(`${API_BASE_URL}/recruitment_processes/${processId}`);
-            set({ processesIsLoading: false });
+            await axios.delete(`${API_BASE_URL}/recruitment_processes/${processId}`, {
+                withCredentials: true
+            });
             setProcesses(processesArray.filter(p => p.id !== processId));
-
-        } catch (error) {
-
+        } catch (err) {
             let errorMessage = "Something went wrong, please try again.";
-            if (axios.isAxiosError(error) && error.response?.status === 404) {
-                errorMessage = "Recruitment process not found.";
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().deleteProcess(processId, processesArray, setProcesses);
+                    }
+                }
+                if (err.response?.status === 404) {
+                    errorMessage = "Recruitment process not found.";
+                }
+                else if (err.response?.status === 500) { 
+                    errorMessage = "This process is being used in the hiring processes.";             
+                }
             }
-            else if (axios.isAxiosError(error) && error.response?.status === 500) { 
-                errorMessage = "This process is being used in the hiring processes.";             
-            }
-
-            showErrorToast(errorMessage);
+            await showErrorToast(errorMessage);
+        } finally {
+            set({ processesIsLoading: false });
         }
     },
-    
 
-    /*
-
-     1 -> assessment
-     2 -> interview
-     3 -> cv screening
-     
-    */
-    updateProcess: async (processId: number,name: string, phases: Phase[]) => {
+    updateProcess: async (processId: number, name: string, phases: Phase[]) => {
         try {
             const transformedPhases = phases.map(phase => {
-            const basePhase = {
-                phaseNumber: phase.phase_num.toString(),
-                phaseName: phase.phasename,
-                phaseType: phase.type
-            };
-
-            // Only include assessmentId and deadline for Assessment phases (type 1)
-            if (phase.type === 1) {
-                return {
-                ...basePhase,
-                assessmentId: phase.assessmentId,
-                deadline: phase.deadline
+                const basePhase = {
+                    phaseNumber: phase.phase_num.toString(),
+                    phaseName: phase.phasename,
+                    phaseType: phase.type
                 };
-            }
-            
-            return basePhase;
+
+                if (phase.type === 1) {
+                    return {
+                        ...basePhase,
+                        assessmentId: phase.assessmentId,
+                        deadline: phase.deadline
+                    };
+                }
+                
+                return basePhase;
             });
-            console.log("Transformed phases:", transformedPhases);
+
             await axios.put(`${API_BASE_URL}/recruitment_processes/${processId}`, {
                 processName: name,
                 phases: transformedPhases
-
+            }, {
+                withCredentials: true
             });
-       
-        } catch (error) {
+        } catch (err) {
             let errorMessage = "Something went wrong, please try again.";
-            if(axios.isAxiosError(error) && error.response?.status === 404) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().updateProcess(processId, name, phases);
+                }
+            }
+            if (axios.isAxiosError(err) && err.response?.status === 404) {
                 errorMessage = "Recruitment process not found.";
             } 
-            return showErrorToast(errorMessage);
+            await showErrorToast(errorMessage);
+            throw err;
         }
     },
 
     addProcess: async (name: string, phases: Phase[]) => {
         try {
-                        // Transform phases to match backend expectations
             const transformedPhases = phases.map(phase => {
-            const basePhase = {
-                phaseNumber: phase.phase_num.toString(),
-                phaseName: phase.phasename,
-                phaseType: phase.type
-            };
-
-            // Only include assessmentId and deadline for Assessment phases (type 1)
-            if (phase.type === 1) {
-                return {
-                ...basePhase,
-                assessmentId: phase.assessmentId,
-                deadline: phase.deadline
+                const basePhase = {
+                    phaseNumber: phase.phase_num.toString(),
+                    phaseName: phase.phasename,
+                    phaseType: phase.type
                 };
-            }
-            
-            return basePhase;
-            });
 
-            console.log("Transformed phases:", transformedPhases);
+                if (phase.type === 1) {
+                    return {
+                        ...basePhase,
+                        assessmentId: phase.assessmentId,
+                        deadline: phase.deadline
+                    };
+                }
+                
+                return basePhase;
+            });
 
             await axios.post(`${API_BASE_URL}/recruitment_processes`, {
                 processName: name,
                 phases: transformedPhases
+            }, {
+                withCredentials: true
             });
 
             set(() => ({
                 processesHasMore: true,
                 processesPage: 1
             }));
-        } catch (error) {
-            console.error("Error adding recruitment process:", error);
-            throw error; // Re-throw to allow error handling in the UI
+        } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().addProcess(name, phases);
+                }
+            }
+            console.error("Error adding recruitment process:", err);
+            throw err;
         }
-},
-
+    }
 });

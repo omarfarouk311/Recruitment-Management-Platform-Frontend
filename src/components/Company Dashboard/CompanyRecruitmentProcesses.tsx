@@ -4,7 +4,9 @@ import RecruitmentProcessDialog from '../common/RecruitmentProcessDialog';
 import useStore from "../../stores/globalStore";
 import { Process, Phase} from "../../types/companyDashboard";
 import axios from "axios";
-
+import config from "../../../config/config";
+const API_BASE_URL = config.API_BASE_URL;import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 
 interface Assessment {
     id: number;
@@ -101,10 +103,10 @@ const handleSaveProcess = async (processData: { name: string; phases: Phase[] })
     }
 };
 
-    const fetchAssessments = async () => {
+const fetchAssessments = async () => {
         setIsFetchingAssessments(true);
         try {
-            const response = await axios.get('http://localhost:8080/api/assessments/');
+            const response = await axios.get('http://localhost:8080/api/assessments/', {withCredentials: true});
             if (response.data.success) {
                 // Store only id and name
                 const simplifiedAssessments = response.data.assessments.map((a: any) => ({
@@ -116,6 +118,12 @@ const handleSaveProcess = async (processData: { name: string; phases: Phase[] })
             }
         } catch (error) {
             console.error('Error fetching assessments:', error);
+            if(axios.isAxiosError(error) && error.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await fetchAssessments();
+                }
+            }
         } finally {
             setIsFetchingAssessments(false);
         }

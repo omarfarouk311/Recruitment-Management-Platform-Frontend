@@ -5,6 +5,8 @@ import axios from 'axios';
 import config from '../../../config/config.ts';
 const API_BASE_URL = config.API_BASE_URL;
 
+import { authRefreshToken } from '../../util/authUtils.ts';
+
 export interface RecruiterInterviewsSlice {
     recruiterJobTitles: string[];
     recruiterInterviewsData: Interviews[];
@@ -20,20 +22,19 @@ export interface RecruiterInterviewsSlice {
     recruiterInterviewsSetUpdateInterview: (jobId: number, candidateId: number, date: string, link: string) => Promise<void>;
 }
 
-
 export const createInterviewsSlice: StateCreator<
     CombinedState,
     [],
     [],
     RecruiterInterviewsSlice
-    > = (set, get) => ({
+> = (set, get) => ({
     recruiterJobTitles: [],
     recruiterInterviewsData: [],
     recruiterInterviewsPage: 1,
     recruiterInterviewsHasMore: true,
     recruiterInterviewsIsLoading: false,
     recruiterInterviewsFilters: {
-        sortByDate: "", // Sort by Date (Ascending/Descending)
+        sortByDate: "",
         jobTitle: "",
     },
     recruiterInterviewsUpateDate: {
@@ -41,6 +42,7 @@ export const createInterviewsSlice: StateCreator<
         seekerId: 0,
         date: "",
     },
+
     resetAllData: () => {
         set({
             recruiterJobTitles: [],
@@ -54,13 +56,16 @@ export const createInterviewsSlice: StateCreator<
             }
         });
     },
-    recruiterInterviewsSetUpateDate: async ({ jobId, seekerId, date}) => {
-        try {
-            set({ recruiterInvitationsIsLoading: true});
 
+    recruiterInterviewsSetUpateDate: async ({ jobId, seekerId, date }) => {
+        set({ recruiterInterviewsIsLoading: true });
+        try {
             await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
                 timestamp: date
+            }, {
+                withCredentials: true
             });
+
             set((state) => ({
                 recruiterInterviewsData: state.recruiterInterviewsData.map(interview =>
                     interview.jobId === jobId && interview.userId === seekerId
@@ -69,12 +74,20 @@ export const createInterviewsSlice: StateCreator<
                 ),
                 recruiterInterviewsIsLoading: false,    
             }));
-          
-        } catch (error) {
-            console.error("Failed to update interview date:", error);
+        } catch (err) {
+            set({ recruiterInterviewsIsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().recruiterInterviewsSetUpateDate({ jobId, seekerId, date });
+                    }
+                }
+            }
+            console.error("Failed to update interview date:", err);
         }
     },
-    // Fetch data function
+
     recruiterInterviewsFetchData: async () => {
         const {
             recruiterInterviewsPage,
@@ -83,17 +96,19 @@ export const createInterviewsSlice: StateCreator<
             recruiterInterviewsFilters,
         } = get();
 
-        // Return early if no more data or already loading
         if (!recruiterInterviewsHasMore || recruiterInterviewsIsLoading) return;
 
         set({ recruiterInterviewsIsLoading: true });
 
         try {
-            // Make API call with filters and pagination
-            const jobTitles = await axios.get(`${API_BASE_URL}/candidates/job-title-filter`)
-            set(() => ({
-                recruiterJobTitles: jobTitles.data.jobTitle
-            }))
+            // Fetch job titles
+            const jobTitlesResponse = await axios.get(`${API_BASE_URL}/candidates/job-title-filter`, {
+                withCredentials: true
+            });
+            
+            set({ recruiterJobTitles: jobTitlesResponse.data.jobTitle });
+
+            // Fetch interviews
             const response = await axios.get(`${API_BASE_URL}/interviews`, {
                 params: Object.fromEntries(
                     Object.entries({
@@ -102,79 +117,87 @@ export const createInterviewsSlice: StateCreator<
                         title: recruiterInterviewsFilters.jobTitle
                     }).filter(([_, value]) => value !== '' && value !== undefined && value !== null)
                 ),
+                withCredentials: true
             });
-            const newRows = response.data.interviews;
-            const hasMore = response.data.length > 0;
-            set((state) => ({
-                recruiterInterviewsData: [
-                    ...state.recruiterInterviewsData, // Existing data after
-                    ...newRows, // New data from API
 
-                ],
-                recruiterInterviewsHasMore: hasMore,
+            const newRows = response.data.interviews;
+            set((state) => ({
+                recruiterInterviewsData: [...state.recruiterInterviewsData, ...newRows],
+                recruiterInterviewsHasMore: newRows.length > 0,
                 recruiterInterviewsIsLoading: false,
                 recruiterInterviewsPage: state.recruiterInterviewsPage + 1,
             }));    
         } catch (err) {
             set({ recruiterInterviewsIsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().recruiterInterviewsFetchData();
+                    }
+                }
+            }
+            console.error("Error fetching interviews:", err);
         }
     },
 
-    // Set filters function
     recruiterInterviewsSetFilters: (filters) => {
-        console.log(filters)
         set((state) => ({
             recruiterInterviewsFilters: { ...state.recruiterInterviewsFilters, ...filters },
-            recruiterInterviewsData: [], // Reset data when filters change
-            recruiterInterviewsPage: 1, // Reset pagination
-            recruiterInterviewsHasMore: true, // Reset hasMore flag
+            recruiterInterviewsData: [],
+            recruiterInterviewsPage: 1,
+            recruiterInterviewsHasMore: true,
         }));
 
-        // Fetch new data after updating filters
         get().recruiterInterviewsFetchData();
-        },
-        recruiterInterviewsSetUpdateInterview: async ( jobId, seekerId, date, meetingLink ) => {
-            try {
-                set({ recruiterInterviewsIsLoading: true });
-                const { recruiterInterviewsData } = get();
+    },
 
-                // Find the current interview to compare values
-                const currentInterview = recruiterInterviewsData.find(
-                    interview => interview.jobId === jobId && interview.userId === seekerId
-                );
+    recruiterInterviewsSetUpdateInterview: async (jobId, seekerId, date, meetingLink) => {
+        try {
+            set({ recruiterInterviewsIsLoading: true });
+            const { recruiterInterviewsData } = get();
 
-                // Only make API call if either date or meetingLink has changed
-                const dateChanged = currentInterview?.date !== date;
-                const linkChanged = currentInterview?.meetingLink !== meetingLink;
+            const currentInterview = recruiterInterviewsData.find(
+                interview => interview.jobId === jobId && interview.userId === seekerId
+            );
 
-                if (dateChanged || linkChanged) {
-                    await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
-                        timestamp: date,
-                        interviewLink: meetingLink
-                    });
+            const dateChanged = currentInterview?.date !== date;
+            const linkChanged = currentInterview?.meetingLink !== meetingLink;
 
-                    // Update state only if the API call was successful
-                    set((state) => ({
-                        recruiterInterviewsData: state.recruiterInterviewsData.map(interview =>
-                            interview.jobId === jobId && interview.userId === seekerId
-                                ? {
-                                    ...interview,
-                                    date: dateChanged ? date : interview.date,
-                                    meetingLink: linkChanged ? meetingLink : interview.meetingLink
-                                }
-                                : interview
-                        ),
-                        recruiterInterviewsIsLoading: false,
-                    }));
-                } else {
-                    // No changes needed, just set loading to false
-                    set({ recruiterInterviewsIsLoading: false });
-                }
-            } catch (error) {
-                console.error("Failed to update interview:", error);
+            if (dateChanged || linkChanged) {
+                await axios.put(`${API_BASE_URL}/interviews/${jobId}/${seekerId}`, {
+                    timestamp: date,
+                    interviewLink: meetingLink
+                }, {
+                    withCredentials: true
+                });
+
+                set((state) => ({
+                    recruiterInterviewsData: state.recruiterInterviewsData.map(interview =>
+                        interview.jobId === jobId && interview.userId === seekerId
+                            ? {
+                                ...interview,
+                                date: dateChanged ? date : interview.date,
+                                meetingLink: linkChanged ? meetingLink : interview.meetingLink
+                            }
+                            : interview
+                    ),
+                    recruiterInterviewsIsLoading: false,
+                }));
+            } else {
                 set({ recruiterInterviewsIsLoading: false });
             }
+        } catch (err) {
+            set({ recruiterInterviewsIsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().recruiterInterviewsSetUpdateInterview(jobId, seekerId, date, meetingLink);
+                    }
+                }
+            }
+            console.error("Failed to update interview:", err);
         }
-
-
+    }
 });

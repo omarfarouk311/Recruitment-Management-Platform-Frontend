@@ -75,7 +75,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 }
             }
 
-            const res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, { params });
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, { params, withCredentials: true });
             const newJobs: Job[] = res.data.map((job: any) => ({
                 id: job.id,
                 title: job.title,
@@ -102,7 +102,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyFetchJobs();
+                        return await get().companyFetchJobs();
                     }
                 }
                 else {
@@ -124,7 +124,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyAddJob(job);
+                        return await get().companyAddJob(job);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -162,7 +162,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyEditJob(job, jobId);
+                        return await get().companyEditJob(job, jobId);
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -194,7 +194,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companyCloseJob(jobId);
+                        return await get().companyCloseJob(jobId);
                     }
                 }
                 else {

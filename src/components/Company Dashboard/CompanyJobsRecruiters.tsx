@@ -30,10 +30,13 @@ const CompanyJobsRecruiters = () => {
     const useHasMore = useStore.useCompanyJobsRecruitersHasMore;
 
     useEffect(() => {
-        clear();
-        fetchRecruiterNames();
-        fetchDepartments();
-        fetchRecruitersData();
+        const fetchData = async () => {
+            clear();
+            await fetchRecruiterNames();
+            await fetchDepartments();
+            await fetchRecruitersData();
+        };
+        fetchData();
     }, []);
 
 

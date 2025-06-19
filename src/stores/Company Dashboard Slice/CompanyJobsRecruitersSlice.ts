@@ -3,7 +3,9 @@ import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
 import { CompanyJobsRecruiters, CompanyJobsRecruitersFilters } from "../../types/company";
+import { authRefreshToken } from "../../util/authUtils";
 const API_BASE_URL = config.API_BASE_URL;
+
 
 
 export interface CompanyJobsRecruitersSlice {
@@ -24,7 +26,6 @@ export interface CompanyJobsRecruitersSlice {
 
     CompanyJobsRecruitersClear: () => void;
     CompanyJobsRecruitersAssign: (recruiterId: number, recruiterName: string, jobId: (number | null), candidates: number[]) => Promise<void>;
-
 }
 
 export const createCompanyJobsRecruitersSlice: StateCreator<
@@ -46,7 +47,7 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
     CompanyRecruiterNames: [],
     
     CompanyJobsRecruitersSetFilters: async (newFilters) => {
-        console.log(newFilters)
+        console.log(newFilters);
         set((state: CombinedState) => ({
             CompanyJobsRecruitersFilters: {
                 ...state.CompanyJobsRecruitersFilters,
@@ -61,80 +62,106 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
     },
 
     CompanyJobsRecruitersFetchRecruiters: async () => {
-        console.log("fetching recruiters")
-        const { CompanyJobsRecruitersPage, CompanyJobsRecruitersFilters } = get();
+        const { CompanyJobsRecruitersPage, CompanyJobsRecruitersHasMore, CompanyJobsRecruitersIsLoading } = get();
+
+        if (!CompanyJobsRecruitersHasMore || CompanyJobsRecruitersIsLoading) return;
+
         set({ CompanyJobsRecruitersIsLoading: true });
         try {
-            // Clean filters the same way as the second function
+            const { CompanyJobsRecruitersFilters } = get();
             const cleanedFilters = Object.fromEntries(
                 Object.entries(CompanyJobsRecruitersFilters).filter(
                     ([_, value]) => value !== "" && value !== undefined && value !== null
                 )
             );
-    
+
             const response = await axios.get(
                 `${API_BASE_URL}/recruiters`,
                 {
                     params: {
                         page: CompanyJobsRecruitersPage,
                         ...cleanedFilters,
-                        // Ensure consistent param names with backend expectations
                         name: cleanedFilters.recruiterName,
                         sorted: cleanedFilters.assignedCandidates,
-                    }
+                    },
+                    withCredentials: true
                 }
             );
-    
+            console.log("Response data:", response.data);
             const data = response.data.recruiters;
             set((state: CombinedState) => ({
                 CompanyJobsRecruiters: [...state.CompanyJobsRecruiters, ...data],
-                CompanyJobsRecruitersPage: CompanyJobsRecruitersPage + 1,
+                CompanyJobsRecruitersPage: state.CompanyJobsRecruitersPage + 1,
                 CompanyJobsRecruitersHasMore: data.length > 0,
                 CompanyJobsRecruitersIsLoading: false,
             }));
-            console.log("now " + get().CompanyJobsRecruitersIsLoading)
-        }
-        catch (error) {
-            console.error("Error fetching recruiters:", error);
-        } finally {
+        } catch (err) {
             set({ CompanyJobsRecruitersIsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyJobsRecruitersFetchRecruiters();
+                    }
+                }
+            }
+            console.error("Error fetching recruiters:", err);
         }
     },
+
     CompanyJobsRecruitersFetchRecruitersNames: async () => {
         set({ CompanyJobsRecruitersIsLoading: true });
         try {
-
             const response = await axios.get(
-                `${API_BASE_URL}/recruiters/allRecruiters`
-            ) 
-            const data = response.data;
-            const namesArray = data.map((item: { name: string }) => item.name); // Replace 'name' with your actual property name
-
-            set({ CompanyRecruiterNames: namesArray });
+                `${API_BASE_URL}/recruiters/allRecruiters`,
+                { withCredentials: true }
+            );
+            const namesArray = response.data.map((item: { name: string }) => item.name);
+            set({ 
+                CompanyRecruiterNames: namesArray,
+                CompanyJobsRecruitersIsLoading: false 
+            });
+        } catch (err) {
             set({ CompanyJobsRecruitersIsLoading: false });
-        } catch (error) {
-            console.error("Error fetching recruiters names:", error);
-            throw error;
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyJobsRecruitersFetchRecruitersNames();
+                    }
+                }
+            }
+            console.error("Error fetching recruiters names:", err);
+            throw err;
         }
-        
     },
+
     CompanyJobsRecruitersFetchDepartments: async () => {
         set({ CompanyJobsRecruitersIsLoading: true });
         try {
             const response = await axios.get(
-                `${API_BASE_URL}/recruiters/departments`
+                `${API_BASE_URL}/recruiters/departments`,
+                { withCredentials: true }
             );
-            const data = response.data.result;
-            console.log(data)
-            const departmentArray = data.map((item: { department: string }) => item.department); 
-
-            set({ CompanyJobsRecruitersDepartments: departmentArray });
-        } catch (error) {
-            console.error("Error fetching departments:", error);
-        } finally {
+            const departmentArray = response.data.result.map((item: { department: string }) => item.department);
+            set({ 
+                CompanyJobsRecruitersDepartments: departmentArray,
+                CompanyJobsRecruitersIsLoading: false 
+            });
+        } catch (err) {
             set({ CompanyJobsRecruitersIsLoading: false });
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyJobsRecruitersFetchDepartments();
+                    }
+                }
+            }
+            console.error("Error fetching departments:", err);
         }
     },
+
     CompanyJobsRecruitersClear: () => {
         set({
             CompanyJobsRecruiters: [],
@@ -150,26 +177,26 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
             CompanyJobsRecruitersDepartments: [],
         });
     },
+
     CompanyJobsRecruitersAssign: async (recruiterId, recruiterName, jobId, candidates) => {
         set({ CompanyJobsRecruitersIsLoading: true });
-        console.log("assigning recruiters")
         try {
             const res = await axios.patch(
-                `${config.API_BASE_URL}/candidates/assign-candidates`,
+                `${API_BASE_URL}/candidates/assign-candidates`,
                 {
-                    recruiterId: recruiterId,
-                    jobId: jobId,
-                    candidates: candidates,
-                }
+                    recruiterId,
+                    jobId,
+                    candidates,
+                },
+                { withCredentials: true }
             );
 
             if (res.status !== 200) {
                 throw new Error("Error in assigning candidates");
             }
-            // Optional: Refresh the data from server
+
             const { assignedCandidatesCnt: newCount, invalidCandidates = [] } = res.data;
             set((state) => {
-                // Filter out invalid candidates from the selection
                 const validCandidates = candidates.filter(
                     candidateId => !invalidCandidates.includes(candidateId)
                 );
@@ -177,33 +204,35 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
                 return {
                     CompanyJobsRecruiters: state.CompanyJobsRecruiters.map(recruiter =>
                         recruiter.id === recruiterId
-                            ? {
-                                ...recruiter,
-                                assigned_candidates_cnt: newCount,
-                            }
+                            ? { ...recruiter, assigned_candidates_cnt: newCount }
                             : recruiter
                     ),
-                    // Update Companycandidates with recruiter name for valid candidates
                     Companycandidates: state.Companycandidates.map(candidate =>
                         validCandidates.includes(candidate.seekerId)
                             ? {
                                 ...candidate,
-                                recruiterName: recruiterName,
-                                recruiterId: recruiterId
-                            }
+                                recruiterName,
+                                recruiterId
+                              }
                             : candidate
                     ),
-                    // Clear selected candidates that were successfully assigned
                     selectedCandidates: [],
-                
                     selectedRecruiters: new Map(),
                     CompanyJobsRecruitersIsLoading: false
                 };
             });
-
-        } catch (error) {
+        } catch (err) {
             set({ CompanyJobsRecruitersIsLoading: false });
-            throw error;
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyJobsRecruitersAssign(recruiterId, recruiterName, jobId, candidates);
+                    }
+                }
+            }
+            console.error("Error assigning candidates:", err);
+            throw err;
         }
     },
 });

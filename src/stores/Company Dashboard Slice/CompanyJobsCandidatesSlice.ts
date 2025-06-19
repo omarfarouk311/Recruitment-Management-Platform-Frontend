@@ -4,7 +4,7 @@ import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
 import { CompanyCandidates, CompanyCandidateFilters } from "../../types/candidates";
-
+import { authRefreshToken } from "../../util/authUtils";
 
 
 export interface CompanyCandidatesSlice {
@@ -123,29 +123,34 @@ export const createCompanyCandidatesSlice: StateCreator<
         });
     },
 
-    CompanyCandidatesMakeDecision: async (seekerIds, decision, jobId) => {
-        console.log(seekerIds, decision, jobId)
-        let res = await axios.post(
+CompanyCandidatesMakeDecision: async (seekerIds, decision, jobId) => {
+    try {
+        console.log(seekerIds, decision, jobId);
+        const res = await axios.post(
             `${config.API_BASE_URL}/candidates/make-decision`,
-            { jobId, decision, candidates: seekerIds }
+            { jobId, decision, candidates: seekerIds },
+            {
+                withCredentials: true  // Added credentials
+            }
         );
+
         if (res.status !== 200) {
             throw Error("Error in making decision");
-            
         }
+
         const updatedCandidates = res.data.updatedCandidates;
         set((state: CombinedState) => ({
             CompanyCandidatesFilters: {
-              ...state.CompanyCandidatesFilters,
+                ...state.CompanyCandidatesFilters,
             },
             Companycandidates: decision === true
-              ? state.Companycandidates.map(candidate => {
-                  const updatedCandidate = updatedCandidates.find(
-                    (uc: { seekerId: number }) => uc.seekerId === candidate.seekerId
-                  );
-                  return updatedCandidate
-                    ? { ...candidate, phase: updatedCandidate.nextPhaseName }
-                    : candidate;
+                ? state.Companycandidates.map(candidate => {
+                    const updatedCandidate = updatedCandidates.find(
+                        (uc: { seekerId: number }) => uc.seekerId === candidate.seekerId
+                    );
+                    return updatedCandidate
+                        ? { ...candidate, phase: updatedCandidate.nextPhaseName }
+                        : candidate;
                 })
                 : state.Companycandidates.filter(
                     candidate => !updatedCandidates.some(
@@ -154,114 +159,164 @@ export const createCompanyCandidatesSlice: StateCreator<
                 ),
             selectedCandidates: [],
             selectedRecruiters: new Map(),
-          }));
-    },
+        }));
 
-    CompanyCandidatesFetchCandidates: async () => {
-        const {
-            CompanyCandidatesPage,
-            CompanyCandidatesHasMore,
-            CompanyCandidatesIsLoading,
-            CompanyCandidatesFilters,
-            companyTabSelectJobId
-        } = get();
-
-        if (!CompanyCandidatesHasMore || CompanyCandidatesIsLoading) return;
-        set({ CompanyCandidatesIsLoading: true });
-
-        try {
-            const params = {
-                page: CompanyCandidatesPage,
-                [CompanyCandidatesFilters.sortBy == '1' ? "sortByRecommendation" : "sortByAssessmentScore"]: CompanyCandidatesFilters.sortBy,
-                phaseType: CompanyCandidatesFilters.phaseType || "",
-                country: CompanyCandidatesFilters.candidateCountry || "",
-                city: CompanyCandidatesFilters.candidateCity || "",
-                status: CompanyCandidatesFilters.status || "1"
-            };
-
-            // Remove undefined values from params
-            for (const key in params) {
-                if (params[key as keyof typeof params] === "") {
-                    delete params[key as keyof typeof params];
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().CompanyCandidatesMakeDecision(seekerIds, decision, jobId);  // Recursive retry
                 }
             }
-
-            let res = await axios.get(
-                `${config.API_BASE_URL}/candidates/job/${companyTabSelectJobId}`,
-                { params }
-            );
-            console.log(res)
-            console.log(`Hello ${res.data.length}`)
-            set((state: CombinedState) => ({
-                Companycandidates: [
-                    ...state.Companycandidates,
-                    ...res.data
-                ],
-                CompanyCandidatesHasMore: res.data.length > 0,
-                CompanyCandidatesIsLoading: false,
-                CompanyCandidatesPage: state.CompanyCandidatesPage + 1,
-                selectedCandidates: [],
-            }));
-            console.log("here")
-        } catch (err) {
-            set({ CompanyCandidatesIsLoading: false });
         }
-    },
-    CompanyCandidatesSetPhases: async () => {
+        console.error("Error making decision:", err);
+    }
+},
 
-        let res = await axios.get(
-            `${config.API_BASE_URL}/candidates/phase-types`
+ CompanyCandidatesFetchCandidates: async () => {
+    const {
+        CompanyCandidatesPage,
+        CompanyCandidatesHasMore,
+        CompanyCandidatesIsLoading,
+        CompanyCandidatesFilters,
+        companyTabSelectJobId
+    } = get();
+
+    if (!CompanyCandidatesHasMore || CompanyCandidatesIsLoading) return;
+    set({ CompanyCandidatesIsLoading: true });
+
+    try {
+        const params = {
+            page: CompanyCandidatesPage,
+            [CompanyCandidatesFilters.sortBy == '1' ? "sortByRecommendation" : "sortByAssessmentScore"]: CompanyCandidatesFilters.sortBy,
+            phaseType: CompanyCandidatesFilters.phaseType || "",
+            country: CompanyCandidatesFilters.candidateCountry || "",
+            city: CompanyCandidatesFilters.candidateCity || "",
+            status: CompanyCandidatesFilters.status || "1"
+        };
+
+        // Remove empty values from params
+        Object.keys(params).forEach(key => {
+            if (params[key as keyof typeof params] === "") {
+                delete params[key as keyof typeof params];
+            }
+        });
+
+        const res = await axios.get(
+            `${config.API_BASE_URL}/candidates/job/${companyTabSelectJobId}`,
+            {
+                params,
+                withCredentials: true  // Added credentials
+            }
         );
-        const phases = res.data.map((phaseType: { id: number; name: string }) => ({ value: phaseType.id, label: phaseType.name }));
+
+        console.log(res);
+        console.log(`Hello ${res.data.length}`);
+
+        set((state: CombinedState) => ({
+            Companycandidates: [
+                ...state.Companycandidates,
+                ...res.data
+            ],
+            CompanyCandidatesHasMore: res.data.length > 0,
+            CompanyCandidatesIsLoading: false,
+            CompanyCandidatesPage: state.CompanyCandidatesPage + 1,
+            selectedCandidates: [],
+        }));
+
+        console.log("here");
+    } catch (err) {
+        set({ CompanyCandidatesIsLoading: false });
+        
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().CompanyCandidatesFetchCandidates();  // Recursive retry
+                }
+            }
+        }
+        
+        console.error("Error fetching candidates:", err);
+    }
+},
+  CompanyCandidatesSetPhases: async () => {
+    try {
+        const res = await axios.get(
+            `${config.API_BASE_URL}/candidates/phase-types`,
+            {
+                withCredentials: true  // Added credentials
+            }
+        );
+        
+        const phases = res.data.map((phaseType: { id: number; name: string }) => ({ 
+            value: phaseType.id, 
+            label: phaseType.name 
+        }));
+        
         set({
             CompanyCandidatesPhases: phases,
         });
-    },
+        
+    } catch (err) {
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().CompanyCandidatesSetPhases();  // Recursive retry
+                }
+            }
+        }
+        console.error("Error fetching phase types:", err);
+    }
+},
     CompanyCandidatesSetCurrentJobId: async (jobId) => {
         set({ CurrentJobId: jobId });
         const { CompanyCandidatesFetchCandidates } = get();
         await CompanyCandidatesFetchCandidates();
     },
-    CompanyCandidateUnAssign: async (jobId, candidates) => {
-        set({ CompanyCandidatesIsLoading: true });
-        console.log("heree")
-        console.log(candidates)
-        
-        try {
-            // 1. Unassign candidates
-            const res = await axios.patch(
-                `${config.API_BASE_URL}/candidates/unassign-candidates`,
-                { jobId, candidates }
-            );
-
-            if (res.status >= 400) {
-                throw new Error(res.data?.message || "Error in unassigning candidates");
+   CompanyCandidateUnAssign: async (jobId, candidates) => {
+    set({ CompanyCandidatesIsLoading: true });
+    console.log("heree");
+    console.log(candidates);
+    
+    try {
+        // 1. Unassign candidates
+        const res = await axios.patch(
+            `${config.API_BASE_URL}/candidates/unassign-candidates`,
+            { jobId, candidates },
+            {
+                withCredentials: true  // Added credentials
             }
+        );
 
-            set((state: CombinedState) => ({
-                Companycandidates: state.Companycandidates.map(candidate => {
-                    if (candidates.includes(candidate.seekerId)) {
-                        return {
-                            ...candidate,
-                            recruiterName: '',
-                            recruiterId: undefined // Assuming you also want to clear the recruiter ID
-                        };
-                    }
-                    return candidate;
-                }),
-                CompanyCandidatesIsLoading: false,
-                selectedCandidates: [],
-            }));
+        if (res.status >= 400) {
+            throw new Error(res.data?.message || "Error in unassigning candidates");
+        }
 
+        // Update candidates state
+        set((state: CombinedState) => ({
+            Companycandidates: state.Companycandidates.map(candidate => {
+                if (candidates.includes(candidate.seekerId)) {
+                    return {
+                        ...candidate,
+                        recruiterName: '',
+                        recruiterId: undefined
+                    };
+                }
+                return candidate;
+            }),
+            CompanyCandidatesIsLoading: false,
+            selectedCandidates: [],
+        }));
 
-
-            set((state: CombinedState) => {
-            // Get the current selectedRecruiters Map from state
+        // Update recruiters state
+        set((state: CombinedState) => {
             const currentSelectedRecruiters = state.selectedRecruiters;
             
             return {
                 CompanyJobsRecruiters: state.CompanyJobsRecruiters.map(recruiter => {
-                    // Check if this recruiter exists in the selectedRecruiters Map
                     if (currentSelectedRecruiters.has(recruiter.id)) {
                         const countToSubtract = currentSelectedRecruiters.get(recruiter.id) || 0;
                         return {
@@ -271,17 +326,24 @@ export const createCompanyCandidatesSlice: StateCreator<
                     }
                     return recruiter;
                 }),
-                // Clear the selectedRecruiters Map after applying the changes
                 selectedRecruiters: new Map(),
                 selectedCandidates: []
             };
         });   
 
-        } catch (err) {
-            set({ CompanyCandidatesIsLoading: false });
-            console.error("Unassign operation failed:", err);
-            // Consider adding error state or toast notification
-            throw err; // Only if you need to propagate
+    } catch (err) {
+        set({ CompanyCandidatesIsLoading: false });
+        
+        if (axios.isAxiosError(err)) {
+            if (err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().CompanyCandidateUnAssign(jobId, candidates);  // Recursive retry
+                }
+            }
         }
+        
+        console.error("Unassign operation failed:", err);
     }
+},
 });

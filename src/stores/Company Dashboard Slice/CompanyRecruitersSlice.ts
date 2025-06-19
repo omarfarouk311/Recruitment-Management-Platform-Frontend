@@ -6,6 +6,19 @@ import { CompanyRecruiters, CompanyRecruitersFilter, RecruiterNames } from "../.
 const API_BASE_URL = config.API_BASE_URL;
 import { showErrorToast } from '../../util/errorHandler';
 
+const authRefreshToken = async () => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/refresh`,
+      {},
+      { withCredentials: true }
+    );
+    return response.status === 200;
+  } catch (error) {
+    console.error("Token refresh failed:", error);
+    return false;
+  }
+};
 
 export interface CompanyRecruitersSlice {
     CompanyRecruiters: CompanyRecruiters[];
@@ -16,16 +29,13 @@ export interface CompanyRecruitersSlice {
     CompanyRecruitersFilters: CompanyRecruitersFilter;
     CompanyRecruiterId: number | null;
     
-
-    CompanyRecruitersSetFilters: (
-        filters: Partial<CompanyRecruitersFilter>
-    ) => Promise<void>;
+    CompanyRecruitersSetFilters: (filters: Partial<CompanyRecruitersFilter>) => Promise<void>;
     CompanyRecruitersFetchRecruiters: () => Promise<void>;
     ResetCompanyRecruiters: () => void;
-    CompanyRecruitersDelete: ( recruiterId: number ) => Promise<void>;
+    CompanyRecruitersDelete: (recruiterId: number) => Promise<void>;
     CompanyRecruiterFetchAllRecruiters: () => Promise<void>;
     CompanyRecruiterSetId: (recruiterId: number | null) => void;
-    CompanyRecruitersAdd(email: string, department: string, deadline: string): Promise<void>;
+    CompanyRecruitersAdd: (email: string, department: string, deadline: string) => Promise<void>;
 }
 
 export const createCompanyRecruitersSlice: StateCreator<
@@ -50,17 +60,16 @@ export const createCompanyRecruitersSlice: StateCreator<
     CompanyRecruitersAdd: async (email, department, deadline) => {
         set({ CompanyRecruitersIsLoading: true });
         try {
-            console.log("email", email);
-            console.log("department", department);
-            console.log("deadline", deadline);
             const response = await axios.post(
                 `${API_BASE_URL}/invitations`,
                 {
-                    recruiterEmail:email,
+                    recruiterEmail: email,
                     department,
                     deadline,
-                }
+                },
+                { withCredentials: true }
             );
+            
             if (response.status === 200) {
                 set((state) => ({
                     CompanyRecruiters: [
@@ -70,28 +79,32 @@ export const createCompanyRecruitersSlice: StateCreator<
                 }));
             }
         } catch (err) {
-                 let errorMessage = "Something went wrong. Please try again.";
-
-                if (axios.isAxiosError(err) && err.response?.status === 404) {
-                    errorMessage = "Recruiter email not found.";
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyRecruitersAdd(email, department, deadline);
+                    }
                 }
-              
-                const error =  new Error(errorMessage); // Throw error to be caught by component
-                showErrorToast(
-                    error.message
-                );
-            
-            console.error("Error adding recruiter:", error);
+                
+                const errorMessage = err.response?.status === 404 
+                    ? "Recruiter email not found." 
+                    : "Something went wrong. Please try again.";
+                
+                await showErrorToast(errorMessage);
+                console.error("Error adding recruiter:", err);
+                throw new Error(errorMessage);
+            }
         } finally {
             set({ CompanyRecruitersIsLoading: false });
         }
     },
+
     CompanyRecruiterSetId: (recruiterId) => {
         set({ CompanyRecruiterId: recruiterId });
     },
     
     CompanyRecruitersSetFilters: async (newFilters) => {
-        console.log("newFilters", newFilters);
         set((state: CombinedState) => ({
             CompanyRecruitersFilters: {
                 ...state.CompanyRecruitersFilters,
@@ -105,14 +118,18 @@ export const createCompanyRecruitersSlice: StateCreator<
     },
 
     CompanyRecruitersFetchRecruiters: async () => {
-        const { CompanyRecruitersPage, CompanyRecruitersFilters } = get();
+        const { CompanyRecruitersPage, CompanyRecruitersHasMore, CompanyRecruitersIsLoading } = get();
+        if (!CompanyRecruitersHasMore || CompanyRecruitersIsLoading) return;
+        
         set({ CompanyRecruitersIsLoading: true });
         try {
+            const { CompanyRecruitersFilters } = get();
             const cleanedFilters = Object.fromEntries(
                 Object.entries(CompanyRecruitersFilters).filter(
                     ([_, value]) => value !== "" && value !== undefined && value !== null
                 )
             );
+            
             const response = await axios.get(
                 `${API_BASE_URL}/recruiters`,
                 {
@@ -120,10 +137,10 @@ export const createCompanyRecruitersSlice: StateCreator<
                         page: CompanyRecruitersPage,
                         ...cleanedFilters,
                     },
+                    withCredentials: true
                 }
             );
-            console.log("response", response);
-        
+            
             const data = response.data.recruiters;
             set((state) => ({
                 CompanyRecruiters: [
@@ -133,8 +150,16 @@ export const createCompanyRecruitersSlice: StateCreator<
                 CompanyRecruitersHasMore: data.length > 0,
                 CompanyRecruitersPage: state.CompanyRecruitersPage + 1,
             }));
-        } catch (error) {
-            console.error("Error fetching recruiters:", error);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyRecruitersFetchRecruiters();
+                    }
+                }
+            }
+            console.error("Error fetching recruiters:", err);
         } finally {
             set({ CompanyRecruitersIsLoading: false });
         }
@@ -161,8 +186,10 @@ export const createCompanyRecruitersSlice: StateCreator<
         set({ CompanyRecruitersIsLoading: true });
         try {
             const response = await axios.delete(
-                `${API_BASE_URL}/recruiters/${recruiterId}`
+                `${API_BASE_URL}/recruiters/${recruiterId}`,
+                { withCredentials: true }
             );
+            
             if (response.status === 200) {
                 set((state) => ({
                     CompanyRecruiters: state.CompanyRecruiters.filter(
@@ -170,28 +197,44 @@ export const createCompanyRecruitersSlice: StateCreator<
                     ),
                 }));
             }
-        } catch (error) {
-            console.error("Error deleting recruiter:", error);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyRecruitersDelete(recruiterId);
+                    }
+                }
+            }
+            console.error("Error deleting recruiter:", err);
         } finally {
             set({ CompanyRecruitersIsLoading: false });
         }
     },
+
     CompanyRecruiterFetchAllRecruiters: async () => {
         set({ CompanyRecruitersIsLoading: true });
         try {
             const response = await axios.get(
-                `${API_BASE_URL}/recruiters`
+                `${API_BASE_URL}/recruiters`,
+                { withCredentials: true }
             );
-            const data = response.data;
+            
             set({
-                RecruiterNames: data.recruiters,
+                RecruiterNames: response.data.recruiters,
             });
-        } catch (error) {
-            console.error("Error fetching recruiters:", error);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().CompanyRecruiterFetchAllRecruiters();
+                    }
+                }
+            }
+            console.error("Error fetching recruiters:", err);
         } finally {
             set({ CompanyRecruitersIsLoading: false });
         }
     },
 });
-
-
