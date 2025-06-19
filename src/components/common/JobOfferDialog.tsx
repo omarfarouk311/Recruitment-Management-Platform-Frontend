@@ -3,6 +3,7 @@ import useStore from "../../stores/globalStore";
 import { Dialog, DialogTitle } from "@headlessui/react";
 import SkeletonLoader from "./SkeletonLoader";
 import Button from "./Button";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 interface JobOfferDialogProps {
     useIsOpen: () => boolean;
@@ -34,7 +35,7 @@ const JobOfferDialog = ({
     const useUpdateOfferData = useStore.useJobOfferDialogUpdateData();
     const [useSelectedTemplate, useSetSelectedTemplate] = [useStore.useJobOfferDialogSelectedTemplateId(), useStore.useJobOfferDialogSetTemplateId()];
     const [useIsLoadingSubmit, setUseIsLoadingSubmit] = useState(false);
-
+    const userRole = useStore.useUserRole();
     
     const onClose = () => {
         if(useSelectedTemplate) {
@@ -95,7 +96,7 @@ const JobOfferDialog = ({
             const loadData = async () => {
                 if(candidateId)
                     await useSetTemplateList();
-                if (!isEditing) return;
+                if (!isEditing && userRole != UserRole.SEEKER) return;
                 const oldIsEditing = isEditing;
                 isEditing = false;
                 await useSetOfferDetails();
