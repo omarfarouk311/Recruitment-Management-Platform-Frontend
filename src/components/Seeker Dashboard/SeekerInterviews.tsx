@@ -64,18 +64,17 @@ const SeekerInterviews = () => {
                 return (
                     <div>
                         {row.companyId ? (
-                            <Link
-                                to="/seeker/company-profile"
-                                className="px-2 text-blue-600 hover:underline underline-offset-2"
-                                title="Click to view company profile"
-                            >
-                                {row.companyName}
-                            </Link>
-                        ) : (
-                            <span className="px-2 cursor-default" title="Company profile not available">
-                                {row.companyName}
-                            </span>
-                        )}
+                        <Link 
+                            to={`/seeker/companies/${row.companyId}`}
+                            className="px-2 text-blue-600 hover:underline underline-offset-2"
+                            title="Click to view company profile">
+                            {row.companyName}
+                        </Link>
+                    ) : (
+                        <span className="px-2 cursor-default" title="Company profile not available">
+                            {row.companyName}
+                        </span>
+                    )}
                     </div>
                 );
             },
