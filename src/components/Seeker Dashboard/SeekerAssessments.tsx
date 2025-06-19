@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import AssessmentDialog from "../common/assessmentDialog";
+import JobDetailsDialog from "../common/JobDetailsDialog";
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
@@ -23,8 +24,8 @@ const SeekerAssessment = () => {
     const CompanyNames = useStore.useSeekerAssessmentsCompanyNames();
     const useSetCompanyNames = useStore.useSeekerAssessmentsSetCompanyNames();
     const fetchData = useFetchData();
-    const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
-    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
+    const setDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
+    const setSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
     const useSetSelectAssessmentId = useStore.useSetSelectedAssessmentId();
     const useSetAssessmentDialogIsOpen = useStore.useSetAssessmentDialogIsOpen();
     const clear = useStore.useClearSeekerAssessment();
@@ -42,6 +43,8 @@ const SeekerAssessment = () => {
         useSetAssessmentDialogIsOpen(true);
     };
 
+    
+
     const columns: ColumnDef<assessment>[] = [
         {
             key: "jobTitle",
@@ -51,8 +54,8 @@ const SeekerAssessment = () => {
                     <div>
                         <button
                             onClick={() => {
-                                useSetDialogIsOpen(true);
-                                useSetSelectedJobId(row.jobId);
+                                setDialogIsOpen(true);
+                                setSelectedJobId(row.jobId);
                             }}
                             disabled={!row.jobId}
                             className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
@@ -70,19 +73,18 @@ const SeekerAssessment = () => {
             render: (row) => {
                 return (
                     <div>
-                        {row.companyId ? (
-                            <Link
-                                to="/seeker/company-profile"
-                                className="px-2 text-blue-600 hover:underline underline-offset-2"
-                                title="Click to view company profile"
-                            >
-                                {row.companyName}
-                            </Link>
-                        ) : (
-                            <span className="px-2 cursor-default" title="Company profile not available">
-                                {row.companyName}
-                            </span>
-                        )}
+                       {row.companyId ? (
+                        <Link 
+                            to={`/seeker/companies/${row.companyId}`}
+                            className="px-2 text-blue-600 hover:underline underline-offset-2"
+                            title="Click to view company profile">
+                            {row.companyName}
+                        </Link>
+                    ) : (
+                        <span className="px-2 cursor-default" title="Company profile not available">
+                            {row.companyName}
+                        </span>
+                    )}
                     </div>
                 );
             },
@@ -189,6 +191,7 @@ const SeekerAssessment = () => {
                 />
 
                 <AssessmentDialog />
+                <JobDetailsDialog />
             </div>
         </div>
     );
