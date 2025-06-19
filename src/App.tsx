@@ -14,10 +14,7 @@ import { UserRole } from "./stores/User Slices/userSlice";
 
 function App() {
   const userRole = useStore.useUserRole();
-  const setUserId = useStore.useUserSetId();
-  const setRole = useStore.useUserSetRole();
-  setUserId(1);
-  setRole(UserRole.COMPANY);
+  
   return (
     <>
       <Router>
