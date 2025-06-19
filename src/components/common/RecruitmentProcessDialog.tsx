@@ -323,20 +323,20 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={handleClose}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            {isEditMode ? 'Update Process' : 'Save Process'}
-          </button>
-        </div>
+     <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+      <button
+        onClick={handleClose}
+        className="px-6 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSave}
+        className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
+      >
+        {isEditMode ? 'Update Process' : 'Save Process'}
+      </button>
+    </div>
       </div>
     </div>
   );

@@ -120,14 +120,14 @@ const CompanyJobsRecruiters = () => {
                 </div>
             </div>
             {/* Scrollable content area */}
-            <div className="flex-1 overflow-y-auto">
-                <Dashboard
-                    columns={columns}
-                    useData={useData}
-                    useHasMore={useHasMore}
-                    useIsLoading={useIsLoading}
-                    useFetchData={fetchRecruiters}
-                />
+          <div className="flex-1 overflow-y-auto" style={{ maxHeight: '350px' }}>
+            <Dashboard
+                columns={columns}
+                useData={useData}
+                useHasMore={useHasMore}
+                useIsLoading={useIsLoading}
+                useFetchData={fetchRecruiters}
+            />
             </div>
         </div>
     );

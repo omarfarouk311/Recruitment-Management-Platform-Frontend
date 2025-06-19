@@ -6,14 +6,17 @@ import FilterDropdown from "../Filters/FilterDropdown";
 import { CompanyJobsRecruitersSortOptions } from "../../types/company";
 import { CompanyRecruiters as companyRecruiters } from "../../types/companyDashboard";
 import { PlusCircle } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const CompanyRecruiters = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [newRecruiter, setNewRecruiter] = useState({
         email: "",
         department: "",
-        deadline: "",
+        deadline: null as Date | null,
     });
+    const [dateError, setDateError] = useState("");
 
     const filters = useStore.useCompanyRecruitersFilters();
     const setFilters = useStore.useCompanyRecruitersSetFilters();
@@ -26,7 +29,7 @@ const CompanyRecruiters = () => {
     const useIsLoading = useStore.useCompanyRecruitersIsLoading;
     const useHasMore = useStore.useCompanyRecruitersHasMore;
     const setRecruiterId = useStore.useCompanyRecruiterSetId();
-    const addNewRecruiter = useStore.useCompanyRecruitersAdd(); // Make sure this exists in your store
+    const addNewRecruiter = useStore.useCompanyRecruitersAdd();
 
     useEffect(() => {
         resetCompanyRecruiters();
@@ -38,15 +41,30 @@ const CompanyRecruiters = () => {
     };
 
     const handleAddRecruiter = () => {
+        if (!newRecruiter.deadline) {
+            setDateError("Please select a deadline");
+            return;
+        }
+
+        // Check if date is in the past
+        if (newRecruiter.deadline < new Date()) {
+            setDateError("Deadline cannot be in the past");
+            return;
+        }
+
+        // Convert to ISO string
+        const isoDate = newRecruiter.deadline.toISOString();
+
         // Call your API here
-        addNewRecruiter(newRecruiter.email, newRecruiter.department, newRecruiter.deadline);
+        addNewRecruiter(newRecruiter.email, newRecruiter.department, isoDate);
 
         // Reset form and close modal
         setNewRecruiter({
             email: "",
             department: "",
-            deadline: "",
+            deadline: null,
         });
+        setDateError("");
         setShowAddForm(false);
     };
 
@@ -76,8 +94,6 @@ const CompanyRecruiters = () => {
             header: "Fire Recruiter",
             render: (recruiter) => (
                 <div className="flex justify-center w-full">
-                    {" "}
-                    {/* Centering container */}
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -177,7 +193,9 @@ const CompanyRecruiters = () => {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Email
+                                </label>
                                 <input
                                     type="email"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -208,29 +226,44 @@ const CompanyRecruiters = () => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Deadline
                                 </label>
-                                <input
-                                    type="date"
+                                <DatePicker
+                                    selected={newRecruiter.deadline}
+                                    onChange={(date: Date | null) => {
+                                        setNewRecruiter({ ...newRecruiter, deadline: date });
+                                        setDateError("");
+                                    }}
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="MMMM d, yyyy h:mm aa"
+                                    minDate={new Date()}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    value={newRecruiter.deadline}
-                                    onChange={(e) =>
-                                        setNewRecruiter({ ...newRecruiter, deadline: e.target.value })
-                                    }
+                                    placeholderText="Select date and time"
+                                    popperPlacement="bottom-start"
                                 />
+                                {dateError && (
+                                    <p className="mt-1 text-sm text-red-600">{dateError}</p>
+                                )}
                             </div>
                         </div>
 
                         <div className="flex justify-end gap-3 mt-6">
                             <button
-                                onClick={() => setShowAddForm(false)}
+                                onClick={() => {
+                                    setShowAddForm(false);
+                                    setDateError("");
+                                }}
                                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleAddRecruiter}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+                                className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400"
                                 disabled={
-                                    !newRecruiter.email || !newRecruiter.department || !newRecruiter.deadline
+                                    !newRecruiter.email ||
+                                    !newRecruiter.department ||
+                                    !newRecruiter.deadline
                                 }
                             >
                                 Add Recruiter

@@ -90,7 +90,7 @@ const CompanyJobsCandidates = () => {
             render: (row) => {
                 return (
                     <Link
-                        to={`/recruiter/candidates/${row.seekerId}`}
+                        to={`/company/seeker/${row.seekerId}/job/${jobId}`}
                         className="text-blue-600 hover:underline underline-offset-2"
                         title="Click to view candidate details"
                     >

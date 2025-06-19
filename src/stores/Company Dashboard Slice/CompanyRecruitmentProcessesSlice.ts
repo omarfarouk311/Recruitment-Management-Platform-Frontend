@@ -4,6 +4,7 @@ import axios from "axios";
 import config from "../../../config/config";
 const API_BASE_URL = config.API_BASE_URL;
 import { Phase, Process as processes} from "../../types/companyDashboard";
+import { showErrorToast } from '../../util/errorHandler';
 
 
 export interface CompanyRecruitmentProcessesSlice {
@@ -17,7 +18,7 @@ export interface CompanyRecruitmentProcessesSlice {
     fetchProcessById?: (processId: number) => Promise<processes | null>;
     setProcessId: (processId: number | null) => void;
     resetProcesses: () => void;
-    deleteProcess: (processId: number) => Promise<void>;
+    deleteProcess: (processId: number, processesArray:processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => Promise<void>;
     // addProcess: (name: string, numOfPhases: number) => Promise<void>;
     updateProcess: (processId:number, name: string, phases: Phase[]) => Promise<void>;
     addProcess: (name: string, phases: Phase[]) => Promise<void>;
@@ -99,13 +100,24 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
             processId: null
         });
     },
-    deleteProcess: async (processId: number) => {
+    deleteProcess: async (processId: number, processesArray:processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => {
         try {
             set({ processesIsLoading: true });
             await axios.delete(`${API_BASE_URL}/recruitment_processes/${processId}`);
             set({ processesIsLoading: false });
+            setProcesses(processesArray.filter(p => p.id !== processId));
+
         } catch (error) {
-            console.error("Error deleting recruitment process:", error);
+
+            let errorMessage = "Something went wrong, please try again.";
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                errorMessage = "Recruitment process not found.";
+            }
+            else if (axios.isAxiosError(error) && error.response?.status === 500) { 
+                errorMessage = "This process is being used in the hiring processes.";             
+            }
+
+            showErrorToast(errorMessage);
         }
     },
     
@@ -145,7 +157,11 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
             });
        
         } catch (error) {
-            console.error("Error updating recruitment process:", error);
+            let errorMessage = "Something went wrong, please try again.";
+            if(axios.isAxiosError(error) && error.response?.status === 404) {
+                errorMessage = "Recruitment process not found.";
+            } 
+            return showErrorToast(errorMessage);
         }
     },
 

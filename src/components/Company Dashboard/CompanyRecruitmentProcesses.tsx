@@ -49,11 +49,11 @@ const CompanyRecruitmentProcesses: React.FC = () => {
 
 
     // Delete process
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: number, processesArray: Process[], setProcesses: React.Dispatch<React.SetStateAction<Process[]>>) => {
         try {
-        
-            await deleteProcess(id);
-            setProcesses(processes.filter(process => process.id !== id));
+
+            await deleteProcess(id, processesArray, setProcesses);
+            // setProcesses(processes.filter(process => process.id !== id));
             
         } catch (error) {
             console.error('Error deleting process:', error);
@@ -178,13 +178,13 @@ const handleSaveProcess = async (processData: { name: string; phases: Phase[] })
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th scope="col" className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                                         Name
                                     </th>
-                                    <th scope="col" className="px-8 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th scope="col" className="px-50 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
                                         Number of Phases
                                     </th>
-                                    <th scope="col" className="px-8 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th scope="col" className="px-8 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
@@ -219,7 +219,7 @@ const handleSaveProcess = async (processData: { name: string; phases: Phase[] })
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDelete(process.id);
+                                                        handleDelete(process.id, processes, setProcesses);
                                                     }}
                                                     className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
                                                     title="Delete"

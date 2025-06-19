@@ -4,6 +4,7 @@ import axios from "axios";
 import config from "../../../config/config";
 import { CompanyRecruiters, CompanyRecruitersFilter, RecruiterNames } from "../../types/companyDashboard";
 const API_BASE_URL = config.API_BASE_URL;
+import { showErrorToast } from '../../util/errorHandler';
 
 
 export interface CompanyRecruitersSlice {
@@ -52,23 +53,34 @@ export const createCompanyRecruitersSlice: StateCreator<
             console.log("email", email);
             console.log("department", department);
             console.log("deadline", deadline);
-            // const response = await axios.post(
-            //     `${API_BASE_URL}/recruiters`,
-            //     {
-            //         email,
-            //         department,
-            //         deadline,
-            //     }
-            // );
-            // if (response.status === 200) {
-            //     set((state) => ({
-            //         CompanyRecruiters: [
-            //             ...state.CompanyRecruiters,
-            //             response.data.recruiter,
-            //         ],
-            //     }));
-            // }
-        } catch (error) {
+            const response = await axios.post(
+                `${API_BASE_URL}/invitations`,
+                {
+                    recruiterEmail:email,
+                    department,
+                    deadline,
+                }
+            );
+            if (response.status === 200) {
+                set((state) => ({
+                    CompanyRecruiters: [
+                        ...state.CompanyRecruiters,
+                        response.data.recruiter,
+                    ],
+                }));
+            }
+        } catch (err) {
+                 let errorMessage = "Something went wrong. Please try again.";
+
+                if (axios.isAxiosError(err) && err.response?.status === 404) {
+                    errorMessage = "Recruiter email not found.";
+                }
+              
+                const error =  new Error(errorMessage); // Throw error to be caught by component
+                showErrorToast(
+                    error.message
+                );
+            
             console.error("Error adding recruiter:", error);
         } finally {
             set({ CompanyRecruitersIsLoading: false });
@@ -181,3 +193,5 @@ export const createCompanyRecruitersSlice: StateCreator<
         }
     },
 });
+
+
