@@ -91,7 +91,7 @@ const RecruiterFinishProfile = () => {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        onSubmit(data); // Retry submission after refreshing token
+                        await onSubmit(data); // Retry submission after refreshing token
                     }
                 } else if (err.response?.status === 400) {
                     if (err.response.data.message !== "Validation Error") {

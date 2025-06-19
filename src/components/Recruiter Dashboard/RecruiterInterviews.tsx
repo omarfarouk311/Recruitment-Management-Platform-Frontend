@@ -9,6 +9,8 @@ import { Link } from "react-router-dom";
 import { DashboardSortByFilterOptions } from "../../types/recruiterDashboard";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import JobDetailsDialog from "../common/JobDetailsDialog";
+
 
 const RecruiterInterviews = () => {
     const filters = useStore.useRecruiterInterviewsFilters();
@@ -19,6 +21,9 @@ const RecruiterInterviews = () => {
     const useFetchData = useStore.useRecruiterInterviewsFetchData;
     const useUpdateInterview = useStore.useRecruiterInterviewsSetUpdateInterview();
     const fetchData = useFetchData();
+
+    const useSetDialogIsOpen = useStore.useJobDetailsDialogSetIsOpen();
+    const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
 
     const jobTitles = useStore.useRecruiterJobTitles();
     const resetData = useStore.useResetAllData();
@@ -80,27 +85,38 @@ const RecruiterInterviews = () => {
     const columns: ColumnDef<Interviews>[] = [
         {
             key: "userName",
-            header: "User Name",
-            render: (row) => (
-                <Link
-                    to={`/seeker/${row.userId}`}
-                    className="text-blue-600 hover:underline"
-                >
-                    {row.userName}
-                </Link>
-            ),
+            header: "Candidate Name",
+            render: (row) => {
+                return (
+                    <Link
+                        to={`/recruiter/seekers/${row.userId}/job/${row.jobId}`}
+                        className="text-blue-600 hover:underline underline-offset-2"
+                        title="Click to view candidate details"
+                    >
+                        {row.userName}
+                    </Link>
+                );
+            },
         },
         {
             key: "jobTitle",
             header: "Job Title",
-            render: (row) => (
-                <Link
-                    to={`/job/${row.jobId}`}
-                    className="text-blue-600 hover:underline"
-                >
-                    {row.jobTitle}
-                </Link>
-            ),
+            render: (row) => {
+                return(
+                <div>
+                    <button onClick={() => {
+                        useSetDialogIsOpen(true);
+                        useSetSelectedJobId(row.jobId);
+                        console.log("Selected Job ID:", row.jobId);
+                    }}
+                    disabled={!row.jobId}
+                    className={row.jobId ? "text-blue-600 hover:underline underline-offset-2" : ""}
+                    title={row.jobId ? "Click to view job details" : "No job details available"}>
+                        {row.jobTitle}
+                    </button>
+
+                </div>
+            )}
         },
         {
             key: "date",
@@ -119,7 +135,8 @@ const RecruiterInterviews = () => {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
-                    hour12: false
+                    hour12: false,
+                    timeZone: 'UTC'  // Add this to display in UTC
                 });
 
                 return (
@@ -208,6 +225,8 @@ const RecruiterInterviews = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
+                <JobDetailsDialog />
+
             </div>
 
             {/* Edit Interview Modal */}

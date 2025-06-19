@@ -89,18 +89,21 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchInfo: async () => {
-        const { userId, seekerProfileSelectedSeekerData } = get();
+        const { userId, seekerProfileSelectedSeekerData, seekerProfileFetchInfo } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            let res = await axios.get(
+                    `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, 
+                    { withCredentials: true }
+                );
             set({ seekerProfileInfo: { 
-                ...res.data, 
-                phone: res.data.phoneNumber, 
-                birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
-                gender: res.data.gender ? 'male' : 'female',
-                image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
-            },
-            userImage: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
-        });
+                    ...res.data, 
+                    phone: res.data.phoneNumber, 
+                    birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
+                    gender: res.data.gender ? 'male' : 'female',
+                    image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+                },
+                userImage: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+            });
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 if(err.response?.status === 404) {
@@ -114,6 +117,13 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                         image: undefined
                     }})
                 }
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await seekerProfileFetchInfo();
+                    }
+                }
+                showErrorToast('Failed to fetch profile information.');
             }
         }
     },
@@ -121,59 +131,24 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileUpdateInfo: async (profile) => {
         const { userId } = get();
         try {
-            let res
-            try {
-                res = await axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
-                    name: profile.name,
-                    country: profile.country,
-                    city: profile.city,
-                    phoneNumber: profile.phone,
-                    dateOfBirth: (new Date(profile.birthDate)).toISOString(),
-                    gender: profile.gender === 'male'
-                });
-            } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }  
-            }
-
-            if(!res) {
-                res = await axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
-                    name: profile.name,
-                    country: profile.country,
-                    city: profile.city,
-                    phoneNumber: profile.phone,
-                    dateOfBirth: (new Date(profile.birthDate)).toISOString(),
-                    gender: profile.gender === 'male'
-                });
-            }
+            await axios.put(`${config.API_BASE_URL}/seekers/profiles/`, {
+                name: profile.name,
+                country: profile.country,
+                city: profile.city,
+                phoneNumber: profile.phone,
+                dateOfBirth: (new Date(profile.birthDate)).toISOString(),
+                gender: profile.gender === 'male'
+            }, { withCredentials: true });
             
-            let imageRes;
+            
             if(profile.image instanceof File) {
-                try {
-                    imageRes = await axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
-                        headers: {
-                            'Content-Type': 'image/jpeg',
-                            'File-Name': profile.image.name,
-                        }
-                    });
-                } catch (err) {
-                    if (axios.isAxiosError(err)) {
-                        if (err.response?.status === 401) {
-                            await authRefreshToken();
-                        }
-                    }
-                }
-                if(!imageRes) {
-                    imageRes = await axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
-                        headers: {
-                            'Content-Type': 'image/jpeg',
-                            'File-Name': profile.image.name,
-                        }
-                    });
-                }
+                await axios.post(`${config.API_BASE_URL}/seekers/profiles/${userId}/image`, profile.image, {
+                    headers: {
+                        'Content-Type': 'image/jpeg',
+                        'File-Name': profile.image.name,
+                    },
+                    withCredentials: true
+                });
             }
 
             let tmpDate = Date.now();
@@ -190,8 +165,16 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
+                    return;
                 }
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileUpdateInfo(profile);
+                    }
+                } 
             }
+            showErrorToast('Failed to update profile information.');
             throw err;
         }
     },
@@ -211,7 +194,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchExperience: async () => {
         const { seekerProfileSelectedSeekerData, userId } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/experiences/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/experiences/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, { withCredentials: true });
             set({
                 seekerProfileExperience: res.data.map((exp: Experience & {jobTitle: string}) => ({
                     ...exp,
@@ -221,6 +204,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 }))
             });
         } catch (err) {
+            if(axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileFetchExperience();
+                }
+            }
             showErrorToast('Failed to fetch experiences. Please try again later.');
         }
     },
@@ -232,7 +221,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 startDate: new Date(experience.startDate).toISOString(),
                 endDate: experience.endDate ? new Date(experience.endDate).toISOString() : undefined,
                 jobTitle: experience.position,
-            });
+            }, { withCredentials: true });
             set((state) => ({
                 seekerProfileExperience: [
                     {
@@ -251,13 +240,16 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
+                    return;
                 }
-                else {
-                    showErrorToast('Failed to add experience. Please try again later.');
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileAddExperience(experience);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to add experience. Please try again later.');
             }
+            showErrorToast('Failed to add experience. Please try again later.');
             throw err;
         }
 
@@ -270,7 +262,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 startDate: new Date(experience.startDate).toISOString(),
                 endDate: experience.endDate ? new Date(experience.endDate).toISOString() : undefined,
                 jobTitle: experience.position,
-            });
+            }, { withCredentials: true });
 
             set((state) => ({
                 seekerProfileExperience: state.seekerProfileExperience.map((exp) =>
@@ -289,19 +281,23 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
-                } else {
-                    showErrorToast('Failed to update experience. Please try again later.');
+                    return;
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        await get().seekerProfileUpdateExperience(experience);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to update experience. Please try again later.');
             }
+            showErrorToast('Failed to update experience. Please try again later.');
             throw err;
         }
     },
 
     seekerProfileRemoveExperience: async (id) => {
         try {
-            await axios.delete(`${config.API_BASE_URL}/seekers/experiences/${id}`);
+            await axios.delete(`${config.API_BASE_URL}/seekers/experiences/${id}`, { withCredentials: true });
             await new Promise<void>((resolve) => {
                 setTimeout(() => {
                     set((state) => ({
@@ -317,12 +313,16 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
-                } else {
-                    showErrorToast('Failed to remove experience. Please try again later.');
+                    return;
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileRemoveExperience(id);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to remove experience. Please try again later.');
             }
+            showErrorToast('Failed to remove experience. Please try again later.');
             throw err;
         }
     },
@@ -330,7 +330,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileFetchEducation: async () => {
         const { seekerProfileSelectedSeekerData, userId } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/educations/${seekerProfileSelectedSeekerData.seekerId ?? userId}`);
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/educations/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, { withCredentials: true });
             set({
                 seekerProfileEducation: res.data.education.map((edu: Education & {start_date: string; end_date: string; school_name: string; field: string;}) => (
                     {
@@ -343,6 +343,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 ))
             });
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileFetchEducation();
+                }
+            }
             showErrorToast('Failed to fetch education. Please try again later.');
         }
     },
@@ -355,7 +361,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
                 school_name: education.institution,
                 field: education.fieldOfStudy,
-            })
+            }, { withCredentials: true })
             set((state) => ({
                 seekerProfileEducation: [
                     {
@@ -374,12 +380,16 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
-                } else {
-                    showErrorToast('Failed to add education. Please try again later.');
+                    return;
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileAddEducation(education);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to add education. Please try again later.');
-            }
+            } 
+            showErrorToast('Failed to add education. Please try again later.');
             throw err;
         }
     },
@@ -392,7 +402,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
                 school_name: education.institution,
                 field: education.fieldOfStudy,
-            })
+            }, { withCredentials: true })
             set((state) => ({
                 seekerProfileEducation: state.seekerProfileEducation.map((edu) =>
                     edu.id === education.id ? {
@@ -410,23 +420,33 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     });
-                } else {
-                    showErrorToast('Failed to update education. Please try again later.');
+                    return;
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileUpdateEducation(education);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to update education. Please try again later.');
             }
+            showErrorToast('Failed to update education. Please try again later.');
             throw err;
         }
     },
 
     seekerProfileRemoveEducation: async (id) => {
         try {
-            await axios.delete(`${config.API_BASE_URL}/seekers/educations/${id}`);
+            await axios.delete(`${config.API_BASE_URL}/seekers/educations/${id}`, { withCredentials: true });
             set((state) => ({
                 seekerProfileEducation: state.seekerProfileEducation.filter((edu) => edu.id !== id)
             }));
         } catch (err) { 
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileRemoveEducation(id);
+                }
+            }
             showErrorToast('Failed to remove education. Please try again later.');
             throw err;
         }
@@ -438,10 +458,17 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`, {
                 params: {
                     seekerId: seekerProfileSelectedSeekerData.seekerId,
-                }
+                },
+                withCredentials: true
             });
             set({ seekerProfileSkills: res.data.map((skill: {skillid: number; skillname: string}) => ({id: skill.skillid, name: skill.skillname})) });
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileFetchSkills(); 
+                }
+            }
             showErrorToast('Failed to fetch skills. Please try again later.');
         }
     },
@@ -449,7 +476,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileAddSkill: async (id) => {
         const { seekerProfileSkillsFormData } = get();
         try {
-            await axios.post(`${config.API_BASE_URL}/seekers/skills`, {skills: [{skillId: id}]});
+            await axios.post(`${config.API_BASE_URL}/seekers/skills`, {skills: [{skillId: id}]}, { withCredentials: true });
             set((state) => ({
                 seekerProfileSkills: [seekerProfileSkillsFormData.find(skill => skill.id === id)!, ...state.seekerProfileSkills,]
             }))
@@ -465,23 +492,32 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     else {
                         showErrorToast('Skill already exists.');
                     }
-                } else {
-                    showErrorToast('Failed to add skill. Please try again later.');
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileAddSkill(id);
+                    }
                 }
-            } else {
-                showErrorToast('Failed to add skill. Please try again later.');
             }
+            showErrorToast('Failed to add skill. Please try again later.');
             throw err;
         }
     },
 
     seekerProfileRemoveSkill: async (id) => {
         try {
-            await axios.delete(`${config.API_BASE_URL}/seekers/skills/${id}`);
+            await axios.delete(`${config.API_BASE_URL}/seekers/skills/${id}`, { withCredentials: true });
             set((state) => ({
                 seekerProfileSkills: state.seekerProfileSkills.filter((skill) => skill.id !== id)
             }))
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileRemoveSkill(id);
+                }
+            }
             showErrorToast('Failed to remove skill. Please try again later.');
             throw err;
         }
@@ -490,24 +526,18 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     
     seekerProfileFetchSkillsFormData: async () => {
         try {
-            let res;
-            try {
-                res = await axios.get(`${config.API_BASE_URL}/skills`);
-            } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }
-            }
-            if (!res) {
-                res = await axios.get(`${config.API_BASE_URL}/skills`);
-            }
+            let res = await axios.get(`${config.API_BASE_URL}/skills`, { withCredentials: true });
             set({
                seekerProfileSkillsFormData: [{name: "Select Skill", id: ""}, ...res.data]
             })
         } catch (err) {
-
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileFetchSkillsFormData();
+                }
+            }
+            showErrorToast('Failed to fetch skills form data. Please try again later.');
         }
     },
 
@@ -517,7 +547,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, {
                 params: userRole === UserRole.SEEKER ? {}: { 
                 ...seekerProfileSelectedSeekerData
-            }});
+            },
+            withCredentials: true
+            });
             set({
                 seekerProfileCVs: res.data.cvNames.map((cv: {id: number; name: string; created_at: string}) => ({
                     ...cv,
@@ -526,11 +558,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             });
         } catch(err) {
             if (axios.isAxiosError(err)) {
-                showErrorToast(`Failed to fetch CVs: ${err.response?.statusText || 'Network error'}`);
-            } else {
-                showErrorToast('Failed to fetch CVs: Unexpected error');
-                console.error(err);
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileFetchCVs();
+                    }
+                }
             }
+            showErrorToast('Failed to fetch CVs');
         }
     },
 
@@ -545,7 +580,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 headers: {
                     'File-Name': cv.name,
                     'Content-Type': cv.type,
-                }
+                },
+                withCredentials: true
             });
 
             set((state) => ({
@@ -561,35 +597,46 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         } catch(err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 409) {
-                    showErrorToast('CVs limit reached. Please remove an existing CV before adding a new one.');
+                    return showErrorToast('CVs limit reached. Please remove an existing CV before adding a new one.');
                 } else if (err.response?.status === 400) {
-                    showErrorToast('Invalid CV format. Please upload a valid file.');
-                } else {
-                    showErrorToast(`Failed to add CV: ${err.response?.statusText || 'Network error'}`);
+                    return showErrorToast('Invalid CV format. Please upload a valid file.');
+                } 
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileAddCV(cv, createdAt);
+                    } 
                 }
-            } else {
-                showErrorToast('Failed to add CV: Unexpected error');
             }
+            showErrorToast('Failed to add CV');
             throw err;
         }
     },
 
     seekerProfileRemoveCV: async (id) => {
         try {
-            await axios.delete(`${config.API_BASE_URL}/seekers/cvs/${id}`);
+            await axios.delete(`${config.API_BASE_URL}/seekers/cvs/${id}`, { withCredentials: true });
             set((state) => ({
                 seekerProfileCVs: state.seekerProfileCVs.filter((cv) => cv.id !== id)
             }));
         } catch(err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status && err.response.status >= 400 && err.response.status < 600) {
-                    showErrorToast(`Failed to remove CV: ${err.response.statusText || 'Unknown error'}`);
-                } else {
-                    showErrorToast('Failed to remove CV: Network error');
+                    if (err.response.status === 401) {
+                        const success = await authRefreshToken();
+                        if (success) {
+                            return await get().seekerProfileRemoveCV(id);
+                        }
+                    } else if (err.response.status === 404) {
+                        return showErrorToast('CV not found');
+                    } else if (err.response.status === 403) {
+                        return showErrorToast('You do not have permission to remove this CV');
+                    } else if (err.response.status === 400) {
+                        return showErrorToast('Invalid request to remove CV');
+                    }
                 }
-            } else {
-                showErrorToast('Failed to remove CV: Unexpected error');
             }
+            showErrorToast('Failed to remove CV');
             throw err;
         }
     },
@@ -603,10 +650,20 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 params: {
                     seekerId: seekerProfileSelectedSeekerData.seekerId,
                     jobId: seekerProfileSelectedSeekerData.jobId
-                }
+                },
+                withCredentials: true
             });
             return res.data;
         } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileGetCV(id);
+                    }
+                }
+            }
+            showErrorToast('Failed to fetch CV');
             throw err;
         }
     },
@@ -620,29 +677,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
             if (seekerProfileSelectedSeekerData.jobId) {
                 return;
             }
-            let res;
-            try {
-                res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
-                    params: {
-                        page: seekerProfileReviewsPage
-                    }
-                })
-            } catch (err) {
-                if(axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }
-                throw err;
-            }
-
-            if(!res) {
-                res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
-                    params: {
-                        page: seekerProfileReviewsPage
-                    }
-                })
-            }
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/reviews`, {
+                params: {
+                    page: seekerProfileReviewsPage
+                },
+                withCredentials: true
+            })
 
             set((state) => {
                 const newReviews = res.data.map((review: Review & {companyId: number; companyName: string}) => ({
@@ -662,35 +702,22 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 }
             });
         } catch(err) {
-            if (axios.isAxiosError(err)) {
-                showErrorToast(`Failed to fetch reviews: ${err.response?.statusText || 'Network error'}`);
-            } else {
-                showErrorToast('Failed to fetch reviews: Unexpected error');
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileFetchReviews();
+                }
             }
+            showErrorToast('Failed to fetch reviews');
             set({ seekerProfileReviewsIsLoading: false });
         }
     },
 
     seekerProfileUpdateReview: async (review) => {
         try {
-            let res;
-            try {
-                res = await axios.put(`${config.API_BASE_URL}/reviews/${review.id}`, {
-                    ...review
-                });
-            } catch (err) {
-                if(axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }
-                throw err;
-            }
-            if(!res) {
-                res = await axios.put(`${config.API_BASE_URL}/reviews/${review.id}`, {
-                   ...review
-                });
-            }
+            await axios.put(`${config.API_BASE_URL}/reviews/${review.id}`, {
+                ...review
+            }, { withCredentials: true });
             set((state) => ({
                 seekerProfileReviews: state.seekerProfileReviews.map((rev) => rev.id === review.id ?
                     { ...rev, ...review } : { ...rev }
@@ -703,39 +730,34 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     validationErrors.forEach((error: string) => {
                         showErrorToast(error);
                     }); 
+                    return;
                 } 
-                else {
-                    showErrorToast('Failed to update review. Please try again later.');
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().seekerProfileUpdateReview(review);
+                    }
                 }
             }
-            else {
-                showErrorToast('Failed to update review. Please try again later.');
-            }
+            showErrorToast('Failed to update review. Please try again later.');
             throw err;
         }
     },
 
     seekerProfileRemoveReview: async (id) => {
         try {
-            let res;
-            try {
-                res = await axios.delete(`${config.API_BASE_URL}/reviews/${id}`);
-            } catch (err) {
-                if(axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        await authRefreshToken();
-                    }
-                }
-                throw err;
-            }
-            if(!res) {
-                await axios.delete(`${config.API_BASE_URL}/reviews/${id}`); 
-            }
+            await axios.delete(`${config.API_BASE_URL}/reviews/${id}`, { withCredentials: true });
             set((state) => ({
                 seekerProfileReviews: state.seekerProfileReviews.filter((rev) => rev.id !== id)
             }));
         }
         catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerProfileRemoveReview(id);
+                }
+            }
             showErrorToast('Failed to remove review. Please try again later.');
             throw err; 
         }

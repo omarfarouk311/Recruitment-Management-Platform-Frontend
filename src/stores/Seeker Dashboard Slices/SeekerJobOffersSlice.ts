@@ -5,6 +5,8 @@ import { JobOfferOverviewType } from "../../types/jobOffer";
 import { DashboardFilters } from "../../types/seekerDashboard";
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { authRefreshToken } from "../../util/authUtils.ts";
+import { showErrorToast } from "../../util/errorHandler.ts";
 
 export enum JobOfferDecision{
     Rejected = 0,
@@ -70,7 +72,6 @@ export const createSeekerJobOffersSlice: StateCreator<
         if (!seekerJobOffersHasMore || seekerJobOffersIsLoading) return;
         set({ seekerJobOffersIsLoading: true });
 
-        // mock API call, don't forget to include the filters in the query string if they are populated
         try {
             const params = Object.fromEntries(
                 Object.entries({
@@ -83,10 +84,10 @@ export const createSeekerJobOffersSlice: StateCreator<
                 }).filter(([_, value]) => value !== undefined && value !== null && value !== "")
             );
 
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers`, { params });
-            if (res.status !== 200) {
-                throw new Error("Error fetching data");
-            }
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers`, { 
+                params,
+                withCredentials: true,
+            });
             set((state) => ({
                 seekerJobOffersData: [
                     ...state.seekerJobOffersData,
@@ -102,10 +103,17 @@ export const createSeekerJobOffersSlice: StateCreator<
                     })),
                 ],
                 seekerJobOffersHasMore: res.data.length > 0,
-                seekerJobOffersIsLoading: false,
                 seekerJobOffersPage: state.seekerJobOffersPage + 1,
             }));
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerJobOffersFetchData();
+                }
+            }
+            showErrorToast("Error fetching job offers");
+        } finally {
             set({ seekerJobOffersIsLoading: false });
         }
     },
@@ -113,7 +121,10 @@ export const createSeekerJobOffersSlice: StateCreator<
     seekerJobOffersSetCompanyNames: async () => {
         const { status } = get().seekerJobOffersFilters;
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/company-names/`, { params: status? {status: status}: {} });
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/job-offers/company-names/`, { 
+                params: status? {status: status}: {},
+                withCredentials: true,
+            });
             
             if (res.status !== 200) {
                 throw new Error("Error fetching data");
@@ -128,7 +139,13 @@ export const createSeekerJobOffersSlice: StateCreator<
                 ],
             });
         } catch (err) {
-            
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerJobOffersSetCompanyNames();
+                }
+            }
+            showErrorToast("Error fetching company names");
         }
     },
 
@@ -148,10 +165,9 @@ export const createSeekerJobOffersSlice: StateCreator<
 
     seekerJobOfferMakeDecision: async (jobId, decision) => {
         try {
-            let res = await axios.patch(`${config.API_BASE_URL}/seekers/job-offers/reply/${jobId}`, { status: decision });
-            if (res.status !== 200) {
-                throw new Error("Error making decision");
-            }
+            await axios.patch(`${config.API_BASE_URL}/seekers/job-offers/reply/${jobId}`, { status: decision }, {
+                withCredentials: true,
+            });
             set((prev) => ({
                 seekerJobOffersData: prev.seekerJobOffersData.filter(value => {
                     if (jobId === value.jobId) {
@@ -161,7 +177,13 @@ export const createSeekerJobOffersSlice: StateCreator<
                 })
             }));
         } catch (err) {
-            
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await get().seekerJobOfferMakeDecision(jobId, decision);
+                }
+            }
+            showErrorToast("Error making decision on job offer");
         }
     },
 

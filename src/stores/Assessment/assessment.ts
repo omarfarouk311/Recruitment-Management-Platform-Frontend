@@ -48,128 +48,100 @@ export const createAssessmentSlice: StateCreator<
 
     fetchAssessmentData: async (id, jobId) => {
         set({ assessmentIsLoading: true });
-        if (!id && get().userRole === UserRole.COMPANY) {
-            set({
-                assessmentData: {
-                    name: "",
-                    time: 0,
-                    questions: [
-                        {
-                            id: 1,
-                            question: "",
-                            answers: [],
-                            correctAnswers: [],
-                            questionNum: 1,
-                        },
-                    ],
-                },
-            });
-        } else if (id && get().userRole === UserRole.COMPANY) {
-            try {
-                let res;
+        try{
+            if (!id && get().userRole === UserRole.COMPANY) {
+                set({
+                    assessmentData: {
+                        name: "",
+                        time: 0,
+                        questions: [
+                            {
+                                id: 1,
+                                question: "",
+                                answers: [],
+                                correctAnswers: [],
+                                questionNum: 1,
+                            },
+                        ],
+                    },
+                });
+            } else if (id && get().userRole === UserRole.COMPANY) {
                 try {
-                    res = await axios.get(
-                        `${config.API_BASE_URL}/assessments/${id}`
-                    );
-                } catch (err) {
-                    if (
-                        axios.isAxiosError(err) &&
-                        err.response?.status === 404
-                    ) {
+                    let res = await axios.get(
+                            `${config.API_BASE_URL}/assessments/${id}`,
+                            { withCredentials: true }
+                        );
+                    if (res) {
                         set({
-                            assessmentData: null,
+                            assessmentData: {
+                                id: id,
+                                name: res.data.assessment.assessmentInfo.name,
+                                time: res.data.assessment.assessmentInfo
+                                    .assessmentTime,
+                                jobTitle:
+                                    res.data.assessment.assessmentInfo.jobTitle,
+                                numberOfQuestions:
+                                    res.data.assessment.assessmentInfo
+                                        .numberOfQuestions,
+                                questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum<b.questionNum)),
+                            },
                             assessmentIsLoading: false,
                         });
-                        showErrorToast("Assessment not found");
-                        return;
                     }
-                    if (
-                        axios.isAxiosError(err) &&
-                        err.response?.status === 401
-                    ) {
-                        await authRefreshToken();
-                        res = await axios.get(
-                            `${config.API_BASE_URL}/assessments/${id}`
-                        );
-                    }
+                } catch (err) {
+                    set({ assessmentData: null, assessmentIsLoading: false });
+                    showErrorToast("Error fetching assessment data");
                 }
-                if (res) {
+            } else if (id && jobId && get().userRole === UserRole.SEEKER) {
+                let res = await axios.get(
+                    `${config.API_BASE_URL}/assessments/${id}/job/${jobId}`,
+                    { withCredentials: true }
+                );
+                if (res.data.assessmentDetails.questions.length === 0) {
                     set({
-                        assessmentData: {
-                            id: id,
-                            name: res.data.assessment.assessmentInfo.name,
-                            time: res.data.assessment.assessmentInfo
-                                .assessmentTime,
-                            jobTitle:
-                                res.data.assessment.assessmentInfo.jobTitle,
-                            numberOfQuestions:
-                                res.data.assessment.assessmentInfo
-                                    .numberOfQuestions,
-                            questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum<b.questionNum)),
-                        },
+                        assessmentData: null,
                         assessmentIsLoading: false,
                     });
+                    showErrorToast("Assessment not found");
+                    return;
                 }
-            } catch (err) {
-                set({ assessmentData: null, assessmentIsLoading: false });
-                showErrorToast("Error fetching assessment data");
+                set({
+                    assessmentData: {
+                        id: id,
+                        jobId: jobId,
+                        name: res.data.assessmentDetails.name,
+                        time: res.data.assessmentDetails.assessment_time,
+                        numberOfQuestions:
+                            res.data.assessmentDetails.num_of_questions,
+                        questions: res.data.assessmentDetails.questions.sort((a: any, b:any) => (a.questionNum-b.questionNum)).map(
+                            (question: Question) => ({
+                                ...question,
+                                correctAnswers: [],
+                            })
+                        ),
+                    },
+                    assessmentIsLoading: false,
+                });
             }
-        } else if (id && jobId && get().userRole === UserRole.SEEKER) {
-            let res;
-            try{
-                try {
-                    res = await axios.get(
-                        `${config.API_BASE_URL}/assessments/${id}/job/${jobId}`
-                    );
-                } catch (err) {
-                    if (axios.isAxiosError(err) && err.response?.status === 404) {
-                        set({
-                            assessmentData: null,
-                            assessmentIsLoading: false,
-                        });
-                        showErrorToast("Assessment not found");
-                        const navigate = useNavigate();
-                        navigate("/seeker/dashboard");
-                        return;
-                    }
-                    if (axios.isAxiosError(err) && err.response?.status === 401) {
-                        await authRefreshToken();
-                        res = await axios.get(
-                            `${config.API_BASE_URL}/assessments/${id}/job/${jobId}`
-                        );
-                    }
-                }
-                if (res) {
-                    if (res.data.assessmentDetails.questions.length === 0) {
-                        set({
-                            assessmentData: null,
-                            assessmentIsLoading: false,
-                        });
-                        showErrorToast("Assessment not found");
-                        return;
-                    }
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if(err.response?.status === 404) {
                     set({
-                        assessmentData: {
-                            id: id,
-                            jobId: jobId,
-                            name: res.data.assessmentDetails.name,
-                            time: res.data.assessmentDetails.assessment_time,
-                            numberOfQuestions:
-                                res.data.assessmentDetails.num_of_questions,
-                            questions: res.data.assessmentDetails.questions.sort((a: any, b:any) => (a.questionNum-b.questionNum)).map(
-                                (question: Question) => ({
-                                    ...question,
-                                    correctAnswers: [],
-                                })
-                            ),
-                        },
+                        assessmentData: null,
                         assessmentIsLoading: false,
                     });
+                    showErrorToast("Assessment not found");
+                    window.location.href = "/seeker/dashboard";
+                    return;
                 }
-            } catch (err) {
-                set({ assessmentData: null, assessmentIsLoading: false });
-                showErrorToast("Error fetching assessment data");
+                else if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if(success)
+                        return await (get().fetchAssessmentData(id, jobId));
+                }
             }
+            set({ assessmentData: null, assessmentIsLoading: false });
+            showErrorToast("Error fetching assessment data");
         }
     },
 
@@ -182,27 +154,21 @@ export const createAssessmentSlice: StateCreator<
                 questionId: question.id,
                 answers: question.correctAnswers,
             }));
-            let res;
-            try {
-                res = await axios.post(
+
+            await axios.post(
                     `${config.API_BASE_URL}/assessments/${selectedAssessment.id}/job/${selectedAssessment.jobId}`,
-                    { metaData: answers }
+                    { metaData: answers },
+                    { withCredentials: true }
                 );
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/assessments/${selectedAssessment.id}/job/${selectedAssessment.jobId}`,
-                        { metaData: answers }
-                    );
-                } else {
-                    throw err;
-                }
-            }
             
             set({ assessmentSubmitionIsLoading: false });
             toast.success("Assessment submitted successfully");
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if(success)
+                    return await (get().assessmentSubmitAnswers());
+            }
             set({ assessmentSubmitionIsLoading: false });
             showErrorToast("Error submitting answers");
             throw err;
@@ -216,67 +182,45 @@ export const createAssessmentSlice: StateCreator<
             if (!selectedAssessment) return;
             set({ assessmentSubmitionIsLoading: true });
             if(!selectedAssessment.id) {
-                try {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/assessments`,
-                        {
-                            name: selectedAssessment.name,
-                            assessmentTime: selectedAssessment.time,
-                            jobTitle: selectedAssessment.jobTitle,
-                            metaData: selectedAssessment.questions.map((question) => ({
-                                questions: question.question,
-                                answers: question.answers,
-                                correctAnswers: question.correctAnswers,
-                                questionNum: question.questionNum,
-                            })),
-                        }
-                    )
-                } catch (err) {
-                    if (axios.isAxiosError(err) && err.response?.status === 401) {
-                        const success = await authRefreshToken();
-                        if(success)
-                            await (get().assessmentSaveData());
-                        else {
-                            showErrorToast("Error saving assessment");
-                            throw err;
-                        }
-                    }
-                    else {
-                        throw err;
-                    }
-                }
+                res = await axios.post(
+                    `${config.API_BASE_URL}/assessments`,
+                    {
+                        name: selectedAssessment.name,
+                        assessmentTime: selectedAssessment.time,
+                        jobTitle: selectedAssessment.jobTitle,
+                        metaData: selectedAssessment.questions.map((question) => ({
+                            questions: question.question,
+                            answers: question.answers,
+                            correctAnswers: question.correctAnswers,
+                            questionNum: question.questionNum,
+                        })),
+                    },
+                    { withCredentials: true }
+                )
             } else {
-                try {
-                    await axios.put(`${config.API_BASE_URL}/assessments/${selectedAssessment.id}`, {
-                        name:selectedAssessment.name,
-                        assessmentTime:selectedAssessment.time,
-                        jobTitle:selectedAssessment.jobTitle,
-                        metaData:selectedAssessment.questions.map(value => ({
-                            questions:value.question,
-                            answers:value.answers,
-                            correctAnswers:value.correctAnswers,
-                            questionNum:value.questionNum
-                        }))
-                    })
-                } catch (err) {
-                    if (axios.isAxiosError(err) && err.response?.status === 401) {
-                        let success = await authRefreshToken();
-                        if(success)
-                            await (get().assessmentSaveData());
-                        else {
-                            showErrorToast("Error saving assessment");
-                            throw err;
-                        }
-                    }
-                    else if(axios.isAxiosError(err) && err.response?.status === 400) {
-                        err.response.data.validationErrors.map((value:string) => {
-                            showErrorToast(value);
-                        });
-                        throw err;
-                    }
-                }
+                await axios.put(`${config.API_BASE_URL}/assessments/${selectedAssessment.id}`, {
+                    name:selectedAssessment.name,
+                    assessmentTime:selectedAssessment.time,
+                    jobTitle:selectedAssessment.jobTitle,
+                    metaData:selectedAssessment.questions.map(value => ({
+                        questions:value.question,
+                        answers:value.answers,
+                        correctAnswers:value.correctAnswers,
+                        questionNum:value.questionNum
+                    }))
+                }, { withCredentials: true })
             }
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                let success = await authRefreshToken();
+                if(success)
+                    return await (get().assessmentSaveData());
+            }
+            else if(axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response.data.validationErrors.map((value:string) => {
+                    showErrorToast(value);
+                });
+            }
             throw err;
         } finally {
             set({ assessmentIsLoading: true });

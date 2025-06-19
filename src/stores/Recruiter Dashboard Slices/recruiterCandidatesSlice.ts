@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config";
 import { showErrorToast } from "../../util/errorHandler";
+import { authRefreshToken } from "../../util/authUtils";
 
 export interface RecruiterCandidatesSlice {
     Recruitercandidates: Candidate[];
@@ -81,9 +82,10 @@ export const createRecruiterCandidatesSlice: StateCreator<
 
     RecruiterCandidatesMakeDecision: async (seekerId, decision, jobId) => {
         try{
-            let res = await axios.post(
+            await axios.post(
                 `${config.API_BASE_URL}/candidates/make-decision`,
-                { jobId, decision, candidates: [seekerId] }
+                { jobId, decision, candidates: [seekerId] },
+                { withCredentials: true }
             );
 
             const { Recruitercandidates } = get();
@@ -98,8 +100,16 @@ export const createRecruiterCandidatesSlice: StateCreator<
         }
         catch (err) {
             if(axios.isAxiosError(err)) {
-                showErrorToast("Error making decision");
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().RecruiterCandidatesMakeDecision(seekerId, decision, jobId);
+                    }
+                } else if (err.response?.status === 404) {
+                    return showErrorToast("Candidate not found");
+                }
             }
+            showErrorToast("Error making decision");
         }
     },
 
@@ -107,11 +117,10 @@ export const createRecruiterCandidatesSlice: StateCreator<
         const {
             RecruiterCandidatesPage,
             RecruiterCandidatesHasMore,
-            RecruiterCandidatesIsLoading,
             RecruiterCandidatesFilters,
         } = get();
 
-        if (!RecruiterCandidatesHasMore || RecruiterCandidatesIsLoading) return;
+        if (!RecruiterCandidatesHasMore) return;
         set({ RecruiterCandidatesIsLoading: true });
 
         try {
@@ -122,21 +131,23 @@ export const createRecruiterCandidatesSlice: StateCreator<
                 phaseType: RecruiterCandidatesFilters.phaseType || undefined,
                 sortBy: RecruiterCandidatesFilters.sortBy || undefined,
                 simplified: false,
+                city: RecruiterCandidatesFilters.candidateCity || undefined,
+                country: RecruiterCandidatesFilters.candidateCountry || undefined,
             };
 
             // Remove undefined values from params
             for (const key in params) {
-                if (params[key as keyof typeof params] === undefined) {
+                if (params[key as keyof typeof params] === undefined || params[key as keyof typeof params] === "") {
                     delete params[key as keyof typeof params];
                 }
             }
 
             let res = await axios.get(
                 `${config.API_BASE_URL}/candidates/recruiter`,
-                { params }
+                { params, withCredentials: true }
             );
-
-            set((state: CombinedState) => ({
+            console.log(res);
+            set((state) => ({
                 Recruitercandidates: [
                     ...state.Recruitercandidates,
                     ...res.data.map((candidate: Candidate) => ({
@@ -153,8 +164,20 @@ export const createRecruiterCandidatesSlice: StateCreator<
             }));
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                showErrorToast("Something went wrong");
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().RecruiterCandidatesFetchCandidates();
+                    }
+                } else if (err.response?.status === 404) {
+                    set({ RecruiterCandidatesHasMore: false });
+                    return showErrorToast("No candidates found");
+                }
             }
+            
+            showErrorToast("Error fetching candidates");
+        }
+        finally {
             set({ RecruiterCandidatesIsLoading: false });
         }
     },
@@ -179,7 +202,7 @@ export const createRecruiterCandidatesSlice: StateCreator<
       
                 let res = await axios.get(
                     `${config.API_BASE_URL}/candidates/job-title-filter`,
-                    { params }
+                    { params, withCredentials: true }
                 );
       
               const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
@@ -189,8 +212,14 @@ export const createRecruiterCandidatesSlice: StateCreator<
         }
         catch(err){
             if(axios.isAxiosError(err)) {
-                showErrorToast("Something went wrong");
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().RecruiterCandidatesSetPositionTitles();
+                    }
+                }
             }
+            showErrorToast("Something went wrong while fetching position titles");
         }
         
     },
@@ -198,7 +227,8 @@ export const createRecruiterCandidatesSlice: StateCreator<
     RecruiterCandidatesSetPhases: async() => {
         try{
             let res = await axios.get(
-                `${config.API_BASE_URL}/candidates/phase-types`
+                `${config.API_BASE_URL}/candidates/phase-types`,
+                { withCredentials: true }
             );
             const phases = res.data.map((phaseType:{id:number; name:string}) => ({value: phaseType.id, label: phaseType.name}));
             set({
@@ -207,8 +237,14 @@ export const createRecruiterCandidatesSlice: StateCreator<
         }
         catch(err){
             if(axios.isAxiosError(err)) {
-                showErrorToast("Something went wrong");
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().RecruiterCandidatesSetPhases();
+                    }
+                }
             }
+            showErrorToast("Something went wrong while fetching phases");
         }
         
     },

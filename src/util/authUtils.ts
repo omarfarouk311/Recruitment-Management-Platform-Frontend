@@ -8,6 +8,7 @@ export async function authRefreshToken() {
     }
     catch (err) {
         window.location.href = "/login";
+        console.error("Error refreshing token:", err);
         return false;
     }
 }

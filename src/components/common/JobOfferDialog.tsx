@@ -3,6 +3,7 @@ import useStore from "../../stores/globalStore";
 import { Dialog, DialogTitle } from "@headlessui/react";
 import SkeletonLoader from "./SkeletonLoader";
 import Button from "./Button";
+import { UserRole } from "../../stores/User Slices/userSlice";
 
 interface JobOfferDialogProps {
     useIsOpen: () => boolean;
@@ -11,12 +12,14 @@ interface JobOfferDialogProps {
         jobId: number;
         candidateId?: number;
     };
+    isEditing?: boolean;
 }
 
 const JobOfferDialog = ({
     useIsOpen,
     useSetIsOpen,
     useSelectedJobIdAndCandidateId,
+    isEditing = false
 }: JobOfferDialogProps) => {
     const offerData = useStore.useJobOfferDialogData();
     const useSetOfferData = useStore.useJobOfferDialogFetchData();
@@ -32,8 +35,8 @@ const JobOfferDialog = ({
     const useUpdateOfferData = useStore.useJobOfferDialogUpdateData();
     const [useSelectedTemplate, useSetSelectedTemplate] = [useStore.useJobOfferDialogSelectedTemplateId(), useStore.useJobOfferDialogSetTemplateId()];
     const [useIsLoadingSubmit, setUseIsLoadingSubmit] = useState(false);
-    const validationErrors = useStore.useJobOfferDialogValidationErrors();
-
+    const userRole = useStore.useUserRole();
+    
     const onClose = () => {
         if(useSelectedTemplate) {
             reset();
@@ -41,17 +44,21 @@ const JobOfferDialog = ({
         }
         useSetIsOpen(false);
     }
-    
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (candidateId) {
-            setUseIsLoadingSubmit(true);
-            await useUpdateOfferData(jobId, candidateId);
+        try {
+            if (candidateId) {
+                setUseIsLoadingSubmit(true);
+                await useUpdateOfferData(jobId, candidateId);
+                setUseIsLoadingSubmit(false);
+            }
+            onClose();
+        } catch (err) {
             setUseIsLoadingSubmit(false);
+            console.error("Error submitting offer:", err);
         }
-        onClose();
-      };
+    };
 
     if (
         offerData &&
@@ -67,18 +74,8 @@ const JobOfferDialog = ({
     const useSetOfferDetails = async (templateId?: number) => {
         try {
             setUseIsLoadingOfferData(true);
-            await new Promise<void> ( resolve => setTimeout(async () => {
-                if(useSelectedTemplate || templateId != undefined)
-                    await useSetOfferData(
-                        { jobId, candidateId },
-                        (templateId ?? undefined) || (useSelectedTemplate ?? undefined)
-                    );
-                else {
-                    await useSetOfferData({ jobId, candidateId });
-                }
-                setUseIsLoadingOfferData(false);
-                resolve();
-            }, 1000));
+            await useSetOfferData({ jobId, candidateId }, templateId);
+            setUseIsLoadingOfferData(false);
         } catch (error) {
             setUseIsLoadingOfferData(false);
         }
@@ -87,12 +84,8 @@ const JobOfferDialog = ({
     const useSetTemplateList = async () => {
         try {
             setUseIsLoadingTemplateList(true);
-            await new Promise<void> ( resolve => setTimeout(async () => {
-                await useSetJobOfferTemplateList();
-                await useSetOfferDetails();
-                setUseIsLoadingTemplateList(false);
-                resolve();
-            }, 1000));
+            await useSetJobOfferTemplateList();
+            setUseIsLoadingTemplateList(false);
         } catch (error) {
             setUseIsLoadingTemplateList(false);
         }
@@ -103,7 +96,11 @@ const JobOfferDialog = ({
             const loadData = async () => {
                 if(candidateId)
                     await useSetTemplateList();
+                if (!isEditing && userRole != UserRole.SEEKER) return;
+                const oldIsEditing = isEditing;
+                isEditing = false;
                 await useSetOfferDetails();
+                isEditing = oldIsEditing;
             };
             loadData();
         }
@@ -169,7 +166,7 @@ const JobOfferDialog = ({
                                             {candidateId ? "Template content" : "Offer"}
                                         </label>
                                         <div className="w-full p-4 bg-gray-50 rounded-2xl min-h-[120px] whitespace-pre-wrap break-words">
-                                            {offerData?.description}
+                                            {offerData?.description ?? "Select a template to view the offer details."}
                                         </div>
                                     </div>
 
@@ -201,15 +198,6 @@ const JobOfferDialog = ({
                                             )}
                                     </div>
                                 </>
-                            )}
-                            {validationErrors && validationErrors.length > 0 && (
-                                <div className="text-red-700 p-4 rounded-2xl">
-                                    <ul className="list-disc pl-5 space-y-1">
-                                        {validationErrors.map((error, index) => (
-                                            <li key={index}>{error}</li>
-                                        ))}
-                                    </ul>
-                                </div>
                             )}
                         </div>
 

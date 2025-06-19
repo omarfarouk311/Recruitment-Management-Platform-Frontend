@@ -71,7 +71,7 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().recruiterProfileFetchInfo();
+                        await get().recruiterProfileFetchInfo();
                     }
                 }
                 else {
@@ -114,7 +114,7 @@ export const createRecruiterProfileSlice: StateCreator<CombinedState, [], [], Re
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().recruiterProfileUpdateInfo(profileData);
+                        await get().recruiterProfileUpdateInfo(profileData);
                     }
                 }
                 else if (err.response?.status === 400) {

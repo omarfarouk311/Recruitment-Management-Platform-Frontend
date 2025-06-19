@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
-import { DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
 import { showErrorToast } from "../../util/errorHandler";
 
 import {
@@ -10,6 +9,7 @@ import {
 } from "../../types/jobOffer";
 import config from "../../../config/config";
 import axios from "axios";
+import { authRefreshToken } from "../../util/authUtils";
 
 export interface RecruiterJobOfferSlice {
     RecruiterJobOfferCandidates: RecruiterJobOfferInfo[];
@@ -76,11 +76,10 @@ export const createRecruiterJobOfferSlice: StateCreator<
         const {
           RecruiterJobOfferPage,
           RecruiterJobOfferHasMore,
-          RecruiterJobOfferIsLoading,
           RecruiterJobOfferFilters,
         } = get();
       
-        if (!RecruiterJobOfferHasMore || RecruiterJobOfferIsLoading) return;
+        if (!RecruiterJobOfferHasMore) return;
         set({ RecruiterJobOfferIsLoading: true });
       
         try {
@@ -97,7 +96,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
             }
         }
           
-          const res = await axios.get(`${config.API_BASE_URL}/recruiters/job-offer-sent`, { params });
+          const res = await axios.get(`${config.API_BASE_URL}/recruiters/job-offer-sent`, { params, withCredentials: true });
 
           // Extract the jobOffers array from the response
           const jobOffers = res.data.jobOffers;
@@ -115,7 +114,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
                   { addSuffix: true }
                 ),
                 seekerId: item.id, 
-                jobId: 1,    
+                jobId: item.jobId,
                 status: "Pending"  
               })),
             ],
@@ -127,8 +126,20 @@ export const createRecruiterJobOfferSlice: StateCreator<
           }));
         } catch (err) {
           if(axios.isAxiosError(err)) {
-              showErrorToast("Something went wrong");
+            if (err.response?.status === 404) {
+              showErrorToast("No job candidates found");
+            } 
+            else if (err.response?.status === 401) {
+              const success = await authRefreshToken();
+              if (success) {
+                return await get().RecruiterJobOfferFetchCandidates();
+              }
+            }
           }
+          
+          showErrorToast("Failed to fetch job candidates");
+        }
+        finally {
           set({ RecruiterJobOfferIsLoading: false });
         }
       },
@@ -153,7 +164,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
   
           let res = await axios.get(
               `${config.API_BASE_URL}/candidates/job-title-filter`,
-              { params }
+              { params, withCredentials: true }
           );
   
         const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
@@ -164,8 +175,17 @@ export const createRecruiterJobOfferSlice: StateCreator<
       }
       catch(err){
         if(axios.isAxiosError(err)) {
-            showErrorToast("Something went wrong");
+          if (err.response?.status === 404) {
+            showErrorToast("No job titles found");
+          } 
+          else if (err.response?.status === 401) {
+            const success = await authRefreshToken();
+            if (success) {
+              return await get().RecruiterJobOfferSetPositionTitles();
+            }
+          }
         }
+        showErrorToast("Failed to fetch job titles");
       }
     },
 });

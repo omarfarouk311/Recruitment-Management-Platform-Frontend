@@ -41,12 +41,11 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
         const {
             companiesTabPage,
             companiesTabHasMore,
-            companiesTabIsCompaniesLoading,
             companiesTabSearchQuery,
             companiesTabFilters: { country, city, industry, type, size, rating },
         } = get();
 
-        if (!companiesTabHasMore || companiesTabIsCompaniesLoading) return;
+        if (!companiesTabHasMore) return;
         set({ companiesTabIsCompaniesLoading: true });
 
         try {
@@ -98,7 +97,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companiesTabFetchCompanies();
+                        await get().companiesTabFetchCompanies();
                     }
                 }
                 else if (err.response?.status === 400) {
@@ -176,7 +175,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companiesTabFetchCompanyIndustries(id);
+                        await get().companiesTabFetchCompanyIndustries(id);
                     }
                 }
                 else {
@@ -212,7 +211,7 @@ export const createCompaniesTabSlice: StateCreator<CombinedState, [], [], Compan
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
                     if (succeeded) {
-                        get().companiesTabFetchCompanyLocations(id);
+                        await get().companiesTabFetchCompanyLocations(id);
                     }
                 }
                 else {

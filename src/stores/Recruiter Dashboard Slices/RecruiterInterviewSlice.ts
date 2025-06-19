@@ -3,7 +3,6 @@ import { CombinedState } from "../storeTypes";
 import { Interviews, DashboardInterviewsFilters, updateInterviewDate } from "../../types/recruiterDashboard";
 import axios from 'axios';
 import config from '../../../config/config.ts';
-import RecruiterInterviews from "../../components/Recruiter Dashboard/RecruiterInterviews.tsx";
 const API_BASE_URL = config.API_BASE_URL;
 
 export interface RecruiterInterviewsSlice {

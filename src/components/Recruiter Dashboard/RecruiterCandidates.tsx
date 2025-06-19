@@ -6,9 +6,14 @@ import { ColumnDef } from "../common/Dashboard";
 import FilterDropdown from "../Filters/FilterDropdown";
 import LocationSearch from "../common/LocationSearch";
 import Button from "../common/Button";
-import { CandidateSortOptions, Candidate, CandidatePhases } from "../../types/candidates";
+import {
+    CandidateSortOptions,
+    Candidate,
+    CandidatePhases,
+} from "../../types/candidates";
 import JobDetailsDialog from "../common/JobDetailsDialog";
 import { set } from "date-fns";
+import JobOfferDialog from "../common/JobOfferDialog";
 
 const RecruiterCandidates = () => {
     // State hooks
@@ -20,23 +25,25 @@ const RecruiterCandidates = () => {
         null | number
     >(null);
     const useSetJobDetailsDialogIsOpen =
-    useStore.useJobDetailsDialogSetIsOpen();
+        useStore.useJobDetailsDialogSetIsOpen();
     const useSetSelectedJobId = useStore.useJobDetailsDialogSetSelectedJobId();
 
     // Action hooks
     const setFilters = useStore.useRecruiterCandidatesSetFilters();
     const fetchCandidates = useStore.useRecruiterCandidatesFetchCandidates();
-    const setPositionTitles =useStore.useRecruiterCandidatesSetPositionTitles();
+    const setPositionTitles =
+        useStore.useRecruiterCandidatesSetPositionTitles();
     const resetRecruiterCandidates = useStore.useResetRecruiterCandidates();
     const setPhaseTypes = useStore.useRecruiterCandidatesSetPhases();
+    const setJobOfferDialogIsOpen = useStore.useSeekerJobOfferDialogSetIsOpen();
+    const setSelectedJobIdAndCandidateId =
+        useStore.useSeekerJobOfferDialogSetJobIdAndCandidateId();
 
     useEffect(() => {
-        
         resetRecruiterCandidates();
         setPositionTitles();
         setPhaseTypes();
         fetchCandidates();
-
     }, []);
 
     const columns: ColumnDef<Candidate>[] = [
@@ -46,8 +53,8 @@ const RecruiterCandidates = () => {
             render: (row) => {
                 return (
                     <Link
-                    to={`/seeker/${row.seekerId}/job/${row.jobId}`}
-                    className="text-blue-600 hover:underline underline-offset-2"
+                        to={`recruiter/seekers/${row.seekerId}/job/${row.jobId}`}
+                        className="text-blue-600 hover:underline underline-offset-2"
                         title="Click to view candidate details"
                     >
                         {row.seekerName}
@@ -111,50 +118,67 @@ const RecruiterCandidates = () => {
             ),
         },
         {
-            key: "decision",
-            header: "Decision",
-            render: (row) => (
-                <div className="flex items-center space-x-4">
-                    <Button
-                        loading={
-                            useIsMakingDecision !== null &&
-                            useIsMakingDecision === row.jobId
-                        }
-                        onClick={async () => {
-                            useSetIsMakingDecision(row.jobId);
-                            await useMakeDecision(
-                                row.seekerId,
-                                true,
-                                row.jobId
-                            );
-                            useSetIsMakingDecision(null);
-                        }}
-                        className="w-[50%]"
-                    >
-                        Next Phase
-                    </Button>
+            key: "Action",
+            header: "Action",
+            render: (row) =>
+                row.phaseType !== "job offer" ? (
+                    <div className="flex items-center space-x-4">
+                        <Button
+                            loading={
+                                useIsMakingDecision !== null &&
+                                useIsMakingDecision === row.jobId
+                            }
+                            onClick={async () => {
+                                useSetIsMakingDecision(row.jobId);
+                                await useMakeDecision(
+                                    row.seekerId,
+                                    true,
+                                    row.jobId
+                                );
+                                useSetIsMakingDecision(null);
+                            }}
+                            className="w-[50%]"
+                        >
+                            Next Phase
+                        </Button>
 
+                        <Button
+                            variant="report"
+                            loading={
+                                useIsMakingDecision !== null &&
+                                useIsMakingDecision === row.jobId
+                            }
+                            onClick={async () => {
+                                useSetIsMakingDecision(row.jobId);
+                                await useMakeDecision(
+                                    row.seekerId,
+                                    false,
+                                    row.jobId
+                                );
+                                useSetIsMakingDecision(null);
+                            }}
+                            className="w-[50%]"
+                        >
+                            Reject
+                        </Button>
+                    </div>
+                ) : !row.offerSent ? ( 
                     <Button
-                        variant="report"
-                        loading={
-                            useIsMakingDecision !== null &&
-                            useIsMakingDecision === row.jobId
-                        }
-                        onClick={async () => {
-                            useSetIsMakingDecision(row.jobId);
-                            await useMakeDecision(
-                                row.seekerId,
-                                false,
-                                row.jobId
+                        onClick={() => {
+                            setJobOfferDialogIsOpen(true);
+                            setSelectedJobIdAndCandidateId(
+                                row.jobId,
+                                row.seekerId
                             );
-                            useSetIsMakingDecision(null);
                         }}
-                        className="w-[50%]"
+                        className="w-full"
+                        title="Click to write job offer"
                     >
-                        Reject
+                        Send Offer
                     </Button>
-                </div>
-            ),
+                ) : (
+                    <span className="w-full text-green-600 font-semibold">Offer Sent</span>
+                ),
         },
     ];
 
@@ -162,7 +186,7 @@ const RecruiterCandidates = () => {
         <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Candidates</h1>
-                <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
+                <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-10">
                     <LocationSearch
                         selectedCountry={filters.candidateCountry}
                         selectedCity={filters.candidateCity}
@@ -172,6 +196,7 @@ const RecruiterCandidates = () => {
                         onCityChange={(value) =>
                             setFilters({ candidateCity: value })
                         }
+                        
                     />
 
                     <FilterDropdown
@@ -180,14 +205,12 @@ const RecruiterCandidates = () => {
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ jobTitle: value })}
                     />
-                    
+
                     <FilterDropdown
                         label="Phase Type"
                         options={phaseTypes}
                         selectedValue={filters.phaseType}
-                        onSelect={(value) =>
-                            setFilters({ phaseType: value })
-                        }
+                        onSelect={(value) => setFilters({ phaseType: value })}
                     />
                     <FilterDropdown
                         label="Sort By"
@@ -212,7 +235,16 @@ const RecruiterCandidates = () => {
                     }
                 />
 
-                <JobDetailsDialog/>
+                <JobOfferDialog
+                    useIsOpen={useStore.useSeekerJobOfferDialogIsOpen}
+                    useSetIsOpen={useStore.useSeekerJobOfferDialogSetIsOpen()}
+                    useSelectedJobIdAndCandidateId={
+                        useStore.useSeekerJobOfferDialogJobIdAndCandidateId
+                    }
+                    isEditing={false}
+                />
+
+                <JobDetailsDialog />
             </div>
         </div>
     );

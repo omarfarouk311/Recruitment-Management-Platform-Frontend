@@ -119,9 +119,7 @@ const JobDetails = ({
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
           const succeeded = await authRefreshToken();
-          if (succeeded) {
-            handleApply();
-          }
+          if (succeeded) await handleApply();
         } else {
           showErrorToast("Failed to fetch CVs");
           throw err;

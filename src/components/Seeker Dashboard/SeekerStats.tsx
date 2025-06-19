@@ -59,9 +59,7 @@ function SeekerStats() {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
           const succeeded = await authRefreshToken();
-          if (succeeded) {
-            loadStats();
-          }
+          if (succeeded) await loadStats();
         } else {
           showErrorToast("Error loading stats. Please try again.");
         }
