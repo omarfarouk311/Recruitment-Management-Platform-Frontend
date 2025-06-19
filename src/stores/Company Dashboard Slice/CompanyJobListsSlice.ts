@@ -57,8 +57,8 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
     companyTabSelectJobId: null,
 
     companyFetchJobs: async () => {
-        const { companyJobsHasMore, companyJobsIsJobsLoading, companyJobsPage, companyJobsFilters, userId } = get();
-        if (!companyJobsHasMore || companyJobsIsJobsLoading) return;
+        const { companyJobsHasMore, companyJobsPage, companyJobsFilters, userId } = get();
+        if (!companyJobsHasMore) return;
 
         set({ companyJobsIsJobsLoading: true });
         try {
@@ -75,7 +75,10 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
                 }
             }
 
-            const res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, { params });
+            const res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs`, {
+                params,
+                withCredentials: true
+            });
             const newJobs: Job[] = res.data.map((job: any) => ({
                 id: job.id,
                 title: job.title,
@@ -101,9 +104,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
-                    if (succeeded) {
-                        get().companyFetchJobs();
-                    }
+                    if (succeeded) await get().companyFetchJobs();
                 }
                 else {
                     showErrorToast("Error while fetching jobs");
@@ -117,15 +118,13 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyAddJob: async (job) => {
         try {
-            await axios.post(`${config.API_BASE_URL}/jobs`, job);
+            await axios.post(`${config.API_BASE_URL}/jobs`, job, { withCredentials: true });
         }
         catch (err) {
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
-                    if (succeeded) {
-                        get().companyAddJob(job);
-                    }
+                    if (succeeded) await get().companyAddJob(job);
                 }
                 else if (err.response?.status === 400) {
                     const validationErrors: string[] = err.response.data.validationErrors;
@@ -144,7 +143,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyEditJob: async (job, jobId) => {
         try {
-            await axios.put(`${config.API_BASE_URL}/jobs/${jobId}`, job);
+            await axios.put(`${config.API_BASE_URL}/jobs/${jobId}`, job, { withCredentials: true });
             set((state) => ({
                 companyJobs: state.companyJobs.map((j) =>
                     j.id === jobId ? {
@@ -161,9 +160,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
-                    if (succeeded) {
-                        get().companyEditJob(job, jobId);
-                    }
+                    if (succeeded) await get().companyEditJob(job, jobId);
                 }
                 else if (err.response?.status === 400) {
                     const validationErrors: string[] = err.response.data.validationErrors;
@@ -182,7 +179,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyCloseJob: async (jobId) => {
         try {
-            await axios.patch(`${config.API_BASE_URL}/jobs/${jobId}`);
+            await axios.patch(`${config.API_BASE_URL}/jobs/${jobId}`, {}, { withCredentials: true });
             set((state) => ({
                 companyJobs: state.companyJobs.map((job) =>
                     job.id === jobId ? { ...job, closed: true } : job
@@ -193,9 +190,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 401) {
                     const succeeded = await authRefreshToken();
-                    if (succeeded) {
-                        get().companyCloseJob(jobId);
-                    }
+                    if (succeeded) await get().companyCloseJob(jobId);
                 }
                 else {
                     showErrorToast("Error while deleting the job");
