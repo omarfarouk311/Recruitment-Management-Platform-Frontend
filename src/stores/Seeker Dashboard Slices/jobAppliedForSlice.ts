@@ -7,6 +7,8 @@ import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { authRefreshToken } from "../../util/authUtils.ts";
+import { showErrorToast } from "../../util/errorHandler.ts";
 
 export interface SeekerJobsAppliedForSlice {
   seekerJobsAppliedForData: JobsAppliedFor[];
@@ -70,6 +72,7 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
 
       let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for`, {
         params,
+        withCredentials: true,
       });
       set((state) => ({
         seekerJobsAppliedForData: [
@@ -90,13 +93,26 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
         seekerJobsAppliedForPage: state.seekerJobsAppliedForPage + 1,
       }));
     } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          return set({ seekerJobsAppliedForHasMore: false });
+        } else if (err.response?.status === 401) {
+          const success = await authRefreshToken();
+          if (success) {
+            return await get().seekerJobsAppliedForFetchData();
+          }
+        }
+      }
+      showErrorToast("Error fetching jobs applied for");
       set({ seekerJobsAppliedForIsLoading: false });
     }
   },
 
   seekerJobsAppliedForSetCompanyNames: async () => {
     try {
-      let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`);
+      let res = await axios.get(`${config.API_BASE_URL}/seekers/jobs-applied-for/companies-filter`, {
+        withCredentials: true,
+      });
       if(res.status !== 200) return;
       set({
         seekerJobsAppliedForCompanyNames: [
@@ -107,7 +123,18 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
         ],
       });
     } catch (err) {
-      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404) {
+          set({ seekerJobsAppliedForCompanyNames: [] });
+        }
+        else if( err.response?.status === 401) {
+          const success = await authRefreshToken();
+          if (success) {
+            return await get().seekerJobsAppliedForSetCompanyNames();
+          }
+        }
+        showErrorToast("Error fetching company names");
+      }
     }
   },
 

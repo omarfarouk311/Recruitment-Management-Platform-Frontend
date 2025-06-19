@@ -166,6 +166,7 @@ const RecruiterJobOffer = () => {
                     useSelectedJobIdAndCandidateId={
                         useStore.useSeekerJobOfferDialogJobIdAndCandidateId
                     }
+                    isEditing={true}
                 />
             </div>
         </div>

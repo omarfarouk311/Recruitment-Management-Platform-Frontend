@@ -30,7 +30,7 @@ const SeekerDashboard = () => {
                         tabs={[
                             "Candidates",
                             "Interviews",
-                            "Job Offer Sent",
+                            "Job Offers Sent",
                             "Invitations",
                         ]}
                         useActiveTab={useActiveTab}

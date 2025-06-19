@@ -14,7 +14,7 @@ import config from "../../config/config";
 import axios, { AxiosResponse } from "axios";
 import { authRefreshToken } from "../util/authUtils";
 import { showErrorToast } from "../util/errorHandler";
-import { format, set } from 'date-fns';
+import { format, set } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,7 +23,7 @@ import { toast } from "react-toastify";
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
     phoneNumber: z.string(),
-    gender: z.enum(["male", "female"]),
+    gender: z.enum(["male", "female"], {message: "You must select a gender"}),
     birthDate: z.date(),
     country: z.string(),
     city: z.string(),
@@ -40,7 +40,8 @@ const formSchema = z.object({
                 file?.type.startsWith("image/") &&
                 ["image/jpeg", "image/png"].includes(file?.type),
             "Only JPEG/PNG images are accepted"
-        ).optional(),
+        )
+        .optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -51,7 +52,6 @@ const ProfileSetup = () => {
     const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
     const allSkills = useStore.useSeekerProfileSkillsFormData();
     const [experiences, setExperiences] = useState<Experience[]>([]);
-    const [progress, setProgress] = useState(0);
     const [educations, setEducations] = useState<Education[]>([]);
     const [parsingIsLoading, setParsingIsLoading] = useState<boolean>(false);
     const userId = useStore.useUserId();
@@ -89,28 +89,26 @@ const ProfileSetup = () => {
         profilePhoto,
     } = watch();
 
-    // Calculate progress based on filled sections
-    useEffect(() => {
-        let filled = 0;
-        if (selectedSkills.length > 0) filled++;
-        if (experiences.length > 0) filled++;
-        if (gender) filled++;
-        if (cvFile) filled++;
-        if (profilePhoto) filled++;
-        if (country) filled++;
-        if (city) filled++;
-        if (phoneNumber) filled++;
-        setProgress(Math.round((filled / 8) * 100));
-    }, [
-        selectedSkills,
-        experiences,
-        cvFile,
-        profilePhoto,
-        country,
-        city,
-        phoneNumber,
-        gender,
-    ]);
+    const fields = [
+        name.trim() !== "",
+        phoneNumber && phoneNumber.trim() !== "",
+        gender !== null,
+        birthDate instanceof Date && !isNaN(birthDate.getTime()),
+        country.trim() !== "",
+        city.trim() !== "",
+        cvFile !== undefined,
+        profilePhoto !== undefined, 
+        selectedSkills.length > 0, 
+        experiences.length > 0,
+        educations.length > 0,
+    ];
+    
+    const filled = fields.filter(Boolean).length;
+    const totalFields = fields.length; // Now 7 fields
+
+    // Then calculate progress:
+    const progress = Math.round((filled / totalFields) * 100);
+
 
     const handleAddSkill = (skillId: number) => {
         let skill = allSkills.find((skill: Skill) => skill.id === skillId);
@@ -193,31 +191,17 @@ const ProfileSetup = () => {
             setParsingIsLoading(true);
             let res: AxiosResponse<any, any>;
             try {
-                try {
-                    res = await axios.post(
-                        `${config.API_BASE_URL}/cvs`,
-                        event.target.files[0],
-                        {
-                            headers: {
-                                "File-Name": event.target.files[0].name,
-                                "Content-Type": event.target.files[0].type,
-                            },
-                        }
-                    );
-                } catch (err) {
-                    if (
-                        axios.isAxiosError(err) &&
-                        err.response?.status === 401
-                    ) {
-                        await authRefreshToken();
-                        res = await axios.post(
-                            `${config.API_BASE_URL}/cvs`,
-                            cvFile
-                        );
-                    } else {
-                        throw err;
+                res = await axios.post(
+                    `${config.API_BASE_URL}/cvs`,
+                    event.target.files[0],
+                    {
+                        headers: {
+                            "File-Name": event.target.files[0].name,
+                            "Content-Type": event.target.files[0].type,
+                        },
+                        withCredentials: true,
                     }
-                }
+                );
                 // set education
                 if (res.data.education) {
                     setEducations((edus) => [
@@ -295,16 +279,28 @@ const ProfileSetup = () => {
                 if (res.data.contactInformation.phone) {
                     setValue("phoneNumber", res.data.contactInformation.phone);
                 }
-                setParsingIsLoading(false);
+                
             } catch (err) {
                 if (axios.isAxiosError(err) && err.response?.status === 400) {
                     err.response?.data.validationErrors.forEach(
-                        (value: string) =>
-                            showErrorToast(`${value}`)
+                        (value: string) => showErrorToast(`${value}`)
                     );
+                    return;
+                } else if (
+                    axios.isAxiosError(err) &&
+                    err.response?.status === 401
+                ) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await handleCvUpload(event);
+                    }
                 }
-                else
-                    showErrorToast("Failed to parse CV. Please try again or fill the data manually.")
+                showErrorToast(
+                    "Failed to parse CV. Please try again or fill the data manually."
+                );
+            }
+            finally {
+                setParsingIsLoading(false);
             }
         } else if (parsingIsLoading) {
             showErrorToast("Parsing is already in progress. Please wait.");
@@ -370,57 +366,53 @@ const ProfileSetup = () => {
             if (cvFile) {
                 form.append("cvFile", cvFile);
             }
-            try {
-                await axios.post(
-                    `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
-                    form,
-                    {
-                        headers: {
-                            "Content-Type": "multipart/form-data",
-                        },
-                    }
-                );
-
-                setUserName(data.name);
-                setUserImage(`${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`);
-
-                window.scrollTo(0, 0);
-                navigate("/seeker/home", { replace: true });
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                    await axios.post(
-                        `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
-                        form,
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        }
-                    );
-
-                    setUserName(data.name);
-                    setUserImage(`${config.API_BASE_URL}/seekers/profiles/${userId}/image?t=${Date.now()}`);
-                    
-                    window.scrollTo(0, 0);
-                    navigate("/seeker/home", { replace: true });
-                } else if (axios.isAxiosError(err) && err.response?.status === 400) {
-                    err.response?.data.validationErrors.forEach(
-                        (value: string) =>
-                            showErrorToast(`${value}`)
-                    );
-                } else if (axios.isAxiosError(err) && err.response?.status === 409) {
-                    showErrorToast(
-                        err.response?.data.message
-                    );
-                } else {
-                    throw err;
+            await axios.post(
+                `${config.API_BASE_URL}/seekers/profiles/finish-profile`,
+                form,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                    withCredentials: true,
                 }
-            }
+            );
+
+            setUserName(data.name);
+            setUserImage(
+                `${
+                    config.API_BASE_URL
+                }/seekers/profiles/${userId}/image?t=${Date.now()}`
+            );
+
+            window.scrollTo(0, 0);
+            navigate("/seeker/home", { replace: true });
             setLoading(false);
         } catch (err) {
-            console.log(err);
+            if (axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response?.data.validationErrors.forEach((value: string) =>
+                    showErrorToast(`${value}`)
+                );
+                return;
+            } else if (
+                axios.isAxiosError(err) &&
+                err.response?.status === 409
+            ) {
+                showErrorToast(err.response?.data.message);
+                return;
+            } else if (
+                axios.isAxiosError(err) &&
+                err.response?.status === 401
+            ) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await handleSubmit(formValues, event);
+                }
+            }
+            console.error(err);
             showErrorToast(`Something went wrong!`);
+            throw err;
+        }
+        finally {
             setLoading(false);
         }
     };
@@ -465,7 +457,7 @@ const ProfileSetup = () => {
                             />
                         </div>
                         <div className="mt-2 text-sm text-gray-600 text-right">
-                            {progress}% Complete
+                            {progress}% Complete ({filled}/{totalFields})
                         </div>
                     </div>
 
@@ -655,13 +647,11 @@ const ProfileSetup = () => {
                             {/* Location Search */}
                             <div className="flex gap-4 my-10">
                                 <LocationSearch
-                                    onCountryChange={
-                                        (selectedOption) =>
-                                            setValue("country", selectedOption)
+                                    onCountryChange={(selectedOption) =>
+                                        setValue("country", selectedOption)
                                     }
-                                    onCityChange={
-                                        (selectedOption) =>
-                                            setValue("city", selectedOption)
+                                    onCityChange={(selectedOption) =>
+                                        setValue("city", selectedOption)
                                     }
                                     selectedCity={city || ""}
                                     selectedCountry={country || ""}
