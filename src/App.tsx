@@ -10,9 +10,14 @@ import CompanyRoutes from "./routes/CompanyRoutes";
 import { ToastContainer } from "react-toastify";
 import { UserRole } from "./stores/User Slices/userSlice";
 
+
+
 function App() {
   const userRole = useStore.useUserRole();
-
+  const setUserId = useStore.useUserSetId();
+  const setRole = useStore.useUserSetRole();
+  setUserId(10);
+  setRole(UserRole.RECRUITER);
   return (
     <>
       <Router>

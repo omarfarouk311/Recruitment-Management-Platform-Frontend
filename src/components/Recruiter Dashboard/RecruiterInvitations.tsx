@@ -10,6 +10,7 @@ import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
 import { DashboardStatusFilterOptions, DashboardSortByFilterOptions } from "../../types/recruiterDashboard";
 import { showErrorToast } from '../../util/errorHandler';
+import JobDetailsDialog from "../common/JobDetailsDialog";
 
 
 const RecruiterInvitations = () => {
@@ -54,7 +55,7 @@ const RecruiterInvitations = () => {
                 <div>
                     {row.companyId ? (
                         <Link
-                            to={`/company/${row.companyId}`}
+                            to={`/recruiter/companies/${row.companyId}`}
                             className="text-blue-600 hover:underline underline-offset-2"
                             title="View company profile"
                         >
