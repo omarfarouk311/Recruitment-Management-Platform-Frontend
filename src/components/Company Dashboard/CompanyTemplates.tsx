@@ -24,56 +24,49 @@ export default function CompanyTemplatesDashboard() {
         setChanged(false);
         setLoading(true);
         setSelectedTemplate(null);
-        let res;
+        
         try {
-            try {
-                res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${id}`, {
-                    params: {
-                        simplified: true,
-                    },
-                });
-            } catch (err) {
-                if (axios.isAxiosError(err) && err.response?.status === 401) {
-                    await authRefreshToken();
-                    res = await axios.get(`/templates/template-details/${id}`, {
-                        params: {
-                            simplified: true,
-                        },
-                    });
-                } else {
-                    throw err;
-                }
-            }
-            console.log(res);
-            if (res.status === 200) {
-                setSelectedTemplate({
-                    id: id,
-                    name: res.data.name,
-                    content: res.data.description,
-                });
-            }
+            let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${id}`, {
+                params: {
+                    simplified: true,
+                },
+                withCredentials: true,
+            });
+            
+            setSelectedTemplate({
+                id: id,
+                name: res.data.name,
+                content: res.data.description,
+            });
+            
         } catch (err) {
+            if (axios.isAxiosError(err) && err.response?.status === 401) {
+                const success = await authRefreshToken();
+                if (success) {
+                    return await handleOpenTemplate(id);
+                }
+            } 
             showErrorToast("Error fetching template");
-            return;
         }
-        setLoading(false);
+        finally {
+            setLoading(false);
+        }
     }
 
     async function handleDeleteTemplate(id: number) {
         try {
-            await axios.delete(`${config.API_BASE_URL}/templates/${id}`);
+            await axios.delete(`${config.API_BASE_URL}/templates/${id}`, {
+                withCredentials: true,
+            });
             setTemplatesData((prev) => prev.filter((template) => template.id !== id));
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await handleDeleteTemplate(id);
-                } else {
-                    showErrorToast("Error deleting template");
+                    return await handleDeleteTemplate(id);
                 }
-            } else {
-                showErrorToast("Error deleting template");
             }
+            showErrorToast("Error deleting template");
         }
     }
 
@@ -86,38 +79,39 @@ export default function CompanyTemplatesDashboard() {
             }
             const res = await axios.get(`${config.API_BASE_URL}/templates`, {
                 params,
+                withCredentials: true,
             });
-            if (res.status === 200) {
-                setTemplatesData((prev) => [
-                    ...prev,
-                    ...res.data.map((template: { id: number; name: string; updated_at: string }) => ({
-                        id: template.id,
-                        name: template.name,
-                        updatedAt: new Date(template.updated_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                        }),
-                    })),
-                ]);
-                if (res.data.length === 0) {
-                    setHasMore(false);
-                }
-                setPage((prev) => prev + 1);
+            
+            setTemplatesData((prev) => [
+                ...prev,
+                ...res.data.map((template: { id: number; name: string; updated_at: string }) => ({
+                    id: template.id,
+                    name: template.name,
+                    updatedAt: new Date(template.updated_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                    }),
+                })),
+            ]);
+            if (res.data.length === 0) {
+                setHasMore(false);
             }
+            setPage((prev) => prev + 1);
+            
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await fetchTemplates();
-                } else {
-                    showErrorToast("Error fetching templates");
+                    await fetchTemplates(curPage);
+                    return;
                 }
-            } else {
-                showErrorToast("Error fetching templates");
             }
+            showErrorToast("Error fetching templates");
         }
-        setLoading(false);
+        finally {
+            setLoading(false);
+        }
     }
 
     async function handleSaveTemplate() {
@@ -131,6 +125,8 @@ export default function CompanyTemplatesDashboard() {
                 let res = await axios.put(`${config.API_BASE_URL}/templates/${selectedTemplate.id}`, {
                     name: selectedTemplate.name,
                     description: selectedTemplate.content,
+                }, {
+                    withCredentials: true,
                 });
                 setTemplatesData((prev) =>
                     prev.map((template) => {
@@ -152,6 +148,8 @@ export default function CompanyTemplatesDashboard() {
                 let res = await axios.post(`${config.API_BASE_URL}/templates`, {
                     name: selectedTemplate.name,
                     description: selectedTemplate.content,
+                }, {
+                    withCredentials: true,
                 });
                 setTemplatesData((prev) => [
                     {
@@ -171,15 +169,14 @@ export default function CompanyTemplatesDashboard() {
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
-                    await handleSaveTemplate();
-                } else {
-                    showErrorToast("Error saving template");
+                    return await handleSaveTemplate();
                 }
-            } else {
-                showErrorToast("Error saving template");
             }
+            showErrorToast("Error saving template");
         }
-        setLoading(false);
+        finally {
+            setLoading(false);
+        }
     }
 
     function handleAddTemplate() {
