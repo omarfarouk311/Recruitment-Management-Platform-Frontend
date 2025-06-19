@@ -40,10 +40,13 @@ const RecruiterCandidates = () => {
         useStore.useSeekerJobOfferDialogSetJobIdAndCandidateId();
 
     useEffect(() => {
-        resetRecruiterCandidates();
-        setPositionTitles();
-        setPhaseTypes();
-        fetchCandidates();
+        const initialize = async () => {
+            resetRecruiterCandidates();
+            await setPositionTitles();
+            await setPhaseTypes();
+            await fetchCandidates();
+        };
+        initialize();
     }, []);
 
     const columns: ColumnDef<Candidate>[] = [
@@ -53,7 +56,7 @@ const RecruiterCandidates = () => {
             render: (row) => {
                 return (
                     <Link
-                        to={`recruiter/seekers/${row.seekerId}/job/${row.jobId}`}
+                        to={`/recruiter/seekers/${row.seekerId}/job/${row.jobId}`}
                         className="text-blue-600 hover:underline underline-offset-2"
                         title="Click to view candidate details"
                     >
