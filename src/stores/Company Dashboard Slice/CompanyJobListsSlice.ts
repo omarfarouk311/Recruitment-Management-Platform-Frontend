@@ -57,8 +57,8 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
     companyTabSelectJobId: null,
 
     companyFetchJobs: async () => {
-        const { companyJobsHasMore, companyJobsIsJobsLoading, companyJobsPage, companyJobsFilters, userId } = get();
-        if (!companyJobsHasMore || companyJobsIsJobsLoading) return;
+        const { companyJobsHasMore, companyJobsPage, companyJobsFilters, userId } = get();
+        if (!companyJobsHasMore) return;
 
         set({ companyJobsIsJobsLoading: true });
         try {
@@ -117,7 +117,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyAddJob: async (job) => {
         try {
-            await axios.post(`${config.API_BASE_URL}/jobs`, job);
+            await axios.post(`${config.API_BASE_URL}/jobs`, job, { withCredentials: true });
         }
         catch (err) {
             if (axios.isAxiosError(err)) {
@@ -144,7 +144,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyEditJob: async (job, jobId) => {
         try {
-            await axios.put(`${config.API_BASE_URL}/jobs/${jobId}`, job);
+            await axios.put(`${config.API_BASE_URL}/jobs/${jobId}`, job, { withCredentials: true });
             set((state) => ({
                 companyJobs: state.companyJobs.map((j) =>
                     j.id === jobId ? {
@@ -182,7 +182,7 @@ export const createcompanyJobsSlice: StateCreator<CombinedState, [], [], Company
 
     companyCloseJob: async (jobId) => {
         try {
-            await axios.patch(`${config.API_BASE_URL}/jobs/${jobId}`);
+            await axios.patch(`${config.API_BASE_URL}/jobs/${jobId}`, {}, { withCredentials: true });
             set((state) => ({
                 companyJobs: state.companyJobs.map((job) =>
                     job.id === jobId ? { ...job, closed: true } : job
