@@ -4,11 +4,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button";
-import useStore from "../../../stores/globalStore";
 import type { Experience } from "../../../types/profile";
 import { useEffect } from "react";
 import LocationSearch from "../../common/LocationSearch";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 
 // Zod schema for validation
 const schema = z.object({
@@ -36,8 +35,17 @@ export default function ExperienceDialog({
   onClose,
   experience,
   updateExperience,
-  addExperience
+  addExperience,
 }: ExperienceDialogProps) {
+  const defaultFormValues = {
+    companyName: "",
+    position: "",
+    country: "",
+    city: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+  };
 
   const {
     register,
@@ -50,15 +58,7 @@ export default function ExperienceDialog({
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      companyName: "",
-      position: "",
-      country: "",
-      city: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-    },
+    defaultValues: defaultFormValues,
     mode: "onSubmit",
   });
 
@@ -77,6 +77,7 @@ export default function ExperienceDialog({
       };
 
       reset({
+        ...defaultFormValues,
         ...experience,
         startDate: formatForInput(experience.startDate),
         endDate: formatForInput(experience.endDate),
@@ -96,13 +97,12 @@ export default function ExperienceDialog({
     }
   }, [isOpen]);
 
-  const onSubmit = async (data: FormData, event?: React.BaseSyntheticEvent) => {
+  const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
 
     const [startYear, startMonth] = data.startDate.split("-").map(Number);
     const [endYear, endMonth] = data.endDate.split("-").map(Number);
-    const isDateValid =
-      startYear < endYear || (startYear === endYear && startMonth <= endMonth);
+    const isDateValid = startYear < endYear || (startYear === endYear && startMonth <= endMonth);
 
     if (!isValid || !isDateValid) {
       if (!isDateValid) {
@@ -132,26 +132,22 @@ export default function ExperienceDialog({
         <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl">
           <div className="p-8 max-h-[80vh] overflow-y-auto hide-scrollbar">
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold">
-                {experience ? "Edit Experience" : "Add Experience"}
-              </h2>
-              <button
-                onClick={onClose}
-                className="hover:bg-gray-200 rounded-full p-2 transition-colors"
-              >
+              <h2 className="text-2xl font-bold">{experience ? "Edit Experience" : "Add Experience"}</h2>
+              <button onClick={onClose} className="hover:bg-gray-200 rounded-full p-2 transition-colors">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={(e) => {
-              e.preventDefault(); // Prevent default form submission
-              e.stopPropagation(); // Stop event bubbling
-              handleSubmit(onSubmit)(e); // Trigger form validation
-            }} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault(); // Prevent default form submission
+                e.stopPropagation(); // Stop event bubbling
+                handleSubmit(onSubmit)(e); // Trigger form validation
+              }}
+              className="space-y-6"
+            >
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Company
-                </label>
+                <label className="text-sm font-medium text-gray-700">Company</label>
                 <input
                   type="text"
                   {...register("companyName")}
@@ -160,16 +156,12 @@ export default function ExperienceDialog({
                   }`}
                 />
                 {errors.companyName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.companyName.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.companyName.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Position
-                </label>
+                <label className="text-sm font-medium text-gray-700">Position</label>
                 <input
                   type="text"
                   {...register("position")}
@@ -177,11 +169,7 @@ export default function ExperienceDialog({
                     errors.position ? "border-red-500" : ""
                   }`}
                 />
-                {errors.position && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.position.message}
-                  </p>
-                )}
+                {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position.message}</p>}
               </div>
 
               <div className="space-y-4">
@@ -193,31 +181,19 @@ export default function ExperienceDialog({
                       setValue("city", "", { shouldValidate: true });
                     }}
                     selectedCity={selectedCity}
-                    onCityChange={(value) =>
-                      setValue("city", value, { shouldValidate: true })
-                    }
+                    onCityChange={(value) => setValue("city", value, { shouldValidate: true })}
                   />
                 </div>
 
                 <div className="flex space-x-6">
-                  {errors.country && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.country.message}
-                    </p>
-                  )}
-                  {errors.city && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.city.message}
-                    </p>
-                  )}
+                  {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>}
+                  {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Start Date
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">Start Date</label>
                   <input
                     type="month"
                     {...register("startDate")}
@@ -226,16 +202,12 @@ export default function ExperienceDialog({
                     }`}
                   />
                   {errors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.startDate.message}
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">{errors.startDate.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    End Date
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">End Date</label>
                   <input
                     type="month"
                     {...register("endDate")}
@@ -243,18 +215,12 @@ export default function ExperienceDialog({
                       errors.endDate ? "border-red-500" : ""
                     }`}
                   />
-                  {errors.endDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.endDate.message}
-                    </p>
-                  )}
+                  {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate.message}</p>}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Description
-                </label>
+                <label className="text-sm font-medium text-gray-700">Description</label>
                 <textarea
                   {...register("description")}
                   className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all min-h-[100px] ${
@@ -262,19 +228,12 @@ export default function ExperienceDialog({
                   }`}
                 />
                 {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.description.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
                 )}
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="!w-[30%] !h-10"
-                  loading={isSubmitting}
-                >
+                <Button type="submit" variant="primary" className="!w-[30%] !h-10" loading={isSubmitting}>
                   {experience ? "Update" : "Add"} Experience
                 </Button>
               </div>

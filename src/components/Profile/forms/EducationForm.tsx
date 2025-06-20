@@ -5,9 +5,8 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Button from "../../common/Button";
-import useStore from "../../../stores/globalStore";
 import type { Education } from "../../../types/profile";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 
 const schema = z.object({
   institution: z.string().min(1, "Institution is required"),
@@ -35,26 +34,25 @@ export default function EducationDialog({
   addEducation,
   updateEducation,
 }: EducationDialogProps) {
+  const defaultFormValues = {
+    institution: "",
+    degree: "",
+    fieldOfStudy: "",
+    startDate: "",
+    endDate: "",
+    grade: "",
+  };
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue,
-    watch,
     trigger,
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      institution: "",
-      degree: "",
-      fieldOfStudy: "",
-      startDate: "",
-      endDate: "",
-      grade: "",
-    },
+    defaultValues: defaultFormValues,
     mode: "onSubmit",
   });
 
@@ -70,6 +68,7 @@ export default function EducationDialog({
       };
 
       reset({
+        ...defaultFormValues,
         ...education,
         startDate: formatForInput(education.startDate),
         endDate: formatForInput(education.endDate),
@@ -91,8 +90,7 @@ export default function EducationDialog({
 
     const [startYear, startMonth] = data.startDate.split("-").map(Number);
     const [endYear, endMonth] = data.endDate.split("-").map(Number);
-    const isDateValid =
-      startYear < endYear || (startYear === endYear && startMonth <= endMonth);
+    const isDateValid = startYear < endYear || (startYear === endYear && startMonth <= endMonth);
 
     if (!isValid || !isDateValid) {
       if (!isDateValid) {
@@ -122,26 +120,22 @@ export default function EducationDialog({
         <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl">
           <div className="p-8 max-h-[80vh] overflow-y-auto hide-scrollbar">
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold">
-                {education ? "Edit Education" : "Add Education"}
-              </h2>
-              <button
-                onClick={onClose}
-                className="hover:bg-gray-200 rounded-full p-2 transition-colors"
-              >
+              <h2 className="text-2xl font-bold">{education ? "Edit Education" : "Add Education"}</h2>
+              <button onClick={onClose} className="hover:bg-gray-200 rounded-full p-2 transition-colors">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={(e) => {
-              e.preventDefault(); // Prevent default form submission
-              e.stopPropagation(); // Stop event bubbling
-              handleSubmit(onSubmit)(e); // Trigger form validation
-            }} className="space-y-6">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault(); // Prevent default form submission
+                e.stopPropagation(); // Stop event bubbling
+                handleSubmit(onSubmit)(e); // Trigger form validation
+              }}
+              className="space-y-6"
+            >
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Institution
-                </label>
+                <label className="text-sm font-medium text-gray-700">Institution</label>
                 <input
                   type="text"
                   {...register("institution")}
@@ -150,16 +144,12 @@ export default function EducationDialog({
                   }`}
                 />
                 {errors.institution && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.institution.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.institution.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Degree
-                </label>
+                <label className="text-sm font-medium text-gray-700">Degree</label>
                 <input
                   type="text"
                   {...register("degree")}
@@ -167,17 +157,11 @@ export default function EducationDialog({
                     errors.degree ? "border-red-500" : ""
                   }`}
                 />
-                {errors.degree && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.degree.message}
-                  </p>
-                )}
+                {errors.degree && <p className="text-red-500 text-sm mt-1">{errors.degree.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Field Of Study
-                </label>
+                <label className="text-sm font-medium text-gray-700">Field Of Study</label>
                 <input
                   type="text"
                   {...register("fieldOfStudy")}
@@ -186,18 +170,13 @@ export default function EducationDialog({
                   }`}
                 />
                 {errors.fieldOfStudy && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.fieldOfStudy.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.fieldOfStudy.message}</p>
                 )}
               </div>
 
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Start Date
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">Start Date</label>
                   <input
                     type="month"
                     {...register("startDate")}
@@ -206,16 +185,12 @@ export default function EducationDialog({
                     }`}
                   />
                   {errors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.startDate.message}
-                    </p>
+                    <p className="text-red-500 text-sm mt-1">{errors.startDate.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    End Date
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">End Date</label>
                   <input
                     type="month"
                     {...register("endDate")}
@@ -223,18 +198,12 @@ export default function EducationDialog({
                       errors.endDate ? "border-red-500" : ""
                     }`}
                   />
-                  {errors.endDate && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.endDate.message}
-                    </p>
-                  )}
+                  {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate.message}</p>}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Grade
-                </label>
+                <label className="text-sm font-medium text-gray-700">Grade</label>
                 <input
                   type="text"
                   {...register("grade")}
@@ -242,20 +211,11 @@ export default function EducationDialog({
                     errors.grade ? "border-red-500" : ""
                   }`}
                 />
-                {errors.grade && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.grade.message}
-                  </p>
-                )}
+                {errors.grade && <p className="text-red-500 text-sm mt-1">{errors.grade.message}</p>}
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="!w-[30%] !h-10"
-                  loading={isSubmitting}
-                >
+                <Button type="submit" variant="primary" className="!w-[30%] !h-10" loading={isSubmitting}>
                   {education ? "Update" : "Add"} Education
                 </Button>
               </div>

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import { Upload, FileText, User, FileInput } from "lucide-react";
-import PhoneInput from "react-phone-number-input"; // Import Value type
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input"; // Import Value type
 import "react-phone-number-input/style.css"; // Import the styles
 import ExperienceSection from "../components/Profile/sections/ExperienceSection";
 import EducationSection from "../components/Profile/sections/EducationSection";
@@ -14,7 +14,7 @@ import config from "../../config/config";
 import axios, { AxiosResponse } from "axios";
 import { authRefreshToken } from "../util/authUtils";
 import { showErrorToast } from "../util/errorHandler";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,8 +22,9 @@ import { toast } from "react-toastify";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    phoneNumber: z.string(),
-    gender: z.enum(["male", "female"], {message: "You must select a gender"}),
+    phoneNumber: z.string().refine((value) => isValidPhoneNumber(value), {
+        message: "Invalid phone number",
+    }),    gender: z.enum(["male", "female"], {message: "You must select a gender"}),
     birthDate: z.date(),
     country: z.string(),
     city: z.string(),
@@ -256,7 +257,7 @@ const ProfileSetup = () => {
                                               "MMM yyyy"
                                           )
                                         : undefined,
-                                description: "",
+                                description: exp.description,
                             })
                         ),
                     ]);
@@ -573,13 +574,13 @@ const ProfileSetup = () => {
                                         Phone Number
                                     </label>
                                     <PhoneInput
-                                        international
+                                        international={true}
                                         defaultCountry="US"
                                         value={phoneNumber}
                                         onChange={(value) =>
                                             setValue(
                                                 "phoneNumber",
-                                                value?.toString() || ""
+                                                value || ""
                                             )
                                         }
                                         placeholder="Enter phone number"
