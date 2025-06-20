@@ -92,7 +92,7 @@ const ProfileSetup = () => {
     const fields = [
         name.trim() !== "",
         phoneNumber && phoneNumber.trim() !== "",
-        gender !== null,
+        gender !== null && gender !== undefined,
         birthDate instanceof Date && !isNaN(birthDate.getTime()),
         country.trim() !== "",
         city.trim() !== "",
@@ -102,7 +102,7 @@ const ProfileSetup = () => {
         experiences.length > 0,
         educations.length > 0,
     ];
-    
+
     const filled = fields.filter(Boolean).length;
     const totalFields = fields.length; // Now 7 fields
 
