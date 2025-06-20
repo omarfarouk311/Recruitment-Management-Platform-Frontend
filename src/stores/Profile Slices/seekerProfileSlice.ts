@@ -790,16 +790,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
 
     seekerProfileFetchAll: async () => {
         const { seekerProfileFetchInfo, seekerProfileFetchExperience, seekerProfileFetchEducation, seekerProfileFetchSkills, seekerProfileFetchCVs, seekerProfileFetchReviews } = get();
-        await Promise.all([
-            seekerProfileFetchInfo(),
-            seekerProfileFetchExperience(),
-            seekerProfileFetchEducation(),
-        ]);
-
-        await Promise.all([
-            seekerProfileFetchSkills(),
-            seekerProfileFetchCVs(),
-            seekerProfileFetchReviews()
-        ]);
+        
+        await seekerProfileFetchInfo();
+        await seekerProfileFetchExperience();
+        await seekerProfileFetchEducation();
+        await seekerProfileFetchSkills();
+        await seekerProfileFetchCVs();
+        await seekerProfileFetchReviews();
     }
 });

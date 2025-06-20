@@ -146,7 +146,7 @@ export const createRecruiterCandidatesSlice: StateCreator<
                 `${config.API_BASE_URL}/candidates/recruiter`,
                 { params, withCredentials: true }
             );
-            console.log(res);
+            
             set((state) => ({
                 Recruitercandidates: [
                     ...state.Recruitercandidates,
