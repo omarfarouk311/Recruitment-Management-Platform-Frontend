@@ -14,14 +14,13 @@ export default function ProfileInfo() {
     const credentials = useStore.useSeekerCredentials();
     const fetchEmail = useStore.useSeekerProfileFetchEmail();
     const userRole = useStore.useUserRole();
-    
+
     // State for Profile Dialog
     const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
     const [imageError, setImageError] = useState(false);
 
     // State for Account Settings Dialog
-    const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] =
-        useState(false);
+    const [isAccountSettingsDialogOpen, setIsAccountSettingsDialogOpen] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
@@ -40,33 +39,25 @@ export default function ProfileInfo() {
             ) : (
                 <div
                     className={`flex items-center ${
-                        userRole === UserRole.SEEKER
-                            ? "justify-between"
-                            : "justify-center mr-12"
+                        userRole === UserRole.SEEKER ? "justify-between" : "justify-center mr-12"
                     } px-6 py-14 h-full`}
                 >
                     <div className="flex items-center">
-                        <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
-                            {profileInfo.image && !imageError ? (
-                                <img
-                                    src={profileInfo.image as string}
-                                    onError={() => setImageError(true)}
-                                    className="h-24 w-24 rounded-full object-cover"
-                                />
-                            ) : (
-                                <span className="h-24 w-24 text-4xl text-gray-400 flex items-center justify-center">
-                                    {profileInfo.name.charAt(0)}
-                                </span>
-                            )}
-                        </div>
+                        {profileInfo.image && !imageError ? (
+                            <img
+                                src={profileInfo.image as string}
+                                onError={() => setImageError(true)}
+                                className="h-24 w-24 rounded-full object-cover"
+                            />
+                        ) : (
+                            <span className="h-24 w-24 text-4xl text-gray-400 flex items-center justify-center">
+                                {profileInfo.name.charAt(0)}
+                            </span>
+                        )}
 
                         <div className="ml-6">
-                            <h1 className="text-2xl font-semibold text-gray-900">
-                                {profileInfo.name}
-                            </h1>
-                            <p className="text-gray-600">
-                                {profileInfo.country}
-                            </p>
+                            <h1 className="text-2xl font-semibold text-gray-900">{profileInfo.name}</h1>
+                            <p className="text-gray-600">{profileInfo.country}</p>
                             <p className="text-gray-600">{profileInfo.city}</p>
                         </div>
                     </div>
@@ -81,9 +72,7 @@ export default function ProfileInfo() {
                                 <Button
                                     variant="outline"
                                     className="w-[150px]"
-                                    onClick={() =>
-                                        setIsAccountSettingsDialogOpen(true)
-                                    } // Open the account settings dialog
+                                    onClick={() => setIsAccountSettingsDialogOpen(true)} // Open the account settings dialog
                                 >
                                     <Settings className="h-4 w-4 mr-2" />
                                     Account Settings
