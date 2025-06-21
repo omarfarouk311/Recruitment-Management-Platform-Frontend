@@ -16,7 +16,6 @@ function JobSeekerProfile() {
   const removeSkill = useStore.useSeekerProfileRemoveSkill();
   const fetchSkills = useStore.useSeekerProfileFetchSkills();
   const { userId, jobId } = useParams();
-  const fetchAll = useStore.useSeekerProfileFetchAll();
   const setSelectedUser = useStore.useSetSeekerProfileSelectedSeekerData();
 
   useEffect(() => {
@@ -25,7 +24,6 @@ function JobSeekerProfile() {
         seekerId: parseInt(userId),
         jobId: parseInt(jobId),
       });
-      fetchAll();
     }
     return () => {
       clearProfile();

@@ -356,11 +356,12 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     seekerProfileAddEducation: async (education) => {
         try {
             let res = await axios.post(`${config.API_BASE_URL}/seekers/educations/add`, {
-                ...education,
+                degree: education.degree,
+                grade: education.grade,
                 start_date: new Date(education.startDate).toISOString(),
                 end_date: education.endDate ? new Date(education.endDate).toISOString() : undefined,
                 school_name: education.institution,
-                field: education.fieldOfStudy,
+                field: education.fieldOfStudy
             }, { withCredentials: true })
             set((state) => ({
                 seekerProfileEducation: [

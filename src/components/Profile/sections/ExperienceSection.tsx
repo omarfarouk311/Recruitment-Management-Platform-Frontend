@@ -76,9 +76,7 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
         </div>
 
         <div
-          className={`space-y-4 overflow-hidden ${
-            showAll ? "max-h-none" : "max-h-[200px]"
-          }`}
+          className={`space-y-4 overflow-hidden `}
         >
           {isLoading ? (
             <SkeletonLoader />
