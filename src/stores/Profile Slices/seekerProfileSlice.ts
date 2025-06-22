@@ -670,8 +670,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     },
 
     seekerProfileFetchReviews: async () => {
-        const { seekerProfileReviewsHasMore, seekerProfileReviewsIsLoading, seekerProfileReviewsPage, seekerProfileSelectedSeekerData } = get();
-        if (!seekerProfileReviewsHasMore || seekerProfileReviewsIsLoading) return;
+        const { seekerProfileReviewsHasMore, seekerProfileReviewsPage, seekerProfileSelectedSeekerData } = get();
+        if (!seekerProfileReviewsHasMore) return;
 
         set({ seekerProfileReviewsIsLoading: true });
         try {
@@ -698,8 +698,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 return {
                     seekerProfileReviews: [...state.seekerProfileReviews, ...newReviews],
                     seekerProfileReviewsHasMore: res.data.length > 0,
-                    seekerProfileReviewsPage: state.seekerProfileReviewsPage + 1,
-                    seekerProfileReviewsIsLoading: false
+                    seekerProfileReviewsPage: state.seekerProfileReviewsPage + 1
                 }
             });
         } catch(err) {
@@ -710,6 +709,9 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 }
             }
             showErrorToast('Failed to fetch reviews');
+            
+        }
+        finally {
             set({ seekerProfileReviewsIsLoading: false });
         }
     },
