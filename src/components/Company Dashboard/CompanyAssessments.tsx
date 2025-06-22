@@ -3,10 +3,16 @@ import { ColumnDef } from "../common/Dashboard";
 import { assessment, InvitationsStatusFilterOptions,AssessmentFilters } from "../../types/companyDashboard";
 import { useEffect } from "react";
 import FilterDropdown from "../Filters/FilterDropdown";
+import AssessmentDialog from "../common/assessmentDialog";
 import LocationSearch from "../common/LocationSearch"
 import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
+
+import axios from "axios";
+import config from "../../../config/config.ts";
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 
 const CompanyAssessment = () => {
@@ -32,14 +38,51 @@ const CompanyAssessment = () => {
     }, []);
 
     const handleEditAssessment = (assessmentId:number) => {
-        
-        useSetSelectAssessmentId(assessmentId);
-        useSetAssessmentDialogIsOpen(true);
+    //    console.log('Edit clicked for assessment:', assessmentId);
+          window.location.href = `/company/assessment/${assessmentId}`;
    };
-   const handleDeleteAssessment = (assessmentId:number) => {
-        
-    useSetSelectAssessmentId(assessmentId);
-    useSetAssessmentDialogIsOpen(true);
+   const handleDeleteAssessment = async(assessmentId:number) => {
+     if (!assessmentId) {
+    console.error("Invalid assessment ID:", assessmentId);
+    showErrorToast("Invalid assessment ID");
+    return;
+  }
+
+  try {
+    const response = await axios.delete(
+      `${config.API_BASE_URL}/assessments/${assessmentId}`,
+      {
+        withCredentials: true,
+      }
+    );
+      if (response.status === 200 || response.status === 204) {
+      useStore.setState((state) => ({
+        companyAssessmentsData: state.companyAssessmentsData.filter(
+          (a) => a.assessmentId !== assessmentId
+        ),
+      }));
+    }
+    
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      if (err.response?.status === 401) {
+        const succeeded = await authRefreshToken();
+        if (succeeded) {
+          await handleDeleteAssessment(assessmentId); // retry
+        } else {
+          showErrorToast("Session expired. Please login again.");
+        }
+      } else if (err.response?.status === 400) {
+        console.error("400 Bad Request:", err.response.data);
+        showErrorToast("Bad request: check assessment ID or permissions / assessment has been assigned to recruitment process");
+      } else {
+        console.error(err);
+        showErrorToast("Failed to delete assessment");
+      }
+    } else {
+      showErrorToast("Unexpected error occurred");
+    }
+  }
 };
 
    const columns: ColumnDef<assessment>[] = [
@@ -100,7 +143,8 @@ const CompanyAssessment = () => {
                 <Button
                     variant="primary"
                     className="h-7 text-sm w-[120px]"
-                    onClick={() => handleEditAssessment(row.assessmentId)} 
+                    
+                    onClick={() =>{ handleEditAssessment(row.assessmentId)}} 
                 >
                     Edit Assessment
                 </Button>
@@ -140,6 +184,7 @@ const CompanyAssessment = () => {
                     useIsLoading={useIsLoading}
                     useFetchData={useFetchData}
                 />
+                <AssessmentDialog />
 
             </div>
         </div>

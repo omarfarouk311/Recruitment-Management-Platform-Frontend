@@ -1,15 +1,11 @@
 import { StateCreator } from "zustand";
-import {
-  assessment,
-  AssessmentFilters
-} from "../../types/companyDashboard.ts";
-
+import { assessment, AssessmentFilters } from "../../types/companyDashboard.ts";
 import { CombinedState } from "../storeTypes";
-
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
-
+import { showErrorToast } from '../../util/errorHandler.ts';
+import { authRefreshToken } from '../../util/authUtils.ts';
 
 export interface CompanyAssessmentsSlice {
   companyAssessmentsData: assessment[];
@@ -17,19 +13,16 @@ export interface CompanyAssessmentsSlice {
   companyAssessmentsHasMore: boolean;
   companyAssessmentsIsLoading: boolean;
   companyAssessmentsFilters: AssessmentFilters;
-
-  CompanyAssessmentsJobTitleNames:{ value: string; label: string }[];
+  CompanyAssessmentsJobTitleNames: { value: string; label: string }[];
+  companyAssessmentsError: string | null;
+  companyAssessmentsSetError: (error: string | null) => void;
   companyAssessmentsSetJobTitlesNames: () => Promise<void>;
-
   companyAssessmentsFetchData: () => Promise<void>;
   companyAssessmentsSetFilters: (
     filters: Partial<CompanyAssessmentsSlice["companyAssessmentsFilters"]>
   ) => Promise<void>;
-  
   clearCompanyAssessment: () => void;
 }
-
-
 
 export const createCompanyAssessmentsSlice: StateCreator<
   CombinedState,
@@ -41,6 +34,7 @@ export const createCompanyAssessmentsSlice: StateCreator<
   companyAssessmentsPage: 1,
   companyAssessmentsHasMore: true,
   companyAssessmentsIsLoading: false,
+  companyAssessmentsError: null,
   CompanyAssessmentsJobTitleNames: [],
   companyAssessmentsFilters: {
     jobTitle: ""
@@ -51,62 +45,103 @@ export const createCompanyAssessmentsSlice: StateCreator<
       companyAssessmentsPage,
       companyAssessmentsHasMore,
       companyAssessmentsIsLoading,
-      companyAssessmentsFilters:{jobTitle}
+      companyAssessmentsFilters: { jobTitle }
     } = get();
-    if (!companyAssessmentsHasMore || companyAssessmentsIsLoading) return;
-    set({ companyAssessmentsIsLoading: true });
-
-    // Mock API call, don't forget to include the filters in the query string if they are populated
-    try {
-        let params = Object.fromEntries(
-          Object.entries({
-            page: companyAssessmentsPage,
-            jobTitle: jobTitle || undefined,
-          }).filter(([_, value]) => value !== undefined)
-        );
-  
-        let res = await axios.get(`${config.API_BASE_URL}/assessments`, {
-          params,
-        });
-        
-        set((state) => ({
-            companyAssessmentsData: [
-            ...state.companyAssessmentsData,
-            ...res.data.assessments.map((a: any) => ({
-              assessmentId: a.id,
-              jobTitle: a.job_title,
-              assessmentName: a.name,
-              assessmentTime:a.assessment_time,
-              numberOfQuestions: a.num_of_questions,
-            })),
-          ],
-          seekerAssessmentsHasMore:  res.data.length > 0,
-          seekerAssessmentsIsLoading: false,
-          seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
-        }));
-  
-      }catch (err) {
-        set({ seekerAssessmentsIsLoading: false });
-      }
-
-
-  },
-  companyAssessmentsSetJobTitlesNames: async () => {
     
-    const { userId } = get();
-    console.log(userId)
-    let res = await axios.get(`${config.API_BASE_URL}/companies/${userId}/jobs?page=1&filterBar=true`);
-    if(res.status !== 200) return;
+    if (!companyAssessmentsHasMore ) return;
+    
+    set({ 
+      companyAssessmentsIsLoading: true,
+      companyAssessmentsError: null 
+    });
 
+    try {
+      let params = Object.fromEntries(
+        Object.entries({
+          page: companyAssessmentsPage,
+          jobTitle: jobTitle || undefined,
+        }).filter(([_, value]) => value !== undefined)
+      );
 
-    set({
-        CompanyAssessmentsJobTitleNames: res.data.map((job: { id: number; title: string }) => ({
+      const response = await axios.get(
+        `${config.API_BASE_URL}/assessments`, 
+        {
+          params,
+          withCredentials: true
+        }
+      );
+      
+      set((state) => ({
+        companyAssessmentsData: [
+          ...state.companyAssessmentsData,
+          ...response.data.assessments.map((a: any) => ({
+            assessmentId: a.id,
+            jobTitle: a.job_title,
+            assessmentName: a.name,
+            assessmentTime: a.assessment_time,
+            numberOfQuestions: a.num_of_questions,
+          })),
+        ],
+        companyAssessmentsHasMore: response.data.length > 0,
+        companyAssessmentsIsLoading: false,
+        companyAssessmentsPage: state.companyAssessmentsPage + 1,
+      }));
+
+    } catch (err) {
+      set({ companyAssessmentsIsLoading: false });
+      
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().companyAssessmentsFetchData();
+          } else {
+            set({ companyAssessmentsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ companyAssessmentsError: "Failed to fetch assessments data" });
+          showErrorToast('Failed to fetch assessments data');
+        }
+      } else {
+        set({ companyAssessmentsError: "An unexpected error occurred" });
+        showErrorToast('An unexpected error occurred');
+      }
+    }
+  },
+
+  companyAssessmentsSetJobTitlesNames: async () => {
+    try {
+      const { userId } = get();
+      const response = await axios.get(
+        `${config.API_BASE_URL}/companies/${userId}/jobs?page=1&filterBar=true`,
+        { withCredentials: true }
+      );
+      
+      if (response.status !== 200) return;
+      
+      set({
+        CompanyAssessmentsJobTitleNames: response.data.map((job: { id: number; title: string }) => ({
           value: job.id,
           label: job.title,
         })),
       });
-    
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const succeeded = await authRefreshToken();
+          if (succeeded) {
+            await get().companyAssessmentsSetJobTitlesNames();
+          } else {
+            set({ companyAssessmentsError: "Session expired. Please login again." });
+          }
+        } else {
+          set({ companyAssessmentsError: "Failed to fetch job titles" });
+          showErrorToast('Failed to fetch job titles');
+        }
+      }
+    }
   },
+
   companyAssessmentsSetFilters: async (filters) => {
     set((state) => ({
       companyAssessmentsFilters: {
@@ -116,13 +151,16 @@ export const createCompanyAssessmentsSlice: StateCreator<
       companyAssessmentsData: [],
       companyAssessmentsPage: 1,
       companyAssessmentsHasMore: true,
+      companyAssessmentsError: null,
     }));
 
     await get().companyAssessmentsFetchData();
   },
   
-
-
+  companyAssessmentsSetError: (error: string | null) => {
+    set({ companyAssessmentsError: error });
+  },
+  
   clearCompanyAssessment: () => {
     set({
       companyAssessmentsData: [],
@@ -132,6 +170,8 @@ export const createCompanyAssessmentsSlice: StateCreator<
       companyAssessmentsFilters: {
         jobTitle: ""
       },
+      CompanyAssessmentsJobTitleNames: [],
+      companyAssessmentsError: null,
     });
   },
 });
