@@ -31,7 +31,7 @@ export interface CompanyProfileSlice {
     companyProfileReviewsFilters: CompanyProfileReviewsFilters;
     companyProfileFetchReviews: (id?: string) => Promise<void>;
     companyProfileSetReviewsFilters: (filters: Partial<CompanyProfileSlice['companyProfileReviewsFilters']>, id?: string) => Promise<void>;
-
+    companyProfileAddReview: (companyId: number, review: { rating: number, description: string, title: string, role: string }) => Promise<void>;
     companyProfileJobs: Job[];
     companyProfileJobsPage: number;
     companyProfileJobsHasMore: boolean;
@@ -357,6 +357,51 @@ export const createCompanyProfileSlice: StateCreator<CombinedState, [], [], Comp
         }));
 
         await get().companyProfileFetchReviews(id);
+    },
+
+    companyProfileAddReview: async (companyId, review) => {
+        try {
+            const res = await axios.post(
+                `${config.API_BASE_URL}/reviews`,
+                {
+                    companyId,
+                    title: review.title,
+                    rating: review.rating,
+                    description: review.description,
+                    role: review.role
+                },
+                { withCredentials: true }
+            );
+
+            set(state => ({
+                companyProfileReviews: [
+                    {
+                        ...review,
+                        id: res.data.id,
+                        createdAt: formatDistanceToNow(new Date(), { addSuffix: true }),
+                        companyData: { id: companyId, name: state.companyProfileInfo.name }
+                    },
+                    ...state.companyProfileReviews],
+            }))
+        }
+        catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const succeeded = await authRefreshToken();
+                    if (succeeded) await get().companyProfileAddReview(companyId, review);
+                }
+                else if (err.response?.status === 400) {
+                    const validationErrors = err.response.data.validationErrors;
+                    validationErrors.forEach((error: string) => {
+                        showErrorToast(error);
+                    });
+                }
+                else if (err.response?.status === 403) {
+                    return showErrorToast('You do not have permission to add a review');
+                }
+                else showErrorToast('Failed to add review');
+            }
+        }
     },
 
     companyProfileFetchJobs: async (id) => {

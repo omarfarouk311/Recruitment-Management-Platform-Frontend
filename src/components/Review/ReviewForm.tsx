@@ -16,21 +16,35 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-interface ReviewDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  review?: Review;
-  updateReview: (review: Review) => Promise<void>;
-}
+type ReviewDialogProps =
+  | {
+      isOpen: boolean;
+      onClose: () => void;
+      review: Review;
+      companyId?: never;
+      updateReview: (review: Review) => Promise<void>;
+      addReview?: never;
+    }
+  | {
+      isOpen: boolean;
+      onClose: () => void;
+      review?: undefined;
+      companyId: number;
+      updateReview?: never;
+      addReview: (
+        companyId: number,
+        review: { rating: number; description: string; title: string; role: string }
+      ) => Promise<void>;
+    };
 
 export default function ReviewForm({
   isOpen,
   onClose,
   review,
   updateReview,
+  addReview,
+  companyId,
 }: ReviewDialogProps) {
-  // add addReview hook when implemented
-
   const {
     register,
     handleSubmit,
@@ -47,7 +61,7 @@ export default function ReviewForm({
   });
 
   useEffect(() => {
-    if (review) {
+    if (review && isOpen) {
       reset({
         title: review.title,
         role: review.role,
@@ -65,7 +79,7 @@ export default function ReviewForm({
         ...data,
       });
     } else {
-      // add addReview hook when implemented
+      await addReview(companyId, data);
     }
     onClose();
   };
@@ -78,22 +92,15 @@ export default function ReviewForm({
         <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl">
           <div className="p-8 max-h-[80vh] overflow-y-auto hide-scrollbar">
             <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold">
-                {review ? "Edit Review" : "Add Review"}
-              </h2>
-              <button
-                onClick={onClose}
-                className="hover:bg-gray-200 rounded-full p-2 transition-colors"
-              >
+              <h2 className="text-2xl font-bold">{review ? "Edit Review" : "Add Review"}</h2>
+              <button onClick={onClose} className="hover:bg-gray-200 rounded-full p-2 transition-colors">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Title
-                </label>
+                <label className="text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
                   {...register("title")}
@@ -101,17 +108,11 @@ export default function ReviewForm({
                     errors.title ? "border-red-500" : ""
                   }`}
                 />
-                {errors.title && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.title.message}
-                  </p>
-                )}
+                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Role
-                </label>
+                <label className="text-sm font-medium text-gray-700">Role</label>
                 <input
                   type="text"
                   {...register("role")}
@@ -119,17 +120,11 @@ export default function ReviewForm({
                     errors.role ? "border-red-500" : ""
                   }`}
                 />
-                {errors.role && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.role.message}
-                  </p>
-                )}
+                {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Rating
-                </label>
+                <label className="text-sm font-medium text-gray-700">Rating</label>
                 <select
                   {...register("rating", { valueAsNumber: true })}
                   className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
@@ -142,17 +137,11 @@ export default function ReviewForm({
                     </option>
                   ))}
                 </select>
-                {errors.rating && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.rating.message}
-                  </p>
-                )}
+                {errors.rating && <p className="text-red-500 text-sm mt-1">{errors.rating.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Description
-                </label>
+                <label className="text-sm font-medium text-gray-700">Description</label>
                 <textarea
                   {...register("description")}
                   rows={4}
@@ -161,19 +150,12 @@ export default function ReviewForm({
                   }`}
                 />
                 {errors.description && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.description.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
                 )}
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="!w-[30%] !h-10"
-                  loading={isSubmitting}
-                >
+                <Button type="submit" variant="primary" className="!w-[30%] !h-10" loading={isSubmitting}>
                   {review ? "Update" : "Add"} Review
                 </Button>
               </div>
