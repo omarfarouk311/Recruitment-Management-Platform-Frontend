@@ -469,8 +469,6 @@ const ProfileSetup = () => {
                                 Basic Information
                             </h2>
                             <div className="flex items-center justify-center mb-20 gap-20">
-                                {" "}
-                                {/* Increased gap */}
                                 {/* Profile Photo Upload */}
                                 <div className="text-center">
                                     <div className="relative">
@@ -513,7 +511,7 @@ const ProfileSetup = () => {
                                 {/* CV Upload */}
                                 <div className="text-center relative">
                                     <div className="relative">
-                                        <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <div className={`w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center transition-all duration-200 ${parsingIsLoading ? "min-h-[8rem]" : ""}`}>
                                             {cvFile ? (
                                                 getFileIcon(cvFile.name)
                                             ) : (
@@ -537,6 +535,9 @@ const ProfileSetup = () => {
                                     <p className="mt-2 text-sm text-gray-600">
                                         Upload CV
                                     </p>
+                                    {parsingIsLoading && (
+                                        <p className="mt-2 text-sm text-blue-500 min-h-[1.5rem]">Parsing CV...</p>
+                                    )}
                                     {cvFile && (
                                         <p className="mt-2 text-sm text-gray-600">
                                             {cvFile.name}
@@ -694,11 +695,12 @@ const ProfileSetup = () => {
                         />
 
                         {/* Submit Button */}
-                        <div className="pt-6 border-t">
+                        <div className="pt-6 border-t min-h-[5rem]">
                             <Button
                                 type="submit"
                                 variant="primary"
                                 loading={loading}
+                                className="min-h-[3rem]"
                             >
                                 Complete Profile
                             </Button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Edit3, Trash2, PlusCircle } from 'lucide-react';
 import { Process, Phase } from "../../types/companyDashboard";
+import Button from './Button';
 
 interface ProcessData {
   id?: number;
@@ -323,19 +324,15 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
         </div>
 
         {/* Footer */}
-     <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-      <button
-        onClick={handleClose}
-        className="px-6 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={handleSave}
-        className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800"
-      >
-        {isEditMode ? 'Update Process' : 'Save Process'}
-      </button>
+    <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 w-full">
+      <div className="flex ml-auto gap-3">
+        <Button variant='report' onClick={handleClose} className="min-w-[200px]">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} className="min-w-[200px]">
+          {isEditMode ? 'Update Process' : 'Save Process'}
+        </Button>
+      </div>
     </div>
       </div>
     </div>
