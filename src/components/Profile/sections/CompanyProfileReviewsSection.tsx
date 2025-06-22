@@ -4,6 +4,10 @@ import ReviewList from "../../Review/ReviewList";
 import FilterDropdown from "../../Filters/FilterDropdown";
 import { sortByDateOptions, reviewsRatingOptions } from "../../../data/filterOptions";
 import { useParams } from "react-router-dom";
+import { PlusCircle } from "lucide-react";
+import ReviewForm from "../../Review/ReviewForm";
+import { useState } from "react";
+import { UserRole } from "../../../stores/User Slices/userSlice";
 
 export default function ReviewsSection() {
   const reviews = useStore.useCompanyProfileReviews();
@@ -13,6 +17,9 @@ export default function ReviewsSection() {
   const filters = useStore.useCompanyProfileReviewsFilters();
   const setFilters = useStore.useCompanyProfileSetReviewsFilters();
   const { id } = useParams();
+  const addReview = useStore.useCompanyProfileAddReview();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const userRole = useStore.useUserRole();
 
   useEffect(() => {
     fetchReviews(id);
@@ -22,7 +29,7 @@ export default function ReviewsSection() {
     <div className="p-6 bg-white rounded-3xl shadow border-2 border-gray-200">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Reviews</h1>
-        <div className="flex space-x-12">
+        <div className="flex gap-14">
           <FilterDropdown
             label="Sort By Date"
             options={sortByDateOptions}
@@ -35,16 +42,27 @@ export default function ReviewsSection() {
             selectedValue={filters.rating}
             onSelect={(value) => setFilters({ rating: value }, id)}
           />
+          <button
+            className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
+            title="Add a review"
+            onClick={() => setIsFormOpen(true)}
+          >
+            <PlusCircle size={30} />
+          </button>
         </div>
       </div>
       <div className="mt-8">
-        <ReviewList
-          reviews={reviews}
-          hasMore={hasMore}
-          isLoading={isLoading}
-          onLoadMore={fetchReviews}
-        />
+        <ReviewList reviews={reviews} hasMore={hasMore} isLoading={isLoading} onLoadMore={fetchReviews} />
       </div>
+
+      {userRole === UserRole.SEEKER && (
+        <ReviewForm
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          addReview={addReview}
+          companyId={parseInt(id!)}
+        />
+      )}
     </div>
   );
 }
