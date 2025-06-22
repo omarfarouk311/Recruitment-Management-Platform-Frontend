@@ -106,7 +106,7 @@ const handleSaveProcess = async (processData: { name: string; phases: Phase[] })
 const fetchAssessments = async () => {
         setIsFetchingAssessments(true);
         try {
-            const response = await axios.get('http://localhost:8080/api/assessments/', {withCredentials: true});
+            const response = await axios.get(`${config.API_BASE_URL}/assessments/`, {withCredentials: true});
             if (response.data.success) {
                 // Store only id and name
                 const simplifiedAssessments = response.data.assessments.map((a: any) => ({
