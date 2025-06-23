@@ -7,7 +7,7 @@ import axios from "axios";
 import config from "../../../config/config";
 const API_BASE_URL = config.API_BASE_URL;import { authRefreshToken } from "../../util/authUtils";
 import { showErrorToast } from "../../util/errorHandler";
-
+import SkeletonLoader from "../common/SkeletonLoader";
 interface Assessment {
     id: number;
     name: string;
@@ -22,11 +22,13 @@ const CompanyRecruitmentProcesses: React.FC = () => {
     const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
 
+
     const fetch = useStore.useFetchProcesses();
     const addProcess = useStore.useAddProcess();
     const deleteProcess = useStore.useDeleteProcess();
     const resetProcesses = useStore.useResetProcesses();
     const updateProcess = useStore.useUpdateProcess();
+    const isLoadingProcesses = useStore.useProcessesIsLoading();
     // const processes = useStore.useProcesses();
 
     useEffect(() => {
@@ -158,6 +160,9 @@ const fetchAssessments = async () => {
 
 
    return (
+         isLoadingProcesses ? (
+            <SkeletonLoader />
+        ) : (
         <div className="max-w-screen-2xl mx-auto px-6 py-8">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
@@ -282,6 +287,7 @@ const fetchAssessments = async () => {
                 isFetchingAssessments={isFetchingAssessments}
             />
         </div>
+    )
     );
 };
 
