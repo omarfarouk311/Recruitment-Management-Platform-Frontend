@@ -34,8 +34,8 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
     processId: null,
 
     fetchProcesses: async () => {
-        const { processesPage, processesHasMore, processesIsLoading } = get();
-        if (processesIsLoading || !processesHasMore) return [];
+        const { processesPage, processesHasMore} = get();
+        if (!processesHasMore) return [];
 
         set({ processesIsLoading: true });
         try {
@@ -65,6 +65,7 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                             }))
                         };
                     } catch (err) {
+                    
                         if (axios.isAxiosError(err) && err.response?.status === 401) {
                             const success = await authRefreshToken();
                             if (success) {
@@ -76,6 +77,8 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                             ...process,
                             phases: []
                         };
+                    } finally {
+                        set({ processesIsLoading: false });
                     }
                 })
             );
@@ -139,6 +142,7 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
 
     updateProcess: async (processId: number, name: string, phases: Phase[]) => {
         try {
+            set({ processesIsLoading: true });
             const transformedPhases = phases.map(phase => {
                 const basePhase = {
                     phaseNumber: phase.phase_num.toString(),
@@ -176,6 +180,9 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
             } 
             await showErrorToast(errorMessage);
             throw err;
+        }
+        finally {
+            set({ processesIsLoading: false });
         }
     },
 
