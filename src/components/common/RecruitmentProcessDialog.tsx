@@ -67,6 +67,8 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
     });
   };
 
+  
+
   const addPhase = () => {
     const newPhase: Phase = {
       id: Date.now(),
@@ -76,7 +78,7 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
       deadline: '',
       assessmentname: '',
       assessment_time: '',
-      assessmentId: null,
+      assessmentid: null,
     };
     setPhases([...phases, newPhase]);
     setErrors(prev => ({
@@ -125,29 +127,47 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
     });
   };
 
-  const handleSave = () => {
-    const processNameError = validateProcessName(processName);
-    const phaseErrors = validatePhaseNames(phases);
-    
-    setErrors({
-      processName: processNameError,
-      phases: phaseErrors
-    });
+ const handleSave = () => {
+  // Validate process name
+  const processNameError = validateProcessName(processName);
+  if (processNameError) {
+    setErrors({ processName: processNameError, phases: [] });
+    return;
+  }
 
-    const hasErrors = processNameError || phaseErrors.some(error => error !== '');
-    if (hasErrors) return;
+  // Validate phase names
+  const phaseErrors = validatePhaseNames(phases);
+  if (phaseErrors.some(error => error !== '')) {
+    setErrors({ processName: '', phases: phaseErrors });
+    return;
+  }
 
-    const validPhases = phases.filter(phase => phase.phasename.trim() !== '');
-    if (validPhases.length === 0) {
-      alert('Please add at least one phase');
-      return;
+  // Simple deadline validation
+  const invalidDeadline = phases.some(phase => {
+    if (phase.type === 1) { // Only check assessment phases
+      const days = parseInt(phase.deadline ?? '');
+      return isNaN(days) || days < 1 || days > 20;
     }
+    return false;
+  });
 
-    onSave({
-      name: processName.trim(),
-      phases: validPhases
-    });
-  };
+  if (invalidDeadline) {
+    alert('Please enter a valid deadline between 1 and 20 days for assessment phases');
+    return;
+  }
+
+  // Filter empty phases and save
+  const validPhases = phases.filter(phase => phase.phasename.trim() !== '');
+  if (validPhases.length === 0) {
+    alert('Please add at least one phase');
+    return;
+  }
+
+  onSave({
+    name: processName.trim(),
+    phases: validPhases
+  });
+};
 
   const handleClose = () => {
     setProcessName('');
@@ -271,7 +291,7 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
                                 const selectedAssessment = assessments.find(a => a.name === selectedName);
                                 updatePhase(phase.id, 'assessmentname', selectedName);
                                 if (selectedAssessment) {
-                                  updatePhase(phase.id, 'assessmentId', selectedAssessment.id);
+                                  updatePhase(phase.id, 'assessmentid', selectedAssessment.id);
                                 }
                               }}
                               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
@@ -284,16 +304,15 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
                               ))}
                             </select>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              value={phase.deadline || ''}
-                              onChange={(e) => updatePhase(phase.id, 'deadline', e.target.value)}
-                              placeholder="Deadline (days)"
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                              min="1"
-                            />
-                          </div>
+                      <input
+                          type="number"
+                          value={phase.deadline || ''}
+                          onChange={(e) => updatePhase(phase.id, 'deadline', e.target.value)}
+                          placeholder="Deadline (days)"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                          min="1"
+                          max="20"
+                        />
                         </>
                       )}
                       {phase.type === 2 && (

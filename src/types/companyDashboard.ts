@@ -121,5 +121,5 @@ export interface Phase {
   deadline?: string;
   assessmentname?: string;
   assessment_time?: string;
-  assessmentId?: number | null;
+  assessmentid?: number | null;
 }

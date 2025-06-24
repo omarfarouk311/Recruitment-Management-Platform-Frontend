@@ -141,26 +141,31 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
     },
 
     updateProcess: async (processId: number, name: string, phases: Phase[]) => {
+        console.log("RAW PHASES DATA:", JSON.parse(JSON.stringify(phases)));
         try {
             set({ processesIsLoading: true });
             const transformedPhases = phases.map(phase => {
-                const basePhase = {
-                    phaseNumber: phase.phase_num.toString(),
-                    phaseName: phase.phasename,
-                    phaseType: phase.type
+            
+            const basePhase = {
+                phaseNumber: phase.phase_num.toString(),
+                phaseName: phase.phasename,
+                phaseType: phase.type
+            };
+
+            if (phase.type == 1) {
+                console.log("ASSESSMENT PHASE DETECTED:", phase.assessmentid, phase.deadline);
+                const transformed = {
+                    ...basePhase,
+                    assessmentId: phase.assessmentid,
+                    deadline: phase.deadline
                 };
+                return transformed;
+            }
+              return basePhase;
+        });
 
-                if (phase.type === 1) {
-                    return {
-                        ...basePhase,
-                        assessmentId: phase.assessmentId,
-                        deadline: phase.deadline
-                    };
-                }
-                
-                return basePhase;
-            });
-
+            console.log("Transformed phases:", transformedPhases);
+        
             await axios.put(`${API_BASE_URL}/recruitment_processes/${processId}`, {
                 processName: name,
                 phases: transformedPhases
@@ -198,7 +203,7 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 if (phase.type === 1) {
                     return {
                         ...basePhase,
-                        assessmentId: phase.assessmentId,
+                        assessmentId: phase.assessmentid,
                         deadline: phase.deadline
                     };
                 }
