@@ -16,7 +16,7 @@ const schema = z.object({
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),
   startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
+  endDate: z.string().optional(),
   description: z.string().min(1, "Description is required"),
 });
 
@@ -80,7 +80,7 @@ export default function ExperienceDialog({
         ...defaultFormValues,
         ...experience,
         startDate: formatForInput(experience.startDate),
-        endDate: formatForInput(experience.endDate),
+        endDate: experience.endDate ? formatForInput(experience.endDate) : undefined,
       });
     } else {
       reset(
@@ -100,9 +100,11 @@ export default function ExperienceDialog({
   const onSubmit = async (data: FormData) => {
     const isValid = await trigger();
 
+    if(data.endDate === "") delete data.endDate;
+
     const [startYear, startMonth] = data.startDate.split("-").map(Number);
-    const [endYear, endMonth] = data.endDate.split("-").map(Number);
-    const isDateValid = startYear < endYear || (startYear === endYear && startMonth <= endMonth);
+    const [endYear, endMonth] = data.endDate? data.endDate.split("-").map(Number): [undefined, undefined];
+    const isDateValid = (!endYear || startYear < endYear) || (startYear === endYear && startMonth <= endMonth!);
 
     if (!isValid || !isDateValid) {
       if (!isDateValid) {
@@ -207,14 +209,33 @@ export default function ExperienceDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">End Date</label>
-                  <input
-                    type="month"
-                    {...register("endDate")}
-                    className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                      errors.endDate ? "border-red-500" : ""
-                    }`}
-                  />
+                    <label className="text-sm font-medium text-gray-700">End Date</label>
+                    <div>
+                      <input
+                        type="month"
+                        {...register("endDate")}
+                        className={`w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                          errors.endDate ? "border-red-500" : ""
+                        }`}
+                        disabled={watch("endDate") === undefined}
+                      />
+                      <div className="mt-2 flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={watch("endDate") === undefined}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              // Set endDate to undefined (Present)
+                              setValue("endDate", undefined, { shouldValidate: true });
+                            } else {
+                              // Set endDate to empty string to allow editing
+                              setValue("endDate", "", { shouldValidate: true });
+                            }
+                          }}
+                        />
+                        <label>Present</label>
+                      </div>
+                    </div>
                   {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate.message}</p>}
                 </div>
               </div>

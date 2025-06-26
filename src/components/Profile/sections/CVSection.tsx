@@ -102,7 +102,7 @@ export default function CVSection() {
                                     {cv.createdAt}
                                 </p>
 
-                                {userRole === UserRole.SEEKER && (
+                                {userRole === UserRole.SEEKER && cvs.length > 1 && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

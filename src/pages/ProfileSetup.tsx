@@ -58,6 +58,8 @@ const ProfileSetup = () => {
     const userId = useStore.useUserId();
     const setUserName = useStore.useUserSetName();
     const setUserImage = useStore.useUserSetImage();
+    const [educationHasError, setEducationHasError] = useState<boolean>(false);
+    const [experienceHasError, setExperienceHasError] = useState<boolean>(false);
 
     const {
         register,
@@ -325,6 +327,14 @@ const ProfileSetup = () => {
         setLoading(true);
         // Add profile setup logic here
         try {
+            if(educationHasError) {
+                showErrorToast("Please fill all required education fields.");
+                return;
+            }
+            if(experienceHasError) {
+                showErrorToast("Please fill all required experience fields.");
+                return;
+            }
             const data = {
                 name: formValues.name,
                 city: formValues.city,
@@ -684,6 +694,8 @@ const ProfileSetup = () => {
                             removeExperience={handleRemoveExperience}
                             useExperiences={() => experiences}
                             updateExperience={handleEditExperience}
+                            showError={true}
+                            setHasError={setExperienceHasError}
                         />
 
                         {/* Education Section */}
@@ -692,6 +704,8 @@ const ProfileSetup = () => {
                             removeEducation={handleRemoveEducation}
                             useEducation={() => educations}
                             updateEducation={handleEditEducation}
+                            showError={true}
+                            setHasError={setEducationHasError}
                         />
 
                         {/* Submit Button */}

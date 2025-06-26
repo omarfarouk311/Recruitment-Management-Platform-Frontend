@@ -71,7 +71,14 @@ export default function SkillDialog({ isOpen, onClose, addSkill }: SkillDialogPr
               </button>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault(); // Prevent default form submission
+                e.stopPropagation(); // Stop event bubbling
+                handleSubmit(onSubmit)(e); // Trigger form validation
+              }} 
+              className="space-y-6"
+            >
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Skill Name

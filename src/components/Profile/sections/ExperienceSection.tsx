@@ -14,9 +14,19 @@ interface ExperienceSectionProps {
   useExperiences: () => Experience[]; 
   updateExperience: (experience: Experience) => Promise<void> | void;
   addExperience: (experience: Experience) => Promise<void> | void;
+  showError?: boolean;
+  setHasError?: (hasError: boolean) => void;
 }
 
-export default function ExperienceSection({removeExperience, fetchExperience, useExperiences, updateExperience, addExperience}: ExperienceSectionProps) {
+export default function ExperienceSection({
+  removeExperience, 
+  fetchExperience, 
+  useExperiences, 
+  updateExperience, 
+  addExperience, 
+  setHasError,
+  showError = false,
+}: ExperienceSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<
     Experience | undefined
@@ -54,7 +64,9 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
   };
 
   const checkMissingData = (experience: Experience) => {
-    return !experience.companyName || !experience.position || !experience.startDate || !experience.endDate || !experience.country || !experience.city;
+    let hasError = (!experience.companyName || !experience.position || !experience.startDate || !experience.country || !experience.city) && showError;
+    setHasError?.(hasError);
+    return hasError;
   }
 
   return (
@@ -113,7 +125,7 @@ export default function ExperienceSection({removeExperience, fetchExperience, us
                   {/* Dates and Buttons */}
                   <div className="flex items-center gap-4 ml-auto pl-4">
                     <p className="text-md text-gray-600 whitespace-nowrap mr-2">
-                      {formatDate(experience.startDate)} - {formatDate(experience.endDate)}
+                      {formatDate(experience.startDate)} - {experience.endDate ? formatDate(experience.endDate) : "Present"}
                     </p>
 
                     {userRole === UserRole.SEEKER && (

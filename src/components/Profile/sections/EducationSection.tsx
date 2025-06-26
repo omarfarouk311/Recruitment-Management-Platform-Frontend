@@ -14,9 +14,19 @@ interface EducationSectionProps {
   useEducation: () => Education[]; 
   addEducation: (education: Education) => Promise<void> | void;
   updateEducation: (education: Education) => Promise<void> | void;
+  showError?: boolean;
+  setHasError?: (hasError: boolean) => void;
 }
 
-export default function EducationSection({removeEducation, fetchEducation, useEducation, addEducation, updateEducation}: EducationSectionProps) {
+export default function EducationSection({
+  removeEducation, 
+  fetchEducation, 
+  useEducation, 
+  addEducation, 
+  updateEducation,
+  setHasError,
+  showError = false
+}: EducationSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<
     Education | undefined
@@ -54,7 +64,9 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
   };
   
   const checkMissingData = (edu: Education) => {
-    return !edu.institution || !edu.degree || !edu.fieldOfStudy || !edu.startDate || !edu.endDate || !edu.grade;
+    let hasError = (!edu.institution || !edu.degree || !edu.fieldOfStudy || !edu.startDate || !edu.endDate || !edu.grade) && showError;
+    setHasError?.(hasError);
+    return hasError;
   }
 
   return (
@@ -114,12 +126,14 @@ export default function EducationSection({removeEducation, fetchEducation, useEd
                     {userRole === UserRole.SEEKER && (
                       <div className="flex gap-4">
                         <button
+                          type="button"
                           className="text-gray-400 hover:text-gray-600"
                           onClick={() => handleEditEducation({ ...edu })}
                         >
                           <Edit className="h-5 w-5" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => removeEducation(edu.id!)}
                           className="text-red-400 hover:text-red-600"
                         >

@@ -199,7 +199,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                 seekerProfileExperience: res.data.map((exp: Experience & {jobTitle: string}) => ({
                     ...exp,
                     startDate: formatDate(new Date(exp.startDate), "MMM yyyy"),
-                    endDate: formatDate(new Date(exp.endDate), "MMM yyyy"),
+                    endDate: exp.endDate ? formatDate(new Date(exp.endDate), "MMM yyyy"): undefined,
                     position: exp.jobTitle,
                 }))
             });
@@ -227,7 +227,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     {
                         ...experience,
                         startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
-                        endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                        endDate: experience.endDate ? formatDate(new Date(experience.endDate), "MMM yyyy"): undefined,
                         id: res.data.id
                     },
                     ...state.seekerProfileExperience
@@ -270,7 +270,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                         ...exp,
                         ...experience,
                         startDate: formatDate(new Date(experience.startDate), "MMM yyyy"),
-                        endDate: formatDate(new Date(experience.endDate), "MMM yyyy"),
+                        endDate: experience.endDate ? formatDate(new Date(experience.endDate), "MMM yyyy"): undefined,
                     } : { ...exp }
                 )
             }));
