@@ -634,6 +634,8 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                         return showErrorToast('You do not have permission to remove this CV');
                     } else if (err.response.status === 400) {
                         return showErrorToast('Invalid request to remove CV');
+                    } else if (err.response.status === 409) {
+                        return showErrorToast('You must have at least one CV.');
                     }
                 }
             }

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
@@ -25,6 +25,7 @@ function App() {
           {userRole === UserRole.SEEKER && <Route path="/seeker/*" element={<SeekerRoutes />} />}
           {userRole === UserRole.RECRUITER && <Route path="/recruiter/*" element={<RecruiterRoutes />} />}
           {userRole === UserRole.COMPANY && <Route path="/company/*" element={<CompanyRoutes />} />}
+          {userRole === null && (<Route path="*" element={ <Navigate to="/" replace /> } />)}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
