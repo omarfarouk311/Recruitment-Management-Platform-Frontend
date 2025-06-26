@@ -204,8 +204,8 @@ export const createRecruiterCandidatesSlice: StateCreator<
                     `${config.API_BASE_URL}/candidates/job-title-filter`,
                     { params, withCredentials: true }
                 );
-      
-              const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
+                
+              const positionTitles =res.data.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
               set({
                   RecruiterCandidatesPositionTitles: positionTitles,
               });

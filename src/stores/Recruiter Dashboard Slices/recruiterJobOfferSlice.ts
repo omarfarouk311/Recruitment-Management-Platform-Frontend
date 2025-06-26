@@ -167,7 +167,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
               { params, withCredentials: true }
           );
   
-        const positionTitles =res.data.jobTitle.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
+        const positionTitles =res.data.map((jobTitle:string) => ({value: jobTitle, label: jobTitle}));
         set({
           RecruiterJobOfferPositionTitles: positionTitles,
         });
