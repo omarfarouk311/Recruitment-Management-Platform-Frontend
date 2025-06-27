@@ -66,31 +66,26 @@ export const createAssessmentSlice: StateCreator<
                     },
                 });
             } else if (id && get().userRole === UserRole.COMPANY) {
-                try {
-                    let res = await axios.get(
-                            `${config.API_BASE_URL}/assessments/${id}`,
-                            { withCredentials: true }
-                        );
-                    if (res) {
-                        set({
-                            assessmentData: {
-                                id: id,
-                                name: res.data.assessment.assessmentInfo.name,
-                                time: res.data.assessment.assessmentInfo
-                                    .assessmentTime,
-                                jobTitle:
-                                    res.data.assessment.assessmentInfo.jobTitle,
-                                numberOfQuestions:
-                                    res.data.assessment.assessmentInfo
-                                        .numberOfQuestions,
-                                questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum<b.questionNum)),
-                            },
-                            assessmentIsLoading: false,
-                        });
-                    }
-                } catch (err) {
-                    set({ assessmentData: null, assessmentIsLoading: false });
-                    showErrorToast("Error fetching assessment data");
+                let res = await axios.get(
+                        `${config.API_BASE_URL}/assessments/${id}`,
+                        { withCredentials: true }
+                    );
+                if (res) {
+                    set({
+                        assessmentData: {
+                            id: id,
+                            name: res.data.assessment.assessmentInfo.name,
+                            time: res.data.assessment.assessmentInfo
+                                .assessmentTime,
+                            jobTitle:
+                                res.data.assessment.assessmentInfo.jobTitle,
+                            numberOfQuestions:
+                                res.data.assessment.assessmentInfo
+                                    .numberOfQuestions,
+                            questions: res.data.assessment.questions.sort((a: any, b:any) => (a.questionNum<b.questionNum)),
+                        },
+                        assessmentIsLoading: false,
+                    });
                 }
             } else if (id && jobId && get().userRole === UserRole.SEEKER) {
                 let res = await axios.get(
@@ -220,10 +215,12 @@ export const createAssessmentSlice: StateCreator<
                 err.response.data.validationErrors.map((value:string) => {
                     showErrorToast(value);
                 });
+                throw err;
             }
+            showErrorToast("Error saving assessment data");
             throw err;
         } finally {
-            set({ assessmentIsLoading: true });
+            set({ assessmentSubmitionIsLoading: false });
         }
     },
 

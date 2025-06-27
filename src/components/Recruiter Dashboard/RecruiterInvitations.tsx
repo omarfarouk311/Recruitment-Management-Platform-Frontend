@@ -9,8 +9,6 @@ import Button from "../common/Button";
 import useStore from "../../stores/globalStore";
 import { Link } from "react-router-dom";
 import { DashboardStatusFilterOptions, DashboardSortByFilterOptions } from "../../types/recruiterDashboard";
-import { showErrorToast } from '../../util/errorHandler';
-import JobDetailsDialog from "../common/JobDetailsDialog";
 
 
 const RecruiterInvitations = () => {
@@ -23,16 +21,12 @@ const RecruiterInvitations = () => {
     const useMakeDecision = useStore.useRecruiterInvitationsMakeDecision();
     const [useIsMakingDecision, useSetIsMakingDecision] = useState<null | number>(null);
     const fetchData = useFetchData();
-    const cancelRequests = useStore.useRecruiterInvitationsCancelRequests();
+    const clear = useStore.useRecruiterInvitationsClear();
 
     // Fetch data when component mounts and when filters change
     useEffect(() => {
         fetchData();
-
-        // Cleanup function to cancel pending requests
-        return () => {
-            cancelRequests();
-        };
+        return clear;
     }, []);
 
 
@@ -69,25 +63,21 @@ const RecruiterInvitations = () => {
                 </div>
             ),
         },
-        { key: "dateReceived", header: "Date Received" },
-        {
-            key: "deadline",
-            header: "Deadline (GMT)",
+        { 
+            key: "dateReceived", 
+            header: "Date Received",
             render: (row) => {
-                const deadline = new Date(row.deadline);
+                const deadline = new Date(row.dateReceived);
 
                 const formattedDate = deadline.toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
-                    timeZone: 'GMT'
                 });
 
                 const formattedTime = deadline.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
-                    timeZone: 'GMT',
                     hour12: false
                 });
 
@@ -95,7 +85,35 @@ const RecruiterInvitations = () => {
                     <div className="flex flex-col">
                         <span>{formattedDate}</span>
                         <span className="text-xs text-gray-500">
-                            {formattedTime} GMT
+                            {formattedTime}
+                        </span>
+                    </div>
+                );
+            }
+        },
+        {
+            key: "deadline",
+            header: "Deadline",
+            render: (row) => {
+                const deadline = new Date(row.deadline);
+
+                const formattedDate = deadline.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                });
+
+                const formattedTime = deadline.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-xs text-gray-500">
+                            {formattedTime}
                         </span>
                     </div>
                 );
@@ -107,14 +125,14 @@ const RecruiterInvitations = () => {
             render: (row) => (
                 <span
                     className={
-                        row.status === "Pending"
+                        new Date(row.deadline) >= new Date() && row.status === "Pending"
                             ? "text-yellow-600"
                             : row.status === "Accepted"
                                 ? "text-green-600"
                                 : "text-red-600"
                     }
                 >
-                    {row.status}
+                    {new Date(row.deadline) < new Date() && row.status === "Pending" ? "Expired": row.status}
                 </span>
             ),
         },
@@ -122,7 +140,7 @@ const RecruiterInvitations = () => {
             key: "decision",
             header: "Decision",
             render: (row) =>
-                row.status === "Pending" ? (
+                row.status === "Pending" && new Date(row.deadline) >= new Date() ? (
                     <div className="flex items-center space-x-4">
                         <Button
                             onClick={() => handleDecision(row.id, 1)}

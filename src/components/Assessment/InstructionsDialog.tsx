@@ -77,7 +77,7 @@ export const InstructionsDialog = ({
                     </div>
                 )}
                 <div className="max-w-[60%] mt-6 flex justify-end space-x-4 ml-auto">
-                    <Button variant="report" onClick={onClose} disabled={isLoading}>
+                    <Button variant="primary" onClick={onClose} disabled={isLoading}>
                         Close
                     </Button>
                     {UserRole.COMPANY === userRole && (
@@ -93,7 +93,7 @@ export const InstructionsDialog = ({
                                 }
                             }}
                         >
-                            {userRole === UserRole.COMPANY ? "Save" : "Submit"}
+                            {userRole === UserRole.COMPANY ? "Save Assessment" : "Submit"}
                         </Button>
                     )}
                 </div>

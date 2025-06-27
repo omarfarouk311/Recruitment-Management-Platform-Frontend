@@ -102,7 +102,6 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     gender: res.data.gender ? 'male' : 'female',
                     image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
                 },
-                userImage: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
             });
         } catch (err) {
             if (axios.isAxiosError(err)) {

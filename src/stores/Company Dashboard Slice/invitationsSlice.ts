@@ -4,6 +4,8 @@ import { CombinedState } from "../storeTypes";
 import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { authRefreshToken } from "../../util/authUtils.ts";
+import { showErrorToast } from "../../util/errorHandler.ts";
 
 export interface CompanyInvitationsSlice {
   companyInvitationsData: Invitations[];
@@ -32,30 +34,29 @@ export const createCompanyInvitationsSlice: StateCreator<
     status: "",
     sortBy: "",
   },
+
   companyInvitationsFetchData: async () => {
     const {
       companyInvitationsPage,
       companyInvitationsHasMore,
-      companyInvitationsIsLoading,
       companyInvitationsFilters: { status, sortBy },
     } = get();
-    if (!companyInvitationsHasMore || companyInvitationsIsLoading) return;
+    if (!companyInvitationsHasMore) return;
     set({ companyInvitationsIsLoading: true });
-
-    // mock API call, don't forget to include the filters in the query string if they are populated
-
-
+    
     try {
       let params = Object.fromEntries(
         Object.entries({
           page: companyInvitationsPage,
-          status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
-          sortBy: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
+          status: status == "2" ? "rejected" : (status == "1" ? "accepted" : (status == "0" ? "pending" : undefined)),
+          sortByDate: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
+          sortByDeadline: Math.abs(parseInt(sortBy)) === 2 ? parseInt(sortBy) / 2 : undefined,
         }).filter(([_, value]) => value !== undefined)
       );
 
       let res = await axios.get(`${config.API_BASE_URL}/invitations`, {
         params,
+        withCredentials: true,
       });
       
       set((state) => ({
@@ -66,7 +67,7 @@ export const createCompanyInvitationsSlice: StateCreator<
             recruiter: a.recruiterName,
             dateSent: a.dateSent,
             recruiterId: a.recruiterId,
-            deadline: formatDistanceToNow(new Date(a.deadline), { addSuffix: true }),
+            deadline: a.deadline,
             status: a.status,
           })),
         ],
@@ -76,9 +77,21 @@ export const createCompanyInvitationsSlice: StateCreator<
       }));
 
     }catch (err) {
+      if(axios.isAxiosError(err) && err.response?.status === 401) {
+        let success = await authRefreshToken();
+        if(success) {
+          return await get().companyInvitationsFetchData();
+        } 
+      }
+      console.error("Error fetching company invitations:", err);
+      showErrorToast("Failed to fetch company invitations. Please try again later.");
+    }
+    finally {
       set({ companyInvitationsIsLoading: false });
     }
   },
+
+
   companyInvitationsSetFilters: async (filters) => {
     set((state) => ({
       companyInvitationsFilters: {

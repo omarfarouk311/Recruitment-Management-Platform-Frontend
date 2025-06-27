@@ -2,6 +2,7 @@ import Dashboard from "../common/Dashboard";
 import { ColumnDef } from "../common/Dashboard";
 import { assessment, InvitationsStatusFilterOptions,AssessmentFilters } from "../../types/companyDashboard";
 import { useEffect } from "react";
+import { PlusCircle } from 'lucide-react';
 import FilterDropdown from "../Filters/FilterDropdown";
 import AssessmentDialog from "../common/assessmentDialog";
 import LocationSearch from "../common/LocationSearch"
@@ -142,16 +143,15 @@ const CompanyAssessment = () => {
                 {/* Edit Button (Blue) */}
                 <Button
                     variant="primary"
-                    className="h-7 text-sm w-[120px]"
-                    
-                    onClick={() =>{ handleEditAssessment(row.assessmentId)}} 
+                    className="min-w-0 w-auto px-1 py-1"
+                    onClick={() => { handleEditAssessment(row.assessmentId) }}
                 >
-                    Edit Assessment
+                    Edit
                 </Button>
                 
                 {/* Delete Button (Red) */}
                 <Button
-                    className="h-7 text-sm w-[120px] bg-red-500 hover:bg-red-600 text-white rounded" 
+                    variant="report" 
                     onClick={() => handleDeleteAssessment(row.assessmentId)}
                 >
                     Delete Assessment
@@ -166,14 +166,23 @@ const CompanyAssessment = () => {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Assessments</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">
-
-
+                    
                     <FilterDropdown
                         label="Job Title"
                         options={JobTitles}
                         selectedValue={filters.jobTitle}
                         onSelect={(value) => setFilters({ jobTitle: value })}
                     />
+
+                    <button
+                        className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
+                        title="Add a new recruiter"
+                        onClick={() => {
+                            window.location.href = "/company/assessment";
+                        }}
+                    >
+                        <PlusCircle size={30} />
+                    </button>
                 </div>
             </div>
             <div className="overflow-y-auto h-[580px]">

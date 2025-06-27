@@ -107,12 +107,7 @@ export const createRecruiterJobOfferSlice: StateCreator<
               ...jobOffers.map((item: any) => ({
                 jobTitle: item.jobtitle,
                 seekerName: item.candidatename,
-                
-                dateApplied: formatDistanceToNow(
-                
-                  new Date(item.datesent), 
-                  { addSuffix: true }
-                ),
+                dateApplied: new Date(item.datesent),
                 seekerId: item.id, 
                 jobId: item.jobId,
                 status: "Pending"  

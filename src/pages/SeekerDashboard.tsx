@@ -34,7 +34,7 @@ const SeekerDashboard = () => {
         <>
         <UserNav />
         <div className="min-h-screen bg-gray-100 pt-1 px-4 pb-10 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto mb-8">
                 <TabGroup
                     tabs={["Jobs Applied For", "Assessments", "Interviews", "Offers"]}
                     useActiveTab={useActiveTab}
@@ -42,7 +42,9 @@ const SeekerDashboard = () => {
                     useSetActiveTab={useSetActiveTab}
                 />
             </div>
-            <SeekerStats />
+            <div className="mb-10">
+                <SeekerStats />
+            </div>
             {loadingTab !== null ? (
                 <SkeletonLoader />
             ) : activeTab == 0 ? (

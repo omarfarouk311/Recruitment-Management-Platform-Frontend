@@ -5,6 +5,8 @@ import { format } from "date-fns";
 
 import axios from "axios";
 import config from "../../../config/config.ts";
+import { authRefreshToken } from "../../util/authUtils.ts";
+import { showErrorToast } from "../../util/errorHandler.ts";
 
 export interface CompanyLogsSlice {
   companyLogsData: Logs[];
@@ -62,6 +64,7 @@ export const createCompanyLogsSlice: StateCreator<
 
       let res = await axios.get(`${config.API_BASE_URL}/logs`, {
         params,
+        withCredentials: true,
       });
       
       set((state) => ({
@@ -80,6 +83,17 @@ export const createCompanyLogsSlice: StateCreator<
       }));
 
     }catch (err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const success = await authRefreshToken();
+          if (!success) return;
+          return await get().companyLogsFetchData();
+        }
+      }
+      console.error("Error fetching company logs:", err);
+      set({ companyLogsIsLoading: false });
+    }
+    finally {
       set({ companyLogsIsLoading: false });
     }
   },
@@ -97,31 +111,57 @@ export const createCompanyLogsSlice: StateCreator<
     await get().companyLogsFetchData();
   },
   companyLogsSetActionType: async () => {
-    let res = await axios.get(`${config.API_BASE_URL}/logs/actions`);
-    if(res.status !== 200) return;
-    set({
-      companyLogsActionType: [
-        ...res.data.map((logs: {id:number; action:string}) => ({
-          value: logs.id,
-          label: logs.action,
-        })),
-      ],
-    });
+    try {
+      let res = await axios.get(`${config.API_BASE_URL}/logs/actions`, {
+        withCredentials: true
+      });
+      if(res.status !== 200) return;
+      set({
+        companyLogsActionType: [
+          ...res.data.map((logs: {id:number; action:string}) => ({
+            value: logs.id,
+            label: logs.action,
+          })),
+        ],
+      });
+    } catch(err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const success = await authRefreshToken();
+          if (success) 
+            return await get().companyLogsSetActionType();
+        }
+      }
+    }
     // set({companyLogsActionType: [{value: "", label: "Any"}, ...mockCompanyActions.map((action) => ({value: String(action.id), label: action.name}))]});
   },
 
   companyLogsSetPerformedBy: async () => {
-    let res = await axios.get(`${config.API_BASE_URL}/recruiters/allRecruiters`);
-    console.log(res.data)
-    if(res.status !== 200) return;
-    set({
-      companyLogsPerformedBy: [
-        ...res.data.map((recruiter:{id:number;name:string}) => ({
-          value: recruiter.id,
-          label: recruiter.name,
-        })),
-      ],
-    });
+    try{
+      let res = await axios.get(`${config.API_BASE_URL}/recruiters/allRecruiters`, {
+        withCredentials: true
+      });
+      
+      if(res.status !== 200) return;
+      set({
+        companyLogsPerformedBy: [
+          ...res.data.map((recruiter:{id:number;name:string}) => ({
+            value: recruiter.id,
+            label: recruiter.name,
+          })),
+        ],
+      });
+    } catch(err) {
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          const success = await authRefreshToken();
+          if (success)
+            return await get().companyLogsSetPerformedBy();
+        }
+      }
+      console.error("Error fetching performed by data:", err);
+      showErrorToast("Failed to fetch performed by data. Please try again later.");
+    }
     // set({companyLogsPerformedBy: [{value: "", label: "Any"}, ...mockCompanyPerformedBy.map((performedby) => ({value:performedby, label:performedby}))]});
   },
 

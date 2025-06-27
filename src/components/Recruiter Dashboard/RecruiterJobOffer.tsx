@@ -81,6 +81,30 @@ const RecruiterJobOffer = () => {
         {
             key: "dateApplied",
             header: "Date sent",
+            render: (row) => {
+                const deadline = new Date(row.dateApplied);
+
+                const formattedDate = deadline.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const formattedTime = deadline.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                return (
+                    <div className="flex flex-col">
+                        <span>{formattedDate}</span>
+                        <span className="text-xs text-gray-500">
+                            {formattedTime}
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: "status",

@@ -8,10 +8,10 @@ import useStore from "../../stores/globalStore";
 import { Timer } from "./Timer";
 import SkeletonLoader from "../common/SkeletonLoader";
 import { UserRole } from "../../stores/User Slices/userSlice";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 export const Assessment = () => {
-  const [activeQuestion, setActiveQuestion] = useState(1);
+  const [activeQuestion, setActiveQuestion] = useState(-1);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const userRole = useStore.useUserRole();
@@ -21,7 +21,6 @@ export const Assessment = () => {
   const submitAnswers = useStore.useAssessmentSubmitAnswers();
   const isLoading = useStore.useAssessmentIsLoading();
   const submitionIsLoading = useStore.useAssessmentSubmitionIsLoading();
-  const navigate = useNavigate();
   const fetchAssessmentData = useStore.useFetchAssessmentData();
   const { assessmentId, jobId } = useParams();
   const reset = useStore.useClearAssessmentData();
@@ -43,7 +42,8 @@ export const Assessment = () => {
   useEffect(() => {
     if (isLoading == false && assessmentData?.questions.length && userRole !== UserRole.COMPANY)
       setShowInstructionsModal(true);
-    setActiveQuestion(0);
+    if(!isLoading && assessmentData?.questions.length)
+      setActiveQuestion(0);
   }, [assessmentData?.id]);
 
   // Effect to submit answers when time is up
@@ -52,7 +52,7 @@ export const Assessment = () => {
       async () => {
         try{
           await submitAnswers();
-          navigate('/seeker/home');
+          window.location.replace("/seeker/home");
         } catch (err) {
           console.log(err);
         }
@@ -188,23 +188,21 @@ export const Assessment = () => {
           <div className="flex">
             {/* Narrower Sidebar Navigation */}
             <nav className="w-[100px] bg-[#ececec] left-0 fixed shadow-[0px_4px_4px_#00000040] h-screen overflow-y-auto z-10">
+              <div className="flex justify-center pt-4 pb-2">
+                <AlertCircleIcon
+                  className="w-8 h-8 cursor-pointer transition-colors duration-150 hover:text-gray-500"
+                  onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInstructionsModal(true);
+                  }}
+                />
+              </div>
               {assessmentData?.questions.map((question, index) => (
                 <div
                   key={question.questionNum}
                   className="relative cursor-pointer"
                   onClick={() => setActiveQuestion(index)}
                 >
-                  {index === 0 && (
-                    <div className="flex justify-center pt-4 pb-2">
-                      <AlertCircleIcon
-                        className="w-8 h-8 cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowInstructionsModal(true);
-                        }}
-                      />
-                    </div>
-                  )}
 
                   <div
                     className={`h-16 flex items-center justify-center ${
@@ -253,173 +251,181 @@ export const Assessment = () => {
                   />
                 )}
                 {/* Question Header */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-gray-500 text-3xl">
-                    Question {activeQuestion + 1}
-                  </h3>
-                  {userRole === UserRole.COMPANY && (
-                    <div className="relative group">
-                      <button
-                        className="text-red-500 hover:text-red-600 flex items-center relative disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={assessmentData?.questions.length === 1}
-                      >
-                        <TrashIcon className="w-5 h-5 mr-2" />
-                        <span>Delete Question</span>
-                      </button>
-                      {assessmentData?.questions.length === 1 && (
-                        <div className="absolute bottom-full right-0 p-2 text-sm bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                          You must have at least one question
+                { activeQuestion === -1 ? (
+                  <div className="flex justify-center items-center h-full">
+                    <p className="text-2xl text-gray-400">Please select a question to display.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold text-gray-500 text-3xl">
+                        Question {activeQuestion + 1}
+                      </h3>
+                      {userRole === UserRole.COMPANY && (
+                        <div className="relative group">
+                          <button
+                            className="text-red-500 hover:text-red-600 flex items-center relative disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => setShowDeleteModal(true)}
+                            disabled={assessmentData?.questions.length === 1}
+                          >
+                            <TrashIcon className="w-5 h-5 mr-2" />
+                            <span>Delete Question</span>
+                          </button>
+                          {assessmentData?.questions.length === 1 && (
+                            <div className="absolute bottom-full right-0 p-2 text-sm bg-gray-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                              You must have at least one question
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-                <textarea
-                  value={assessmentData?.questions[activeQuestion]?.question || ""}
-                  onChange={(e) =>
-                    modifyQuestions((questions) =>
-                      questions.map((q, i) =>
-                        i === activeQuestion
-                          ? {
-                              ...q,
-                              question: e.target.value,
-                            }
-                          : q
-                      )
-                    )
-                  }
-                  className="w-full p-4 rounded-2xl border border-gray-300 shadow-md resize-none overflow-hidden 
-                        whitespace-pre-wrap break-words text-2xl min-h-[60px]"
-                  placeholder="Enter your question here..."
-                  disabled={userRole === UserRole.SEEKER}
-                />
-
-                {/* Answers Section */}
-                <section className="mt-8">
-                  <h3 className="font-semibold text-gray-500 text-3xl mb-6">
-                    Answers
-                  </h3>
-
-                  <div className="space-y-4">
-                    {assessmentData?.questions[activeQuestion]?.answers.map(
-                      (answer, i) => (
-                        <div
-                          key={`answer ${i}`}
-                          className="w-1/2 min-h-[60px] bg-[#ececec] rounded-2xl p-3 cursor-pointer
-                              flex items-center border-2 border-transparent hover:border-gray-400
-                              justify-between group relative"
-                          onClick={() =>
-                            handleAnswerToggle(
-                              assessmentData.questions[activeQuestion].id,
-                              i
-                            )
-                          }
-                        >
-                          <div className="flex items-center flex-1">
-                            <div className="w-6 h-6 bg-white rounded-md mr-4 flex items-center justify-center">
-                              {assessmentData.questions[
-                                activeQuestion
-                              ].correctAnswers?.includes(i) && (
-                                <CheckIcon className="w-5 h-5" />
-                              )}
-                            </div>
-
-                            {userRole === UserRole.COMPANY ? (
-                              <textarea
-                                value={answer}
-                                onChange={(e) =>
-                                  modifyQuestions((questions) =>
-                                    questions.map((q) =>
-                                      q.id === questions[activeQuestion].id
-                                        ? {
-                                            ...q,
-                                            answers: q.answers.map((a, j) =>
-                                              i === j ? e.target.value : a
-                                            ),
-                                          }
-                                        : q
-                                    )
-                                  )
+                    <textarea
+                      value={assessmentData?.questions[activeQuestion]?.question || ""}
+                      onChange={(e) =>
+                        modifyQuestions((questions) =>
+                          questions.map((q, i) =>
+                            i === activeQuestion
+                              ? {
+                                  ...q,
+                                  question: e.target.value,
                                 }
-                                className="flex-1 bg-white rounded-2xl px-4 py-2 border border-gray-300 
-                                    shadow-inner focus:outline-none break-words resize-none 
-                                    overflow-hidden text-xl min-h-[40px]"
-                                onClick={(e) => e.stopPropagation()}
-                                placeholder="Enter answer option..."
-                              />
-                            ) : (
-                              <div className="flex-1 break-words overflow-hidden text-ellipsis text-xl">
-                                {answer}
-                              </div>
-                            )}
-                          </div>
+                              : q
+                          )
+                        )
+                      }
+                      className="w-full p-4 rounded-2xl border border-gray-300 shadow-md resize-none overflow-hidden 
+                            whitespace-pre-wrap break-words text-2xl min-h-[60px]"
+                      placeholder="Enter your question here..."
+                      disabled={userRole === UserRole.SEEKER}
+                    />
 
-                          {userRole === UserRole.COMPANY && (
-                            <button
-                              className="text-red-400 hover:text-red-500 ml-4"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteAnswer(
+                    {/* Answers Section */}
+                    <section className="mt-8">
+                      <h3 className="font-semibold text-gray-500 text-3xl mb-6">
+                        Answers
+                      </h3>
+
+                      <div className="space-y-4">
+                        {assessmentData?.questions[activeQuestion]?.answers.map(
+                          (answer, i) => (
+                            <div
+                              key={`answer ${i}`}
+                              className="w-1/2 min-h-[60px] bg-[#ececec] rounded-2xl p-3 cursor-pointer
+                                  flex items-center border-2 border-transparent hover:border-gray-400
+                                  justify-between group relative"
+                              onClick={() =>
+                                handleAnswerToggle(
                                   assessmentData.questions[activeQuestion].id,
                                   i
-                                );
-                              }}
-                            >
-                              <TrashIcon className="w-6 h-6" />
-                            </button>
-                          )}
-                        </div>
-                      )
-                    )}
-                  </div>
-                  {/* Add Answer Button */}
-                  <div className="flex !justify-end !right-4 mt-8 ">
-                    {userRole === UserRole.COMPANY ? (
-                      <Button
-                        variant="primary"
-                        className="!w-[30%]"
-                        onClick={() =>
-                          handleAddAnswer(
-                            assessmentData!.questions[activeQuestion].id
-                          )
-                        }
-                      >
-                        Add Answer
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        className="!w-[30%]"
-                        onClick={async () => {
-                          try {
-                            if (
-                              assessmentData!.questions.length - 1 ===
-                              activeQuestion
-                            ) {
-                              await submitAnswers();
-                              navigate('/seeker/home');
-                            } else {
-                              setActiveQuestion((prev) =>
-                                Math.min(
-                                  prev + 1,
-                                  assessmentData!.questions.length - 1
                                 )
-                              );
-                            } 
-                          } catch(err) {
-                            console.log(err);
-                          }
-                        }}
-                        loading = {submitionIsLoading}
-                      >
-                        {assessmentData!.questions.length - 1 === activeQuestion
-                          ? "Submit"
-                          : "Next"}
-                      </Button>
-                    )}
-                  </div>
-                </section>
+                              }
+                            >
+                              <div className="flex items-center flex-1">
+                                <div className="w-6 h-6 bg-white rounded-md mr-4 flex items-center justify-center">
+                                  {assessmentData.questions[
+                                    activeQuestion
+                                  ].correctAnswers?.includes(i) && (
+                                    <CheckIcon className="w-5 h-5" />
+                                  )}
+                                </div>
+
+                                {userRole === UserRole.COMPANY ? (
+                                  <textarea
+                                    value={answer}
+                                    onChange={(e) =>
+                                      modifyQuestions((questions) =>
+                                        questions.map((q) =>
+                                          q.id === questions[activeQuestion].id
+                                            ? {
+                                                ...q,
+                                                answers: q.answers.map((a, j) =>
+                                                  i === j ? e.target.value : a
+                                                ),
+                                              }
+                                            : q
+                                        )
+                                      )
+                                    }
+                                    className="flex-1 bg-white rounded-2xl px-4 py-2 border border-gray-300 
+                                        shadow-inner focus:outline-none break-words resize-none 
+                                        overflow-hidden text-xl min-h-[40px]"
+                                    onClick={(e) => e.stopPropagation()}
+                                    placeholder="Enter answer option..."
+                                  />
+                                ) : (
+                                  <div className="flex-1 break-words overflow-hidden text-ellipsis text-xl">
+                                    {answer}
+                                  </div>
+                                )}
+                              </div>
+
+                              {userRole === UserRole.COMPANY && (
+                                <button
+                                  className="text-red-400 hover:text-red-500 ml-4"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteAnswer(
+                                      assessmentData.questions[activeQuestion].id,
+                                      i
+                                    );
+                                  }}
+                                >
+                                  <TrashIcon className="w-6 h-6" />
+                                </button>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                      {/* Add Answer Button */}
+                      <div className="flex !justify-end !right-4 mt-8 ">
+                        {userRole === UserRole.COMPANY ? (
+                          <Button
+                            variant="primary"
+                            className="!w-[30%]"
+                            onClick={() =>
+                              handleAddAnswer(
+                                assessmentData!.questions[activeQuestion].id
+                              )
+                            }
+                          >
+                            Add Answer
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            className="!w-[30%]"
+                            onClick={async () => {
+                              try {
+                                if (
+                                  assessmentData!.questions.length - 1 ===
+                                  activeQuestion
+                                ) {
+                                  await submitAnswers();
+                                  window.location.replace("/seeker/home");
+                                } else {
+                                  setActiveQuestion((prev) =>
+                                    Math.min(
+                                      prev + 1,
+                                      assessmentData!.questions.length - 1
+                                    )
+                                  );
+                                } 
+                              } catch(err) {
+                                console.log(err);
+                              }
+                            }}
+                            loading = {submitionIsLoading}
+                          >
+                            {assessmentData!.questions.length - 1 === activeQuestion
+                              ? "Submit"
+                              : "Next"}
+                          </Button>
+                        )}
+                      </div>
+                    </section>
+                  </>
+                )}
               </div>
             )}
           </div>

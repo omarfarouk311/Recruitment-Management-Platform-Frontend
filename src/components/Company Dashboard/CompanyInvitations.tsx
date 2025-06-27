@@ -39,10 +39,58 @@ const CompanyInvitations = () => {
     {
       key: "dateSent",
       header: "Date Sent",
+      render: (row) => {
+          const deadline = new Date(row.dateSent);
+
+          const formattedDate = deadline.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+          });
+
+          const formattedTime = deadline.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+          });
+
+          return (
+              <div className="flex flex-col">
+                  <span>{formattedDate}</span>
+                  <span className="text-xs text-gray-500">
+                      {formattedTime}
+                  </span>
+              </div>
+          );
+      }
     },
     {
       key: "deadline",
       header: "Deadline",
+      render: (row) => {
+          const deadline = new Date(row.deadline);
+
+          const formattedDate = deadline.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+          });
+
+          const formattedTime = deadline.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false
+          });
+
+          return (
+              <div className="flex flex-col">
+                  <span>{formattedDate}</span>
+                  <span className="text-xs text-gray-500">
+                      {formattedTime}
+                  </span>
+              </div>
+          );
+      }
     },
     {
       key: "status",
@@ -50,14 +98,14 @@ const CompanyInvitations = () => {
       render: (row) => (
         <span
           className={
-            row.status === "Pending"
+            new Date(row.deadline) > new Date() && row.status === "Pending"
               ? "text-yellow-600"
               : row.status === "Accepted"
               ? "text-green-600"
               : "text-red-600"
           }
         >
-          {row.status}
+          {new Date(row.deadline) < new Date() && row.status === "Pending" ? "Expired" : row.status}
         </span>
       ),
     },
@@ -71,7 +119,6 @@ const CompanyInvitations = () => {
             <FilterDropdown
                 label="Status"
                 options={InvitationsStatusFilterOptions}
-                addAnyOption={false}
                 selectedValue={filters.status}
                 onSelect={(value) => setFilters({ status: value })}
             />
@@ -79,7 +126,6 @@ const CompanyInvitations = () => {
             <FilterDropdown
                 label="Sort By"
                 options={InvitationsSortByFilterOptions}
-                addAnyOption={false}
                 selectedValue={filters.sortBy}
                 onSelect={(value) => setFilters({ sortBy: value })}
             />

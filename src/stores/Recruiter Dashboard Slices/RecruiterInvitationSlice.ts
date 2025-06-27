@@ -1,8 +1,7 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
-import { formatDistanceToNow } from "date-fns";
 import { Invitations, DashboardFilters, DashboardStatusFilterOptions } from "../../types/recruiterDashboard";
-import axios, { CancelTokenSource } from 'axios';
+import axios from 'axios';
 import config from '../../../config/config.ts';
 import { showErrorToast } from '../../util/errorHandler';
 
@@ -26,8 +25,7 @@ export interface RecruiterInvitationsSlice {
     recruiterInvitationsFetchData: () => Promise<void>;
     recruiterInvitationsSetFilters: (filters: Partial<RecruiterInvitationsSlice['recruiterInvitationsFilters']>) => void;
     recruiterInvitationsMakeDecision: (invitationId: number, decision: number) => Promise<void>;
-    recruiterInvitationsCancelRequests: () => void;
-    recruiterInvitationsCancelToken?: CancelTokenSource;
+    recruiterInvitationsClear: () => void;
 }
 
 export const createInvitationsSlice: StateCreator<
@@ -47,12 +45,19 @@ export const createInvitationsSlice: StateCreator<
     },
     recruiterInvitationsCompanyNames: [],
 
-    recruiterInvitationsCancelRequests: () => {
-        const { recruiterInvitationsCancelToken } = get();
-        if (recruiterInvitationsCancelToken) {
-            recruiterInvitationsCancelToken.cancel('Operation canceled by the user.');
-            set({ recruiterInvitationsCancelToken: undefined });
-        }
+    recruiterInvitationsClear: () => {
+        set({
+            recruiterInvitationsData: [],
+            recruiterInvitationsPage: 1,
+            recruiterInvitationsHasMore: true,
+            recruiterInvitationsIsLoading: false,
+            recruiterInvitationsFilters: {
+                status: "",
+                sortByDateReceived: "",
+                sortByDeadline: ""
+            },
+            recruiterInvitationsCompanyNames: [],
+        });
     },
 
     recruiterInvitationsFetchData: async () => {
@@ -65,10 +70,9 @@ export const createInvitationsSlice: StateCreator<
 
         if (!recruiterInvitationsHasMore || recruiterInvitationsIsLoading) return;
 
-        get().recruiterInvitationsCancelRequests();
+        get().recruiterInvitationsClear();
 
-        const cancelToken = axios.CancelToken.source();
-        set({ recruiterInvitationsIsLoading: true, recruiterInvitationsCancelToken: cancelToken });
+        set({ recruiterInvitationsIsLoading: true });
 
         try {
             const currentStatus = DashboardStatusFilterOptions.find(
@@ -84,7 +88,6 @@ export const createInvitationsSlice: StateCreator<
                         sortByDeadline: recruiterInvitationsFilters.sortByDeadline == "" ? "" : (recruiterInvitationsFilters.sortByDeadline == "2" ? "1" : "-1")
                     }).filter(([_, value]) => value !== '' && value !== undefined && value !== null)
                 ),
-                cancelToken: cancelToken.token,
                 withCredentials: true
             });
 
@@ -94,18 +97,17 @@ export const createInvitationsSlice: StateCreator<
                     ...state.recruiterInvitationsData,
                     ...newRows.map((invitation: Invitations) => ({
                         ...invitation,
-                        dateReceived: formatDistanceToNow(new Date(invitation.dateReceived)),
+                        dateReceived: new Date(invitation.dateReceived),
                     })),
                 ],
                 recruiterInvitationsHasMore: newRows.length > 0,
                 recruiterInvitationsIsLoading: false,
-                recruiterInvitationsPage: state.recruiterInvitationsPage + 1,
-                recruiterInvitationsCancelToken: undefined,
+                recruiterInvitationsPage: state.recruiterInvitationsPage + 1
             }));
 
         } catch (err) {
             if (!axios.isCancel(err)) {
-                set({ recruiterInvitationsIsLoading: false, recruiterInvitationsCancelToken: undefined });
+                set({ recruiterInvitationsIsLoading: false });
                 
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
@@ -146,15 +148,13 @@ export const createInvitationsSlice: StateCreator<
     },
 
     recruiterInvitationsMakeDecision: async (invitationId, decision) => {
-        const cancelToken = axios.CancelToken.source();
-        set({ recruiterInvitationsIsLoading: true, recruiterInvitationsCancelToken: cancelToken });
+        set({ recruiterInvitationsIsLoading: true });
 
         try {
             await axios.patch(`${API_BASE_URL}/invitations/${invitationId}`, {
                 status: decision,
                 date: new Date().toISOString()
             }, {
-                cancelToken: cancelToken.token,
                 withCredentials: true
             });
 
@@ -168,7 +168,6 @@ export const createInvitationsSlice: StateCreator<
                         : invitation
                 ),
                 recruiterInvitationsIsLoading: false,
-                recruiterInvitationsCancelToken: undefined,
             }));
 
         } catch (err) {
@@ -191,11 +190,10 @@ export const createInvitationsSlice: StateCreator<
                 }
 
                 set({
-                    recruiterInvitationsIsLoading: false,
-                    recruiterInvitationsCancelToken: undefined,
+                    recruiterInvitationsIsLoading: false
                 });
                 
-                await showErrorToast(errorMessage);
+                showErrorToast(errorMessage);
                 throw new Error(errorMessage);
             }
         }

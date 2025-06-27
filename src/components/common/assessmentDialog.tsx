@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 
 interface AssessmentDetails {
+    jobId: number;
     assessmentId:number
     companyName: string;
     jobTitle: string;
@@ -22,6 +23,7 @@ const AssessmentDialog = () => {
     const SeekerAssessmentData=useStore.useSeekerAssessmentsData();
 
     const [assessmentDetails, setAssessmentDetails] = useState<AssessmentDetails>({
+        jobId: 0,
         assessmentId:0,
         companyName: "",
         jobTitle: "",
@@ -33,13 +35,15 @@ const AssessmentDialog = () => {
         if (selectedAssessmentId) {
             // Fetch assessment details from the backend
            
-            const data={assessmentId:-1,companyName:"",jobTitle:"",assessmentTime:"",instructions:"instructions"};
+            const data={jobId:-1,assessmentId:-1,companyName:"",jobTitle:"",assessmentTime:"",instructions:"instructions"};
+
             for(let i=0;i<SeekerAssessmentData.length;i++){
                 if(SeekerAssessmentData[i].assessmentId===selectedAssessmentId){
                     data.assessmentId=SeekerAssessmentData[i].assessmentId;
                     data.companyName=SeekerAssessmentData[i].companyName;
                     data.jobTitle=SeekerAssessmentData[i].jobTitle;
                     data.assessmentTime=SeekerAssessmentData[i].assessmentTime;
+                    data.jobId=SeekerAssessmentData[i].jobId;
                     break;
                 }
             }
@@ -140,8 +144,7 @@ const AssessmentDialog = () => {
                                 variant="primary"
                                 className="rounded-full"
                                 onClick={() => {
-                                    // Handle starting the assessment
-                                     setAssessmentId(selectedAssessmentId!)
+                                    window.location.href = `/seeker/assessment/${assessmentDetails.assessmentId}/job/${assessmentDetails.jobId}`;
                                 }}
                             >
                                 Start Assessment

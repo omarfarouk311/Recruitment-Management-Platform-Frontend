@@ -109,7 +109,6 @@ const CompanyJobsCandidates = () => {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
-                    timeZone: 'GMT'
                 });
 
                 return (
@@ -134,11 +133,10 @@ const CompanyJobsCandidates = () => {
             render: (row) => {
                 return (
                     <>
-                        <span className="text-gray-600">{row.phase || ''}</span>
+                        <span className="text-gray-600">{row.phase}</span>
                         <br />
                         {row.phase === 'assessment' && (
                     <>
-                        <br />
                         <span className="text-gray-600 font-semibold">
                             Assessment Score: {row.score || '0'}
                         </span>

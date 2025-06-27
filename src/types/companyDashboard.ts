@@ -34,14 +34,12 @@ export interface TemplateData {
 
 
 export const InvitationsStatusFilterOptions = [
-  { value: "", label: "Any" },
   { value: "0", label: "Pending" },
   { value: "1", label: "Accepted" },
   { value: "2", label: "Rejected" },
 ];
 
 export const InvitationsSortByFilterOptions = [
-  { value: "", label: "Any" },
   { value: "1", label: "Date Sent (Ascending)" },
   { value: "-1", label: "Date Sent (Descending)" },
   { value: "2", label: "Deadline (Ascending)" },

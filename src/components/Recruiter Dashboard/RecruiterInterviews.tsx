@@ -58,16 +58,7 @@ const RecruiterInterviews = () => {
 
     const handleSubmit = () => {
         if (currentJobId && currentSeekerId) {
-            const utcDate = selectedDate ? new Date(
-                Date.UTC(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate(),
-                    selectedDate.getHours(),
-                    selectedDate.getMinutes(),
-                    selectedDate.getSeconds()
-                )
-            ).toISOString() : "";
+            const utcDate = selectedDate ? selectedDate.toISOString() : "";
 
             handleUpdateInterview(currentJobId, currentSeekerId, utcDate, meetingLink);
             setIsModalOpen(false);
@@ -134,9 +125,7 @@ const RecruiterInterviews = () => {
                 const formattedTime = date.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
                     hour12: false,
-                    timeZone: 'UTC'  // Add this to display in UTC
                 });
 
                 return (

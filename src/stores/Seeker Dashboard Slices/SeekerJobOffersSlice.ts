@@ -93,10 +93,7 @@ export const createSeekerJobOffersSlice: StateCreator<
                     ...state.seekerJobOffersData,
                     ...res.data.map((jobOffer: JobOfferOverviewType) => ({
                         ...jobOffer,
-                        dateRecieved: formatDistanceToNow(
-                            new Date(jobOffer.dateRecieved),
-                            { addSuffix: true }
-                        ),
+                        dateRecieved: new Date(jobOffer.dateRecieved),
                         city: jobOffer.city,
                         country: jobOffer.country,
                         status: parseInt(jobOffer.status) == 2? "Accepted": parseInt(jobOffer.status) == 3? "Rejected": "Pending",
