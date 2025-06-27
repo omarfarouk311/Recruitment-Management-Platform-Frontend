@@ -7,7 +7,9 @@ import Button from "../../common/Button";
 import SkeletonLoader from "../../common/SkeletonLoader";
 import { UserRole } from "../../../stores/User Slices/userSlice";
 
-export default function ProfileInfo() {
+export default function ProfileInfo({
+    userId
+}: {userId?: number}) {
     const profileInfo = useStore.useSeekerProfileInfo();
     const fetchProfileInfo = useStore.useSeekerProfileFetchInfo();
     const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function ProfileInfo() {
 
     useEffect(() => {
         setIsLoading(true);
-        fetchProfileInfo().then(() => {
+        fetchProfileInfo(userId).then(() => {
             setIsLoading(false);
         });
         fetchEmail();

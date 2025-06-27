@@ -49,14 +49,7 @@ export const Assessment = () => {
   // Effect to submit answers when time is up
   useEffect(() => {
     if (timeIsUp) {
-      async () => {
-        try{
-          await submitAnswers();
-          window.location.replace("/seeker/home");
-        } catch (err) {
-          console.log(err);
-        }
-      }
+      submitAnswers();
     }
   }, [timeIsUp]);
 
@@ -402,7 +395,6 @@ export const Assessment = () => {
                                   activeQuestion
                                 ) {
                                   await submitAnswers();
-                                  window.location.replace("/seeker/home");
                                 } else {
                                   setActiveQuestion((prev) =>
                                     Math.min(

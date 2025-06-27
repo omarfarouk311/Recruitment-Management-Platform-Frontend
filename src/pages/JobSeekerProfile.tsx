@@ -36,10 +36,15 @@ function JobSeekerProfile() {
       <div className="max-w-7xl mx-auto py-12 px-6">
         <div className="flex flex-col lg:flex-row lg:space-x-6">
           <div className="flex-[1.5]">
-            <ProfileInfo />
+            <ProfileInfo 
+              userId={userId ? parseInt(userId): undefined}
+            />
           </div>
           <div className="flex-1 lg:flex-[2]">
-            <CVSection />
+            <CVSection
+              userId={userId ? parseInt(userId): undefined}
+              jobId={jobId ? parseInt(jobId): undefined}
+            />
           </div>
         </div>
         <div className="grid grid-cols-4 lg:grid-cols-2 gap-6 mt-6">
@@ -50,6 +55,7 @@ function JobSeekerProfile() {
               useExperiences = {useStore.useSeekerProfileExperience}
               updateExperience= {useStore.useSeekerProfileUpdateExperience()}
               addExperience = {useStore.useSeekerProfileAddExperience()}
+              userId={userId ? parseInt(userId): undefined}
             />
             <EducationSection 
               removeEducation = {useStore.useSeekerProfileRemoveEducation()}
@@ -57,12 +63,14 @@ function JobSeekerProfile() {
               useEducation={useStore.useSeekerProfileEducation}
               updateEducation={useStore.useSeekerProfileUpdateEducation()}
               addEducation={useStore.useSeekerProfileAddEducation()}
+              userId={userId ? parseInt(userId): undefined}
             />
             <SkillsSection 
               removeSkill={removeSkill}
               fetchSkills={fetchSkills}
               useSkills={useStore.useSeekerProfileSkills}
               addSkill={useStore.useSeekerProfileAddSkill()}
+              userId={userId ? parseInt(userId): undefined}
             />
             {userRole === UserRole.SEEKER && <ReviewsSection />}
           </div>

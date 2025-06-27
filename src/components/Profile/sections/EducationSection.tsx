@@ -9,13 +9,14 @@ import { UserRole } from "../../../stores/User Slices/userSlice";
 import { format } from "date-fns";
 
 interface EducationSectionProps {
-  fetchEducation?: () => Promise<void>;
+  fetchEducation?: (selectedSeekerId?: number) => Promise<void>;
   removeEducation: (educationId: number) => Promise<void> | void;
   useEducation: () => Education[]; 
   addEducation: (education: Education) => Promise<void> | void;
   updateEducation: (education: Education) => Promise<void> | void;
   showError?: boolean;
   setHasError?: (hasError: boolean) => void;
+  userId?: number;
 }
 
 export default function EducationSection({
@@ -25,7 +26,8 @@ export default function EducationSection({
   addEducation, 
   updateEducation,
   setHasError,
-  showError = false
+  showError = false,
+  userId
 }: EducationSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<
@@ -39,7 +41,7 @@ export default function EducationSection({
   useEffect(() => {
     if(fetchEducation) {
       setIsLoading(true);
-      fetchEducation().then(() => {
+      fetchEducation(userId).then(() => {
         setIsLoading(false);
       });
     }

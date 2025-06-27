@@ -14,31 +14,31 @@ import { authRefreshToken } from '../../util/authUtils.ts';
 export interface SeekerProfileSlice {
     seekerProfileInfo: SeekerProfileInfo;
     seekerProfileUpdateInfo: (profile: SeekerProfileInfo) => Promise<void>;
-    seekerProfileFetchInfo: () => Promise<void>;
+    seekerProfileFetchInfo: (selectedSeekerId?: number) => Promise<void>;
 
     seekerCredentials: UserCredentials;
     seekerProfileFetchEmail: () => Promise<void>;
     seekerProfileUpdateCredentials: (credentials: UserCredentials) => Promise<void>;
 
     seekerProfileExperience: Experience[];
-    seekerProfileFetchExperience: () => Promise<void>;
+    seekerProfileFetchExperience: (selectedSeekerId?: number) => Promise<void>;
     seekerProfileAddExperience: (experience: Experience) => Promise<void>;
     seekerProfileUpdateExperience: (experience: Experience) => Promise<void>;
     seekerProfileRemoveExperience: (id: number) => Promise<void>;
 
     seekerProfileEducation: Education[];
-    seekerProfileFetchEducation: () => Promise<void>;
+    seekerProfileFetchEducation: (selectedSeekerId?: number) => Promise<void>;
     seekerProfileAddEducation: (education: Education) => Promise<void>;
     seekerProfileUpdateEducation: (education: Education) => Promise<void>;
     seekerProfileRemoveEducation: (id: number) => Promise<void>;
 
     seekerProfileSkills: Skill[];
-    seekerProfileFetchSkills: () => Promise<void>;
+    seekerProfileFetchSkills: (selectedSeekerId?: number) => Promise<void>;
     seekerProfileAddSkill: (id: number) => Promise<void>;
     seekerProfileRemoveSkill: (id: number) => Promise<void>;
 
     seekerProfileCVs: CV[];
-    seekerProfileFetchCVs: () => Promise<void>;
+    seekerProfileFetchCVs: (selectedSeekerId?: number, jobId?: number) => Promise<void>;
     seekerProfileAddCV: (cv: File, createdAt: string) => Promise<void>;
     seekerProfileRemoveCV: (id: number) => Promise<void>;
     seekerProfileGetCV: (id: number) => Promise<Blob | undefined>;
@@ -88,11 +88,11 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         set({ seekerProfileSelectedSeekerData: data });
     },
 
-    seekerProfileFetchInfo: async () => {
-        const { userId, seekerProfileSelectedSeekerData, seekerProfileFetchInfo } = get();
+    seekerProfileFetchInfo: async (selectedSeekerId) => {
+        const { userId, seekerProfileFetchInfo } = get();
         try {
             let res = await axios.get(
-                    `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, 
+                    `${config.API_BASE_URL}/seekers/profiles/${selectedSeekerId ?? userId}`, 
                     { withCredentials: true }
                 );
             set({ seekerProfileInfo: { 
@@ -100,7 +100,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
                     phone: res.data.phoneNumber, 
                     birthDate: new Date(res.data.dateOfBirth).toISOString().split('T')[0], 
                     gender: res.data.gender ? 'male' : 'female',
-                    image: `${config.API_BASE_URL}/seekers/profiles/${seekerProfileSelectedSeekerData.seekerId ?? userId}/image`
+                    image: `${config.API_BASE_URL}/seekers/profiles/${selectedSeekerId ?? userId}/image`
                 },
             });
         } catch (err) {
@@ -190,10 +190,10 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         });
     },
 
-    seekerProfileFetchExperience: async () => {
-        const { seekerProfileSelectedSeekerData, userId } = get();
+    seekerProfileFetchExperience: async (selectedSeekerId) => {
+        const { userId } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/experiences/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, { withCredentials: true });
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/experiences/${selectedSeekerId ?? userId}`, { withCredentials: true });
             set({
                 seekerProfileExperience: res.data.map((exp: Experience & {jobTitle: string}) => ({
                     ...exp,
@@ -326,10 +326,10 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         }
     },
 
-    seekerProfileFetchEducation: async () => {
-        const { seekerProfileSelectedSeekerData, userId } = get();
+    seekerProfileFetchEducation: async (selectedSeekerId) => {
+        const { userId } = get();
         try {
-            let res = await axios.get(`${config.API_BASE_URL}/seekers/educations/${seekerProfileSelectedSeekerData.seekerId ?? userId}`, { withCredentials: true });
+            let res = await axios.get(`${config.API_BASE_URL}/seekers/educations/${selectedSeekerId ?? userId}`, { withCredentials: true });
             set({
                 seekerProfileEducation: res.data.education.map((edu: Education & {start_date: string; end_date: string; school_name: string; field: string;}) => (
                     {
@@ -452,12 +452,11 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         }
     },
 
-    seekerProfileFetchSkills: async () => {
-        const { seekerProfileSelectedSeekerData } = get();
+    seekerProfileFetchSkills: async (selectedSeekerId) => {
         try {
             let res = await axios.get(`${config.API_BASE_URL}/seekers/skills`, {
                 params: {
-                    seekerId: seekerProfileSelectedSeekerData.seekerId,
+                    seekerId: selectedSeekerId,
                 },
                 withCredentials: true
             });
@@ -541,12 +540,14 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
         }
     },
 
-    seekerProfileFetchCVs: async () => {
-        const { userRole, seekerProfileSelectedSeekerData } = get();
+    seekerProfileFetchCVs: async (userId, jobId) => {
+        const { userRole } = get();
+        
         try {
             let res = await axios.get(`${config.API_BASE_URL}/seekers/cvs`, {
                 params: userRole === UserRole.SEEKER ? {}: { 
-                ...seekerProfileSelectedSeekerData
+                seekerId: userId,
+                jobId
             },
             withCredentials: true
             });

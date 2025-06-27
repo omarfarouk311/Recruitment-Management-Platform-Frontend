@@ -7,7 +7,16 @@ import Button from "../../common/Button";
 import { UserRole } from "../../../stores/User Slices/userSlice";
 import { showErrorToast } from "../../../util/errorHandler";
 
-export default function CVSection() {
+interface CVSectionProps {
+    userId?: number;
+    jobId?: number;
+}
+
+export default function CVSection({
+    userId,
+    jobId
+}: CVSectionProps) {
+
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const cvs = useStore.useSeekerProfileCVs();
@@ -18,7 +27,7 @@ export default function CVSection() {
 
     useEffect(() => {
         setIsLoading(true);
-        fetchCVs().then(() => {
+        fetchCVs(userId, jobId).then(() => {
             setIsLoading(false);
         });
     }, []);

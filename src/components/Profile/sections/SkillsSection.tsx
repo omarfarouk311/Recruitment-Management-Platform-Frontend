@@ -8,13 +8,14 @@ import { UserRole } from "../../../stores/User Slices/userSlice";
 import { Skill } from "../../../types/profile";
 
 interface SkillSectionProps {
-  fetchSkills?: () => Promise<void>;
+  fetchSkills?: (selectedSeekerId?: number) => Promise<void>;
   removeSkill: (skillId: number) => Promise<void> | void;
   useSkills: () => Skill[];
   addSkill: (skillId: number) => Promise<void> | void;
+  userId?: number;
 }
 
-export default function SkillsSection({fetchSkills, removeSkill, useSkills, addSkill}: SkillSectionProps) {
+export default function SkillsSection({fetchSkills, removeSkill, useSkills, addSkill, userId}: SkillSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const skills = useSkills();
@@ -23,7 +24,7 @@ export default function SkillsSection({fetchSkills, removeSkill, useSkills, addS
   useEffect(() => {
     if(fetchSkills) {
       setIsLoading(true);
-      fetchSkills().then(() => {
+      fetchSkills(userId).then(() => {
         setIsLoading(false);
       });
     }

@@ -157,6 +157,7 @@ export const createAssessmentSlice: StateCreator<
                 );
             
             set({ assessmentSubmitionIsLoading: false });
+            window.location.replace("/seeker/home");
             toast.success("Assessment submitted successfully");
         } catch (err) {
             if (axios.isAxiosError(err) && err.response?.status === 401) {

@@ -9,13 +9,14 @@ import { UserRole } from "../../../stores/User Slices/userSlice";
 import { format } from "date-fns";
 
 interface ExperienceSectionProps {
-  fetchExperience?: () => Promise<void>;
+  fetchExperience?: (selectedSeekerId?: number) => Promise<void>;
   removeExperience: (experienceId: number) => Promise<void> | void;
   useExperiences: () => Experience[]; 
   updateExperience: (experience: Experience) => Promise<void> | void;
   addExperience: (experience: Experience) => Promise<void> | void;
   showError?: boolean;
   setHasError?: (hasError: boolean) => void;
+  userId?: number;
 }
 
 export default function ExperienceSection({
@@ -26,6 +27,7 @@ export default function ExperienceSection({
   addExperience, 
   setHasError,
   showError = false,
+  userId
 }: ExperienceSectionProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<
@@ -39,7 +41,7 @@ export default function ExperienceSection({
   useEffect(() => {
     if(fetchExperience) {
       setIsLoading(true);
-      fetchExperience().then(() => {
+      fetchExperience(userId).then(() => {
         setIsLoading(false);
       });
     }
