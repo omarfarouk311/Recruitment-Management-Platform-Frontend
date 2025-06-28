@@ -42,6 +42,7 @@ export interface CompanyCandidates {
   seekerId: number;
   seekerName: string;
   phase: string;
+  phaseType: number;
   dateApplied: string;
   candidateCountry: string;
   candidateCity: string;
