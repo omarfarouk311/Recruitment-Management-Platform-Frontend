@@ -69,7 +69,7 @@ const CompanyLogs = () => {
       header: "Extra Data",
       render: (row) => (
         <div className="inline-block text-left">
-          {Object.entries(row.extraData).map(([key, value]) => (
+          {Object.entries(row.extraData || {}).map(([key, value]) => (
             <div key={key}>
               {`${key}: `}
               <b>{typeof value === "object" ? JSON.stringify(value) : value}</b>

@@ -116,11 +116,11 @@ const AssessmentDialog = () => {
 
                             {/* Assessment Time */}
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Assessment Time</label>
+                                <label className="text-sm font-medium text-gray-700">Assessment Time (in minutes)</label>
                                 <input
                                     type="text"
                                     name="assessmentTime"
-                                    value={assessmentDetails.assessmentTime}
+                                    value={Number(assessmentDetails.assessmentTime) / 60}
                                     readOnly
                                     className="w-full p-3 border border-gray-200 rounded-xl bg-gray-100 outline-none"
                                 />

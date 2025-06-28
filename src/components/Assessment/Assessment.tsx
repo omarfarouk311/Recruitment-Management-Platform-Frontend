@@ -238,7 +238,7 @@ export const Assessment = () => {
                 {userRole === UserRole.SEEKER && (
                   <Timer
                     className="mr-16"
-                    initialMinutes={assessmentData?.time || 0}
+                    initialSeconds={assessmentData?.time || 0}
                     timeIsUp={timeIsUp}
                     setTimeIsUp={setTimeIsUp}
                   />

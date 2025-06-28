@@ -182,7 +182,7 @@ export const createAssessmentSlice: StateCreator<
                     `${config.API_BASE_URL}/assessments`,
                     {
                         name: selectedAssessment.name,
-                        assessmentTime: selectedAssessment.time,
+                        assessmentTime: selectedAssessment.time * 60,
                         jobTitle: selectedAssessment.jobTitle,
                         metaData: selectedAssessment.questions.map((question) => ({
                             questions: question.question,

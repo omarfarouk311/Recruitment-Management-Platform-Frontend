@@ -32,8 +32,8 @@ export const InstructionsDialog = ({
                 </h2>
                 {userRole === UserRole.SEEKER ? (
                     <ul className="list-disc pl-6 space-y-2">
-                        <li>{`You have ${assessmentData?.time || 0} ${
-                            assessmentData?.time || 0 > 1 ? "minutes" : "minute"
+                        <li>{`You have ${(assessmentData?.time || 0 ) / 60} ${
+                            (assessmentData?.time || 0 ) / 60 > 1 ? "minutes" : "minute"
                         } to complete the assessment`}</li>
                         <li>No external resources allowed</li>
                         <li>Answer all questions before submitting</li>

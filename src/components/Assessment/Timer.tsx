@@ -2,20 +2,20 @@ import { useEffect, useState } from "react";
 
 export interface TimerProps {
   className?: string;
-  initialMinutes: number;
+  initialSeconds: number;
   timeIsUp: boolean;
   setTimeIsUp: (timeIsUp: boolean) => void;
 }
 
 export const Timer = ({ 
   className, 
-  initialMinutes,
+  initialSeconds,
   timeIsUp,
   setTimeIsUp
 }: TimerProps) => {
   const [endTime, setEndTime] = useState<Date>(() => {
     const initialEndTime = new Date();
-    initialEndTime.setMinutes((new Date()).getMinutes() + initialMinutes);
+    initialEndTime.setSeconds((new Date()).getSeconds() + initialSeconds);
     return initialEndTime;
   });
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -24,10 +24,10 @@ export const Timer = ({
   useEffect(() => {
     if (!endTime) {
       const initialEndTime = new Date();
-      initialEndTime.setMinutes(initialEndTime.getMinutes() + initialMinutes);
+      initialEndTime.setSeconds(initialEndTime.getSeconds() + initialSeconds);
       setEndTime(initialEndTime);
     }
-  }, [initialMinutes, endTime, setEndTime]);
+  }, [initialSeconds, endTime, setEndTime]);
 
   // Update current time every second
   useEffect(() => {

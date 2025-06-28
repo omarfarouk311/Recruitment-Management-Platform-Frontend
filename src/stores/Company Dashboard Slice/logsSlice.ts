@@ -67,9 +67,9 @@ export const createCompanyLogsSlice: StateCreator<
                     ...state.companyLogsData,
                     ...res.data.map((a: any) => ({
                         performedBy: a.performedBy,
-                        performedAt: format(new Date(a.createdAt), "dd/MM/yyyy"),
+                        performedAt: new Date(a.createdAt),
                         actionType: a.action,
-                        extraData: a.extraData,
+                        extraData: a.extraData || {},
                     })),
                 ],
                 companyLogsHasMore: res.data.length === config.paginationLimit,
