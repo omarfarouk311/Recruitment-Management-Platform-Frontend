@@ -164,9 +164,7 @@ export const createInvitationsSlice: StateCreator<
             }));
 
         } catch (err) {
-            if (!axios.isCancel(err)) {
-                let errorMessage = "Something went wrong. Please try again.";
-
+                let errorMessage = "An error occurred while making a decision on the invitation.";
                 if (axios.isAxiosError(err)) {
                     if (err.response?.status === 401) {
                         const success = await authRefreshToken();
@@ -189,6 +187,5 @@ export const createInvitationsSlice: StateCreator<
                 showErrorToast(errorMessage);
                 throw new Error(errorMessage);
             }
-        }
     },
 });

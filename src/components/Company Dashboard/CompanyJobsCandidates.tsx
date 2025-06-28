@@ -138,7 +138,7 @@ const CompanyJobsCandidates = () => {
                         {row.phaseType === 1 && (
                     <>
                         <span className="text-gray-600 font-semibold">
-                            Assessment Score: {row.score || '0'}
+                            Score: {row.score || '0'}
                         </span>
                     </>
                 )}
