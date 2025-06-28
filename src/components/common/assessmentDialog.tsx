@@ -40,7 +40,7 @@ const AssessmentDialog = () => {
                 assessmentId: found.assessmentId,
                 companyName: found.companyName,
                 jobTitle: found.jobTitle,
-                instructions: "Default instructions",
+                instructions: "No external resources allowed\nAnswer all questions before submitting",
                 assessmentTime: found.assessmentTime || "N/A"
             });
         } else {
