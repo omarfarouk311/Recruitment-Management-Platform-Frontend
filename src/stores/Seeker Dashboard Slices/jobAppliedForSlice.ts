@@ -63,7 +63,7 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
           remote: remote ? "true" : undefined,
           country: country || undefined,
           city: city || undefined,
-          status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
+          status: status == "0" ? "rejected" : (status == "1" ? "accepted" : undefined),
           companyName: company || undefined,
           sortByDate: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
           sortByStatusUpdate: Math.abs(parseInt(sortBy)) === 2 ? parseInt(sortBy) / 2 : undefined,

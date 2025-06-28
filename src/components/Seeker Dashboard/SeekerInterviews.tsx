@@ -140,13 +140,6 @@ const SeekerInterviews = () => {
                     />
 
                     <FilterDropdown
-                        label="Status"
-                        options={DashboardStatusFilterOptions}
-                        selectedValue={filters.status}
-                        onSelect={(value) => setFilters({ status: value })}
-                    />
-
-                    <FilterDropdown
                         label="Company Name"
                         options={CompanyNames}
                         selectedValue={filters.company}

@@ -181,7 +181,7 @@ const SeekerJobOffers = () => {
                     />
 
                     <FilterDropdown
-                        label="Status"
+                        label={`Status ${filters.status === "" ? "(Pending)": ""}`}
                         options={DashboardStatusFilterOptions}
                         selectedValue={filters.status}
                         onSelect={(value) => setFilters({ status: value })}
