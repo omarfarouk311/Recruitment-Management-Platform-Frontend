@@ -189,8 +189,14 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                     return await get().updateProcess(processId, name, phases);
                 }
             }
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
+            else if (axios.isAxiosError(err) && err.response?.status === 404) {
                 errorMessage = "Recruitment process not found.";
+            } else if(axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response.data.validationErrors.map((value:string) => {
+                    showErrorToast(value);
+                });
+            } else {
+                showErrorToast("Something went wrong, please try again.");
             }
             showErrorToast(errorMessage);
             throw err;
@@ -244,6 +250,12 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 else {
                     showErrorToast("Something went wrong while adding the process, please try again.");
                 }
+            } else if(axios.isAxiosError(err) && err.response?.status === 400) {
+                err.response.data.validationErrors.map((value:string) => {
+                    showErrorToast(value);
+                });
+            } else {
+                showErrorToast("Something went wrong, please try again.");
             }
             console.error("Error adding recruitment process:", err);
             throw err;
