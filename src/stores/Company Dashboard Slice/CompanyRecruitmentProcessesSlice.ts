@@ -139,8 +139,11 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 if (err.response?.status === 404) {
                     errorMessage = "Recruitment process not found.";
                 }
-                else if (err.response?.status === 500) {
-                    errorMessage = "This process is being used in the hiring processes.";
+                else if (err.response?.status === 500) { 
+                    errorMessage = "Internal Server Error.";             
+                }
+                else if(err.response?.status === 400) {
+                    errorMessage = err.message;
                 }
             }
             showErrorToast(errorMessage);

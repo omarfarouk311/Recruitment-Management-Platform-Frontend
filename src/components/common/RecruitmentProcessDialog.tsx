@@ -304,16 +304,16 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
                               ))}
                             </select>
                           </div>
-                          <input
-                            type="number"
-                            value={phase.deadline || ""}
-                            onChange={(e) => updatePhase(phase.id, "deadline", e.target.value)}
-                            placeholder="Deadline (days)"
-                            className="w-[200px] flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                            min="1"
-                            max="20"
-                          />
-                        </>
+                   <input
+                      type="number"
+                      value={phase.deadline || ''}
+                      onChange={(e) => updatePhase(phase.id, 'deadline', e.target.value)}
+                      placeholder="Enter number of days to submit"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      min="1"
+                      max="20"
+                    />
+                    </>
                       )}
                       {phase.type === 2 && (
                         <div className="text-gray-500 text-sm py-2 pl-3">No additional details needed</div>
