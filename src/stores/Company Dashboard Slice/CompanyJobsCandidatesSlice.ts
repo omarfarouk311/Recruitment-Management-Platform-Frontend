@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import axios from "axios";
@@ -219,7 +218,7 @@ CompanyCandidatesMakeDecision: async (seekerIds, decision, jobId) => {
                 ...state.Companycandidates,
                 ...res.data
             ],
-            CompanyCandidatesHasMore: res.data.length > 0,
+            CompanyCandidatesHasMore: res.data.length === config.paginationLimit,
             CompanyCandidatesIsLoading: false,
             CompanyCandidatesPage: state.CompanyCandidatesPage + 1,
             selectedCandidates: [],

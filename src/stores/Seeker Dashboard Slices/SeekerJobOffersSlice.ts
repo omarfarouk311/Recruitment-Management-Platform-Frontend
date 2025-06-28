@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
-import { formatDistanceToNow } from "date-fns";
 import { JobOfferOverviewType } from "../../types/jobOffer";
 import { DashboardFilters } from "../../types/seekerDashboard";
 import axios from "axios";
@@ -99,7 +98,7 @@ export const createSeekerJobOffersSlice: StateCreator<
                         status: parseInt(jobOffer.status) == 2? "Accepted": parseInt(jobOffer.status) == 3? "Rejected": "Pending",
                     })),
                 ],
-                seekerJobOffersHasMore: res.data.length > 0,
+                seekerJobOffersHasMore: res.data.length === config.paginationLimit,
                 seekerJobOffersPage: state.seekerJobOffersPage + 1,
             }));
         } catch (err) {

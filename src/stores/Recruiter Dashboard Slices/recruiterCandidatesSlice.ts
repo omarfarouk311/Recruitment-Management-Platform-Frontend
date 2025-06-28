@@ -158,7 +158,7 @@ export const createRecruiterCandidatesSlice: StateCreator<
                         ),
                     })),
                 ],
-                RecruiterCandidatesHasMore: res.data.length > 0,
+                RecruiterCandidatesHasMore: res.data.length === config.paginationLimit,
                 RecruiterCandidatesIsLoading: false,
                 RecruiterCandidatesPage: state.RecruiterCandidatesPage + 1,
             }));

@@ -1,4 +1,4 @@
-import { StateCreator, useStore } from "zustand";
+import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
 import axios from "axios";
 import config from "../../../config/config";
@@ -92,7 +92,7 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
             set((state: CombinedState) => ({
                 CompanyJobsRecruiters: [...state.CompanyJobsRecruiters, ...data],
                 CompanyJobsRecruitersPage: state.CompanyJobsRecruitersPage + 1,
-                CompanyJobsRecruitersHasMore: data.length > 0,
+                CompanyJobsRecruitersHasMore: data.length === config.paginationLimit,
                 CompanyJobsRecruitersIsLoading: false,
             }));
         } catch (err) {

@@ -92,7 +92,7 @@ export const createSeekerInterviewsSlice: StateCreator<
             meetingLink: i.meetingLink ?? "",
           })),
         ],
-        seekerInterviewsHasMore: response.data.length > 0,
+        seekerInterviewsHasMore: response.data.length === config.paginationLimit,
         seekerInterviewsIsLoading: false,
         seekerInterviewsPage: state.seekerInterviewsPage + 1,
       }));

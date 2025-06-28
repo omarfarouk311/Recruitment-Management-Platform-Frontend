@@ -98,7 +98,7 @@ export const createSeekerAssessmentsSlice: StateCreator<
             status: a.status,
           })),
         ],
-        seekerAssessmentsHasMore: response.data.length > 0,
+        seekerAssessmentsHasMore: response.data.length === config.paginationLimit,
         seekerAssessmentsIsLoading: false,
         seekerAssessmentsPage: state.seekerAssessmentsPage + 1,
       }));

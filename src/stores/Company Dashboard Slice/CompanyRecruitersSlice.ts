@@ -147,7 +147,7 @@ export const createCompanyRecruitersSlice: StateCreator<
                     ...state.CompanyRecruiters,
                     ...data,
                 ],
-                CompanyRecruitersHasMore: data.length > 0,
+                CompanyRecruitersHasMore: data.length === config.paginationLimit,
                 CompanyRecruitersPage: state.CompanyRecruitersPage + 1,
             }));
         } catch (err) {

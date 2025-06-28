@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 import { CombinedState } from "../storeTypes";
-import { formatDistanceToNow } from "date-fns";
 import { showErrorToast } from "../../util/errorHandler";
 
 import {
@@ -113,26 +112,22 @@ export const createRecruiterJobOfferSlice: StateCreator<
                 status: "Pending"  
               })),
             ],
-
-            
-            RecruiterJobOfferHasMore: jobOffers.length > 0,
-            RecruiterJobOfferIsLoading: false,
+            RecruiterJobOfferHasMore: jobOffers.length === config.paginationLimit,
             RecruiterJobOfferPage: state.RecruiterJobOfferPage + 1,
           }));
         } catch (err) {
           if(axios.isAxiosError(err)) {
             if (err.response?.status === 404) {
               showErrorToast("No job candidates found");
-            } 
+            }
             else if (err.response?.status === 401) {
               const success = await authRefreshToken();
               if (success) {
                 return await get().RecruiterJobOfferFetchCandidates();
               }
             }
+            else showErrorToast("Failed to fetch job candidates");
           }
-          
-          showErrorToast("Failed to fetch job candidates");
         }
         finally {
           set({ RecruiterJobOfferIsLoading: false });
@@ -179,8 +174,8 @@ export const createRecruiterJobOfferSlice: StateCreator<
               return await get().RecruiterJobOfferSetPositionTitles();
             }
           }
+          else showErrorToast("Failed to fetch job titles");
         }
-        showErrorToast("Failed to fetch job titles");
       }
     },
 });

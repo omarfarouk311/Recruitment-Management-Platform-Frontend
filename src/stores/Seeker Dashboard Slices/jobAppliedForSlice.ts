@@ -88,7 +88,7 @@ export const createSeekerJobsAppliedForSlice: StateCreator<
             ),
           })),
         ],
-        seekerJobsAppliedForHasMore:  res.data.length > 0,
+        seekerJobsAppliedForHasMore:  res.data.length === config.paginationLimit,
         seekerJobsAppliedForIsLoading: false,
         seekerJobsAppliedForPage: state.seekerJobsAppliedForPage + 1,
       }));

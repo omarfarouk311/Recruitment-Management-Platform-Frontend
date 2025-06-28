@@ -123,7 +123,7 @@ export const createInterviewsSlice: StateCreator<
             const newRows = response.data.interviews;
             set((state) => ({
                 recruiterInterviewsData: [...state.recruiterInterviewsData, ...newRows],
-                recruiterInterviewsHasMore: newRows.length > 0,
+                recruiterInterviewsHasMore: newRows.length === config.paginationLimit,
                 recruiterInterviewsIsLoading: false,
                 recruiterInterviewsPage: state.recruiterInterviewsPage + 1,
             }));    

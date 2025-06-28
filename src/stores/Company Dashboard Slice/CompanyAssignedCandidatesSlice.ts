@@ -104,7 +104,7 @@ export const createCompanyAssignedCandidatesSlice: StateCreator<
                     }))
                 ],
                 CompanyAssignedCandidatesPage: state.CompanyAssignedCandidatesPage + 1,
-                CompanyAssignedCandidatesHasMore: candidates.length > 0,
+                CompanyAssignedCandidatesHasMore: candidates.length === config.paginationLimit,
                 CompanyAssignedCandidatesIsLoading: false,
             };
         });

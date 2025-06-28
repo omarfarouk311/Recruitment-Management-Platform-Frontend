@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { assessment, AssessmentFilters } from "../../types/companyDashboard.ts";
 import { CombinedState } from "../storeTypes";
-import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
 import { showErrorToast } from '../../util/errorHandler.ts';
@@ -44,7 +43,6 @@ export const createCompanyAssessmentsSlice: StateCreator<
     const {
       companyAssessmentsPage,
       companyAssessmentsHasMore,
-      companyAssessmentsIsLoading,
       companyAssessmentsFilters: { jobTitle }
     } = get();
     
@@ -82,7 +80,7 @@ export const createCompanyAssessmentsSlice: StateCreator<
             numberOfQuestions: a.num_of_questions,
           })),
         ],
-        companyAssessmentsHasMore: response.data.length > 0,
+        companyAssessmentsHasMore: response.data.length === config.paginationLimit,
         companyAssessmentsIsLoading: false,
         companyAssessmentsPage: state.companyAssessmentsPage + 1,
       }));

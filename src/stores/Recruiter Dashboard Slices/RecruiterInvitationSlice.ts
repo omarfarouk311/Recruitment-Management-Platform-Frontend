@@ -64,16 +64,12 @@ export const createInvitationsSlice: StateCreator<
         const {
             recruiterInvitationsPage,
             recruiterInvitationsHasMore,
-            recruiterInvitationsIsLoading,
             recruiterInvitationsFilters,
         } = get();
 
-        if (!recruiterInvitationsHasMore || recruiterInvitationsIsLoading) return;
-
-        get().recruiterInvitationsClear();
+        if (!recruiterInvitationsHasMore) return;
 
         set({ recruiterInvitationsIsLoading: true });
-
         try {
             const currentStatus = DashboardStatusFilterOptions.find(
                 option => option.value === recruiterInvitationsFilters.status
@@ -100,42 +96,39 @@ export const createInvitationsSlice: StateCreator<
                         dateReceived: new Date(invitation.dateReceived),
                     })),
                 ],
-                recruiterInvitationsHasMore: newRows.length > 0,
-                recruiterInvitationsIsLoading: false,
+                recruiterInvitationsHasMore: newRows.length === config.paginationLimit,
                 recruiterInvitationsPage: state.recruiterInvitationsPage + 1
             }));
-
         } catch (err) {
-            if (!axios.isCancel(err)) {
-                set({ recruiterInvitationsIsLoading: false });
-                
-                if (axios.isAxiosError(err)) {
-                    if (err.response?.status === 401) {
-                        const success = await authRefreshToken();
-                        if (success) {
-                            return get().recruiterInvitationsFetchData();
-                        }
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().recruiterInvitationsFetchData();
                     }
                 }
-                console.error('Failed to fetch invitations:', err);
+                else showErrorToast("Failed to fetch invitations. Please try again later.");
             }
+        }
+        finally {
+            set({ recruiterInvitationsIsLoading: false });
         }
     },
 
     recruiterInvitationsSetFilters: (filters) => {
         const currentFilters = get().recruiterInvitationsFilters;
         let tmp = 0;
-        
+
         if (filters.sortByDateReceived && filters.sortByDeadline) {
             tmp = 1;
             if (currentFilters.sortByDateReceived) {
                 filters.sortByDeadline = "";
             } else if (currentFilters.sortByDeadline) {
                 filters.sortByDateReceived = "";
-            } 
+            }
             showErrorToast("Please sort by either date received or deadline, not both");
         }
-        
+
         if (!tmp) {
             set((state) => ({
                 recruiterInvitationsFilters: { ...state.recruiterInvitationsFilters, ...filters },
@@ -192,7 +185,7 @@ export const createInvitationsSlice: StateCreator<
                 set({
                     recruiterInvitationsIsLoading: false
                 });
-                
+
                 showErrorToast(errorMessage);
                 throw new Error(errorMessage);
             }

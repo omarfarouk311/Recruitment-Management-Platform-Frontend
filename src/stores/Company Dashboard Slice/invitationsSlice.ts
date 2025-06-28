@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { Invitations, InvitationsFilters } from "../../types/companyDashboard";
 import { CombinedState } from "../storeTypes";
-import { formatDistanceToNow } from "date-fns";
 import axios from "axios";
 import config from "../../../config/config.ts";
 import { authRefreshToken } from "../../util/authUtils.ts";
@@ -71,8 +70,7 @@ export const createCompanyInvitationsSlice: StateCreator<
             status: a.status,
           })),
         ],
-        companyInvitationsHasMore:  res.data.length > 0,
-        companyInvitationsIsLoading: false,
+        companyInvitationsHasMore: res.data.length === config.paginationLimit,
         companyInvitationsPage: state.companyInvitationsPage + 1,
       }));
 

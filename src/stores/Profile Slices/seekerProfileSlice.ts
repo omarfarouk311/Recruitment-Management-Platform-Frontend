@@ -699,7 +699,7 @@ export const createSeekerProfileSlice: StateCreator<CombinedState, [], [], Seeke
     
                 return {
                     seekerProfileReviews: [...state.seekerProfileReviews, ...newReviews],
-                    seekerProfileReviewsHasMore: res.data.length > 0,
+                    seekerProfileReviewsHasMore: res.data.length === config.paginationLimit,
                     seekerProfileReviewsPage: state.seekerProfileReviewsPage + 1
                 }
             });

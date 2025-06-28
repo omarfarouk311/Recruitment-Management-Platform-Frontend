@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { XCircle, Trash2, PlusCircle } from "lucide-react";
 import { Phase } from "../../types/companyDashboard";
 import Button from "./Button";
+import { showErrorToast } from "../../util/errorHandler";
 
 interface ProcessData {
   id?: number;
@@ -149,14 +150,14 @@ const RecruitmentProcessDialog: React.FC<RecruitmentProcessDialogProps> = ({
     });
 
     if (invalidDeadline) {
-      alert("Please enter a valid deadline between 1 and 20 days for assessment phases");
+      showErrorToast("Please enter a valid deadline between 1 and 20 days for assessment phases");
       return;
     }
 
     // Filter empty phases and save
     const validPhases = phases.filter((phase) => phase.phasename.trim() !== "");
     if (validPhases.length === 0) {
-      alert("Please add at least one phase");
+      showErrorToast("Please add at least one phase");
       return;
     }
 
