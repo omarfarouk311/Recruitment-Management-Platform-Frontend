@@ -68,7 +68,9 @@ export const createJobOfferDialogSlice: StateCreator<
     },
     jobOfferDialogFetchData: async ({ jobId, candidateId }, templateId) => {
         try {
-            if (templateId && !isNaN(templateId)) {
+            console.log(jobId, candidateId, Number(templateId));
+            if(templateId == -1) get().jobOfferDialogResetData();
+            else if (!isNaN(Number(templateId)) && Number(templateId) > 0) {
                 let res = await axios.get(`${config.API_BASE_URL}/templates/template-details/${templateId}`, {
                     withCredentials: true
                 });
@@ -92,7 +94,7 @@ export const createJobOfferDialogSlice: StateCreator<
                         templateId: -1,
                     },
                 });
-            } else if (jobId && candidateId) {
+            } else if (jobId && candidateId && templateId != -1) {
                 let res = await axios.get(`${config.API_BASE_URL}/templates/offer-details/job/${jobId}/seeker/${candidateId}`, {
                     withCredentials: true
                 });
@@ -119,8 +121,15 @@ export const createJobOfferDialogSlice: StateCreator<
                         return await get().jobOfferDialogFetchData({ jobId, candidateId }, templateId);
                     }
                 } 
+                else if (err.response?.status === 400) {
+                    err.response.data.validationErrors.map((value:string) => {
+                        showErrorToast(value);
+                    });
+                    throw err;
+                }
             }
             showErrorToast("Failed to fetch job offer data");
+            throw err;
         }
     },
 
