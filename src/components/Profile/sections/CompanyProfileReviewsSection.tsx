@@ -43,6 +43,7 @@ export default function ReviewsSection() {
             onSelect={(value) => setFilters({ rating: value }, id)}
           />
           <button
+            hidden={userRole !== UserRole.SEEKER}
             className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
             title="Add a review"
             onClick={() => setIsFormOpen(true)}

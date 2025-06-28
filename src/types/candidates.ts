@@ -2,7 +2,7 @@ export interface Candidate {
     seekerId: number;
     seekerName: string;
     phase: string;
-    phaseType?: string;
+    phaseType?: number;
     recruiterId?: string;
     jobId: number;
     jobTitle: string;
@@ -13,6 +13,8 @@ export interface Candidate {
     jobCity: string;
     jobCountry: string;
     offerSent?: boolean;
+    score?: number;
+    totalScore?: number;
   }
   
   export const CandidatePhases = [

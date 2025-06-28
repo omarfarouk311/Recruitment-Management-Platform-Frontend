@@ -196,7 +196,7 @@ export const createAssessmentSlice: StateCreator<
             } else {
                 await axios.put(`${config.API_BASE_URL}/assessments/${selectedAssessment.id}`, {
                     name:selectedAssessment.name,
-                    assessmentTime:selectedAssessment.time,
+                    assessmentTime:selectedAssessment.time * 60,
                     jobTitle:selectedAssessment.jobTitle,
                     metaData:selectedAssessment.questions.map(value => ({
                         questions:value.question,

@@ -42,9 +42,9 @@ const RecruiterCandidates = () => {
     useEffect(() => {
         const initialize = async () => {
             resetRecruiterCandidates();
+            await fetchCandidates();
             await setPositionTitles();
             await setPhaseTypes();
-            await fetchCandidates();
         };
         initialize();
     }, []);
@@ -101,6 +101,21 @@ const RecruiterCandidates = () => {
         {
             key: "phase",
             header: "Phase",
+            render: (row) => {
+                return (
+                    <>
+                        <span className="text-gray-600">{row.phase}</span>
+                        <br />
+                        {row.phaseType === 1 && row.score !== null && (
+                    <>
+                        <span className="text-gray-600 font-semibold">
+                            Score: {row.score || '0'} / {row.totalScore || '0'}
+                        </span>
+                    </>
+                )}
+                    </>
+                );
+            }
         },
         {
             key: "jobLocation",
@@ -124,7 +139,7 @@ const RecruiterCandidates = () => {
             key: "Action",
             header: "Action",
             render: (row) =>
-                row.phaseType !== "job offer" ? (
+                row.phaseType !== 4 ? (
                     <div className="flex items-center space-x-4">
                         <Button
                             loading={
@@ -140,7 +155,7 @@ const RecruiterCandidates = () => {
                                 );
                                 useSetIsMakingDecision(null);
                             }}
-                            className="w-[50%]"
+                            className="!w-[50%]"
                         >
                             Next Phase
                         </Button>
@@ -160,7 +175,7 @@ const RecruiterCandidates = () => {
                                 );
                                 useSetIsMakingDecision(null);
                             }}
-                            className="w-[50%]"
+                            className="!w-[50%]"
                         >
                             Reject
                         </Button>

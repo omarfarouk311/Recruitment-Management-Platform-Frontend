@@ -135,10 +135,10 @@ const CompanyJobsCandidates = () => {
                     <>
                         <span className="text-gray-600">{row.phase}</span>
                         <br />
-                        {row.phaseType === 1 && (
+                        {row.phaseType === 1 && row.score !== null && (
                     <>
                         <span className="text-gray-600 font-semibold">
-                            Score: {row.score || '0'}
+                            Score: {row.score || '0'} / {row.totalScore || '0'}
                         </span>
                     </>
                 )}
