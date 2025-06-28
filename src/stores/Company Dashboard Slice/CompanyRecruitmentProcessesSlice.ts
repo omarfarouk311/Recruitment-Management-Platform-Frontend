@@ -19,7 +19,7 @@ export interface CompanyRecruitmentProcessesSlice {
     resetProcesses: () => void;
     deleteProcess: (processId: number, processesArray: processes[], setProcesses: React.Dispatch<React.SetStateAction<processes[]>>) => Promise<void>;
     updateProcess: (processId: number, name: string, phases: Phase[]) => Promise<void>;
-    addProcess: (name: string, phases: Phase[]) => Promise<void>;
+    addProcess: (name: string, phases: Phase[]) => Promise<number>;
 }
 
 export const createCompanyRecruitmentProcessesSlice: StateCreator<
@@ -34,14 +34,14 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
     processId: null,
 
     fetchProcesses: async () => {
-        const { processesPage, processesHasMore} = get();
+        const { processesPage, processesHasMore } = get();
         if (!processesHasMore) return [];
 
         set({ processesIsLoading: true });
         try {
             // First fetch the list of processes
             const response = await axios.get(`${API_BASE_URL}/recruitment_processes`, {
-                params: { 
+                params: {
                     page: processesPage,
                     limit: 10
                 },
@@ -56,7 +56,7 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                             `${API_BASE_URL}/recruitment_processes/${process.id}`,
                             { withCredentials: true }
                         );
-                        
+
                         return {
                             ...process,
                             phases: phasesResponse.data.recruitment_process.map((phase: any) => ({
@@ -65,11 +65,15 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                             }))
                         };
                     } catch (err) {
-                    
-                        if (axios.isAxiosError(err) && err.response?.status === 401) {
-                            const success = await authRefreshToken();
-                            if (success) {
-                                return await get().fetchProcesses();
+                        if (axios.isAxiosError(err)) {
+                            if (err.response?.status === 401) {
+                                const success = await authRefreshToken();
+                                if (success) {
+                                    return await get().fetchProcesses();
+                                }
+                            }
+                            else {
+                                showErrorToast("Something went wrong while fetching the process, please try again.");
                             }
                         }
                         console.error(`Error fetching phases for process ${process.id}:`, err);
@@ -85,10 +89,15 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
 
             return processesWithPhases;
         } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 401) {
-                const success = await authRefreshToken();
-                if (success) {
-                    return await get().fetchProcesses();
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().fetchProcesses();
+                    }
+                }
+                else {
+                    showErrorToast("Something went wrong while fetching the processes, please try again.");
                 }
             }
             console.error('Error fetching processes:', err);
@@ -130,11 +139,11 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 if (err.response?.status === 404) {
                     errorMessage = "Recruitment process not found.";
                 }
-                else if (err.response?.status === 500) { 
-                    errorMessage = "This process is being used in the hiring processes.";             
+                else if (err.response?.status === 500) {
+                    errorMessage = "This process is being used in the hiring processes.";
                 }
             }
-            await showErrorToast(errorMessage);
+            showErrorToast(errorMessage);
         } finally {
             set({ processesIsLoading: false });
         }
@@ -145,27 +154,27 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
         try {
             set({ processesIsLoading: true });
             const transformedPhases = phases.map(phase => {
-            
-            const basePhase = {
-                phaseNumber: phase.phase_num.toString(),
-                phaseName: phase.phasename,
-                phaseType: phase.type
-            };
 
-            if (phase.type == 1) {
-                console.log("ASSESSMENT PHASE DETECTED:", phase.assessmentid, phase.deadline);
-                const transformed = {
-                    ...basePhase,
-                    assessmentId: phase.assessmentid,
-                    deadline: phase.deadline
+                const basePhase = {
+                    phaseNumber: phase.phase_num.toString(),
+                    phaseName: phase.phasename,
+                    phaseType: phase.type
                 };
-                return transformed;
-            }
-              return basePhase;
-        });
+
+                if (phase.type == 1) {
+                    console.log("ASSESSMENT PHASE DETECTED:", phase.assessmentid, phase.deadline);
+                    const transformed = {
+                        ...basePhase,
+                        assessmentId: phase.assessmentid,
+                        deadline: phase.deadline
+                    };
+                    return transformed;
+                }
+                return basePhase;
+            });
 
             console.log("Transformed phases:", transformedPhases);
-        
+
             await axios.put(`${API_BASE_URL}/recruitment_processes/${processId}`, {
                 processName: name,
                 phases: transformedPhases
@@ -182,8 +191,8 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
             }
             if (axios.isAxiosError(err) && err.response?.status === 404) {
                 errorMessage = "Recruitment process not found.";
-            } 
-            await showErrorToast(errorMessage);
+            }
+            showErrorToast(errorMessage);
             throw err;
         }
         finally {
@@ -207,11 +216,11 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                         deadline: phase.deadline
                     };
                 }
-                
+
                 return basePhase;
             });
 
-            await axios.post(`${API_BASE_URL}/recruitment_processes`, {
+            const response = await axios.post(`${API_BASE_URL}/recruitment_processes`, {
                 processName: name,
                 phases: transformedPhases
             }, {
@@ -222,11 +231,18 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 processesHasMore: true,
                 processesPage: 1
             }));
+
+            return response.data.id;
         } catch (err) {
-            if (axios.isAxiosError(err) && err.response?.status === 401) {
-                const success = await authRefreshToken();
-                if (success) {
-                    return await get().addProcess(name, phases);
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await get().addProcess(name, phases);
+                    }
+                }
+                else {
+                    showErrorToast("Something went wrong while adding the process, please try again.");
                 }
             }
             console.error("Error adding recruitment process:", err);

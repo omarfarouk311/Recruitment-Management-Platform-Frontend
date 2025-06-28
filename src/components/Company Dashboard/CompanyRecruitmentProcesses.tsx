@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Edit3, Trash2, PlusCircle } from "lucide-react";
-import RecruitmentProcessDialog from '../common/RecruitmentProcessDialog';
+import RecruitmentProcessDialog from "../common/RecruitmentProcessDialog";
 import useStore from "../../stores/globalStore";
-import { Process, Phase} from "../../types/companyDashboard";
+import { Process, Phase } from "../../types/companyDashboard";
 import axios from "axios";
 import config from "../../../config/config";
-const API_BASE_URL = config.API_BASE_URL;import { authRefreshToken } from "../../util/authUtils";
+import { authRefreshToken } from "../../util/authUtils";
 import { showErrorToast } from "../../util/errorHandler";
 import SkeletonLoader from "../common/SkeletonLoader";
+
 interface Assessment {
     id: number;
     name: string;
@@ -22,21 +23,19 @@ const CompanyRecruitmentProcesses: React.FC = () => {
     const [selectedProcess, setSelectedProcess] = useState<Process | null>(null);
     const [isEditMode, setIsEditMode] = useState(false);
 
-
     const fetch = useStore.useFetchProcesses();
     const addProcess = useStore.useAddProcess();
     const deleteProcess = useStore.useDeleteProcess();
     const resetProcesses = useStore.useResetProcesses();
     const updateProcess = useStore.useUpdateProcess();
     const isLoadingProcesses = useStore.useProcessesIsLoading();
-    // const processes = useStore.useProcesses();
 
     useEffect(() => {
         // Fetch initial processes when component mounts
         setProcesses([]); // Clear previous state
         resetProcesses(); // Reset processes state before fetching
         fetchProcesses();
-    }, [])
+    }, []);
 
     // Fetch all processes
     const fetchProcesses = async () => {
@@ -45,85 +44,92 @@ const CompanyRecruitmentProcesses: React.FC = () => {
             const processes = await fetch();
             setProcesses(processes);
         } catch (error) {
-            console.error('Error fetching processes:', error);
+            console.error("Error fetching processes:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-
     // Delete process
-    const handleDelete = async (id: number, processesArray: Process[], setProcesses: React.Dispatch<React.SetStateAction<Process[]>>) => {
+    const handleDelete = async (
+        id: number,
+        processesArray: Process[],
+        setProcesses: React.Dispatch<React.SetStateAction<Process[]>>
+    ) => {
         try {
-
             await deleteProcess(id, processesArray, setProcesses);
             // setProcesses(processes.filter(process => process.id !== id));
-            
         } catch (error) {
-            console.error('Error deleting process:', error);
+            console.error("Error deleting process:", error);
         }
     };
 
     // Save process (create or update)
-const handleSaveProcess = async (processData: { name: string; phases: Phase[] }) => {
-    try {
-        console.log("Saving process:", processData);
-        
-        if (isEditMode && selectedProcess?.id) {
-            // Update existing process
-            await updateProcess(selectedProcess.id, processData.name, processData.phases);
-            
-            // Update local state
-            setProcesses(prevProcesses => 
-                prevProcesses.map(p => 
-                    p.id === selectedProcess.id 
-                        ? { 
-                            ...p, 
-                            name: processData.name,
-                            num_of_phases: processData.phases.length,
-                            phases: processData.phases
-                          } 
-                        : p
-                )
-            );
-        } else {
-            // Create new process
-            await addProcess(processData.name, processData.phases);
-             const newProcess: Process = {
-                    id: Date.now(), // Temporary ID, replace with actual ID from backend
+    const handleSaveProcess = async (processData: { name: string; phases: Phase[] }) => {
+        try {
+            console.log("Saving process:", processData);
+
+            if (isEditMode && selectedProcess?.id) {
+                // Update existing process
+                await updateProcess(selectedProcess.id, processData.name, processData.phases);
+
+                // Update local state
+                setProcesses((prevProcesses) =>
+                    prevProcesses.map((p) =>
+                        p.id === selectedProcess.id
+                            ? {
+                                  ...p,
+                                  name: processData.name,
+                                  num_of_phases: processData.phases.length,
+                                  phases: processData.phases,
+                              }
+                            : p
+                    )
+                );
+            } else {
+                // Create new process
+                const id = await addProcess(processData.name, processData.phases);
+                const newProcess: Process = {
+                    id,
                     name: processData.name,
                     num_of_phases: processData.phases.length,
-                    phases: processData.phases
+                    phases: processData.phases,
                 };
                 setProcesses([...processes, newProcess]);
-        }
-        
-        handleCloseDialog(); // Close the dialog after successful save
-    } catch (error) {
-        console.error('Error saving process:', error);
-        // Optionally show error to user
-    }
-};
+            }
 
-const fetchAssessments = async () => {
+            handleCloseDialog(); // Close the dialog after successful save
+        } catch (error) {
+            console.error("Error saving process:", error);
+            // Optionally show error to user
+        }
+    };
+
+    const fetchAssessments = async () => {
         setIsFetchingAssessments(true);
         try {
-            const response = await axios.get(`${config.API_BASE_URL}/assessments/`, {withCredentials: true});
+            const response = await axios.get(`${config.API_BASE_URL}/assessments/`, {
+                withCredentials: true,
+            });
             if (response.data.success) {
                 // Store only id and name
                 const simplifiedAssessments = response.data.assessments.map((a: any) => ({
                     id: a.id,
-                    name: a.name
+                    name: a.name,
                 }));
                 setAssessments(simplifiedAssessments);
-                console.log('Fetched assessments:', simplifiedAssessments);
+                console.log("Fetched assessments:", simplifiedAssessments);
             }
         } catch (error) {
-            console.error('Error fetching assessments:', error);
-            if(axios.isAxiosError(error) && error.response?.status === 401) {
-                const success = await authRefreshToken();
-                if (success) {
-                    return await fetchAssessments();
+            console.error("Error fetching assessments:", error);
+            if (axios.isAxiosError(error)) {
+                if (error.response?.status === 401) {
+                    const success = await authRefreshToken();
+                    if (success) {
+                        return await fetchAssessments();
+                    }
+                } else {
+                    showErrorToast("Failed to fetch assessments");
                 }
             }
         } finally {
@@ -158,12 +164,10 @@ const fetchAssessments = async () => {
         setIsEditMode(false);
     };
 
-
-   return (
-         isLoadingProcesses ? (
-            <SkeletonLoader />
-        ) : (
-        <div className="max-w-screen-2xl mx-auto px-6 py-8">
+    return isLoadingProcesses ? (
+        <SkeletonLoader />
+    ) : (
+        <div className=" mx-auto px-6 py-8">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
@@ -174,8 +178,8 @@ const fetchAssessments = async () => {
                 </div>
                 <button
                     onClick={handleAddProcess}
-                    className="flex items-center text-sm font-semibold text-gray-500 hover:text-black">
-
+                    className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
+                >
                     <PlusCircle size={30} />
                 </button>
             </div>
@@ -191,30 +195,42 @@ const fetchAssessments = async () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                    <th
+                                        scope="col"
+                                        className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                                    >
                                         Name
                                     </th>
-                                    <th scope="col" className="px-50 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                    <th
+                                        scope="col"
+                                        className="px-50 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                                    >
                                         Number of Phases
                                     </th>
-                                    <th scope="col" className="px-8 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                    <th
+                                        scope="col"
+                                        className="px-8 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider"
+                                    >
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {processes.map((process) => (
-                                    <tr 
-                                        key={process.id} 
+                                    <tr
+                                        key={process.id}
                                         className="hover:bg-gray-50 cursor-pointer transition-colors"
                                         onClick={() => handleEditProcess(process)}
                                     >
                                         <td className="px-8 py-5 whitespace-nowrap">
-                                            <div className="text-base font-medium text-gray-900">{process.name}</div>
+                                            <div className="text-base font-medium text-gray-900">
+                                                {process.name}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-5 whitespace-nowrap">
                                             <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {process.num_of_phases} {process.num_of_phases === 1 ? 'Phase' : 'Phases'}
+                                                {process.num_of_phases}{" "}
+                                                {process.num_of_phases === 1 ? "Phase" : "Phases"}
                                             </span>
                                         </td>
                                         <td className="px-8 py-5 whitespace-nowrap text-right text-base font-medium">
@@ -261,7 +277,9 @@ const fetchAssessments = async () => {
                                 d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                             />
                         </svg>
-                        <h3 className="mt-4 text-lg font-medium text-gray-900">No recruitment processes found</h3>
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">
+                            No recruitment processes found
+                        </h3>
                         <p className="mt-2 text-base text-gray-600 mb-6">
                             Get started by creating your first recruitment process
                         </p>
@@ -281,13 +299,14 @@ const fetchAssessments = async () => {
                 isOpen={showDialog}
                 onClose={handleCloseDialog}
                 onSave={handleSaveProcess}
-                initialData={selectedProcess ? { ...selectedProcess, phases: selectedProcess.phases ?? [] } : null}
+                initialData={
+                    selectedProcess ? { ...selectedProcess, phases: selectedProcess.phases ?? [] } : null
+                }
                 isEditMode={isEditMode}
                 assessments={assessments}
                 isFetchingAssessments={isFetchingAssessments}
             />
         </div>
-    )
     );
 };
 

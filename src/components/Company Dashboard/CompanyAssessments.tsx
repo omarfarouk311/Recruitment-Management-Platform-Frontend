@@ -162,7 +162,7 @@ const CompanyAssessment = () => {
 ];
 
     return (
-        <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200">
+        <div className="h-[700px] bg-white p-4 rounded-3xl border-2 border-gray-200 shadow">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="px-6 py-2 text-3xl font-bold">Assessments</h1>
                 <div className="flex items-center py-4 px-6 space-x-6 flex-nowrap z-20">

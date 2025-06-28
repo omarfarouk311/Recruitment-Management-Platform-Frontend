@@ -244,7 +244,7 @@ export default function CompanyTemplatesDashboard() {
     return (
         <div className="mx-auto grid grid-cols-1 gap-6 px-6 md:grid-cols-2 max-h-[700px]">
             {/* Left Panel - Templates List */}
-            <div className="rounded-3xl border border-gray bg-white px-6 pt-6 shadow-xl">
+            <div className="rounded-3xl border-2 border-gray-200 shadow bg-white px-6 pt-6">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Templates</h1>
                     <div className="flex items-center gap-16">
@@ -274,7 +274,7 @@ export default function CompanyTemplatesDashboard() {
             </div>
 
             {/* Right Panel - New Template Form */}
-            <div className="rounded-3xl border min-h-[600px] border-gray bg-white px-6 pt-6 shadow-xl h-full">
+            <div className="rounded-3xl border-2 border-gray-200 shadow min-h-[600px] bg-white px-6 pt-6 h-full">
                 {selectedTemplate ? (
                     <>
                         <div className="mb-6">
