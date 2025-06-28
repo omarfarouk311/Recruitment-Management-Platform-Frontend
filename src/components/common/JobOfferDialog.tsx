@@ -208,25 +208,25 @@ const JobOfferDialog = ({
                         </div>
 
                         <div className="flex justify-end space-x-4">
-                            {candidateId && (
-                                <Button
-                                    variant="report"
-                                    onClick={() => {
-                                        reset();
-                                        onClose();
-                                    }}
+                            <Button
+                                variant="report"
+                                onClick={() => {
+                                    reset();
+                                    onClose();
+                                }}
+                                className="w-[25%]"
+                            >
+                                {candidateId ? "Cancel" : "Close"}
+                            </Button>
+                            
+                            {candidateId && (<Button
+                                    type="submit"
                                     className="w-[25%]"
+                                    loading={useIsLoadingOfferData || useIsLoadingTemplateList || useIsLoadingSubmit}
                                 >
-                                    Cancel
+                                    Send
                                 </Button>
                             )}
-                            <Button
-                                type="submit"
-                                className="w-[25%]"
-                                loading={useIsLoadingOfferData || useIsLoadingTemplateList || useIsLoadingSubmit}
-                            >
-                                {candidateId ? "Send" : "Close"}
-                            </Button>
                         </div>
                     </form>
                 </div>
