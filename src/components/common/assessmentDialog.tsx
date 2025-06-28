@@ -31,30 +31,25 @@ const AssessmentDialog = () => {
         assessmentTime: "",
     });
 
-    useEffect(() => {
-        if (selectedAssessmentId) {
-            // Fetch assessment details from the backend
-           
-            const data={jobId:-1,assessmentId:-1,companyName:"",jobTitle:"",assessmentTime:"",instructions:"instructions"};
-
-            for(let i=0;i<SeekerAssessmentData.length;i++){
-                if(SeekerAssessmentData[i].assessmentId===selectedAssessmentId){
-                    data.assessmentId=SeekerAssessmentData[i].assessmentId;
-                    data.companyName=SeekerAssessmentData[i].companyName;
-                    data.jobTitle=SeekerAssessmentData[i].jobTitle;
-                    data.assessmentTime=SeekerAssessmentData[i].assessmentTime;
-                    data.jobId=SeekerAssessmentData[i].jobId;
-                    break;
-                }
-            }
-        
-                try{
-                    setAssessmentDetails(data); // Update state with fetched data
-                }catch(error){
-                    console.error("Failed to fetch assessment details:", error);
-                };
+   useEffect(() => {
+    if (selectedAssessmentId) {
+        const found = SeekerAssessmentData.find(a => a.assessmentId === selectedAssessmentId);
+        if (found) {
+            setAssessmentDetails({
+                jobId: found.jobId,
+                assessmentId: found.assessmentId,
+                companyName: found.companyName,
+                jobTitle: found.jobTitle,
+                instructions: "Default instructions",
+                assessmentTime: found.assessmentTime || "N/A"
+            });
+        } else {
+            // Close dialog if data not available
+            setIsOpen(false);
+            setAssessmentId(null);
         }
-    }, [selectedAssessmentId]);
+    }
+    }, [selectedAssessmentId, SeekerAssessmentData]);
 
    
     

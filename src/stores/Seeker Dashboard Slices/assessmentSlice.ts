@@ -68,7 +68,6 @@ export const createSeekerAssessmentsSlice: StateCreator<
           page: seekerAssessmentsPage,
           country: country || undefined,
           city: city || undefined,
-          status: status == "3" ? "rejected" : (status == "2" ? "accepted" : undefined),
           companyName: company || undefined,
           sorted: Math.abs(parseInt(sortBy)) === 1 ? parseInt(sortBy) : undefined,
         }).filter(([_, value]) => value !== undefined)

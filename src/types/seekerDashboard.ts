@@ -53,8 +53,7 @@ export interface DashboardFilters{
 
 export const DashboardStatusFilterOptions = [
     { value: "", label: "Pending" },
-    { value: "3", label: "Rejected" },
-    { value: "2", label: "Accepted" },
+    { value: "2", label: "Completed" },
 ]
 
 export const DashboardSortByFilterOptions = [

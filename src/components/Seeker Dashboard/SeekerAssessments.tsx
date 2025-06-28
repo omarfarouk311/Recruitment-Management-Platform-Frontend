@@ -38,10 +38,12 @@ const SeekerAssessment = () => {
         return clear;
     }, []);
 
-    const handleEnterAssessment = (assessmentId: number) => {
-        useSetSelectAssessmentId(assessmentId);
-        useSetAssessmentDialogIsOpen(true);
-    };
+   const handleEnterAssessment = (assessmentId: number) => {
+    console.log('Entering assessment:', assessmentId);
+    useSetSelectAssessmentId(assessmentId);
+    console.log('Current selected ID:', useStore.getState().selectedAssessmentId);
+    useSetAssessmentDialogIsOpen(true);
+};
 
     
 
@@ -117,23 +119,6 @@ const SeekerAssessment = () => {
             },
         },
         {
-            key: "status",
-            header: "Status",
-            render: (row) => (
-                <span
-                    className={
-                        row.status === "Pending"
-                            ? "text-yellow-600"
-                            : row.status === "Accepted"
-                            ? "text-green-600"
-                            : "text-red-600"
-                    }
-                >
-                    {row.status}
-                </span>
-            ),
-        },
-        {
             key: "actions",
             header: "Actions",
             render: (row) => (
@@ -156,14 +141,6 @@ const SeekerAssessment = () => {
                         onCountryChange={(value) => setFilters({ country: value, city: "" })}
                         selectedCity={filters.city}
                         onCityChange={(value) => setFilters({ city: value })}
-                    />
-
-                    <FilterDropdown
-                        label="Status"
-                        options={DashboardStatusFilterOptions}
-                        addAnyOption={false}
-                        selectedValue={filters.status}
-                        onSelect={(value) => setFilters({ status: value })}
                     />
 
                     <FilterDropdown
