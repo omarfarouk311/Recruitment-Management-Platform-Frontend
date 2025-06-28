@@ -4,6 +4,7 @@ import { Dialog, DialogTitle } from "@headlessui/react";
 import SkeletonLoader from "./SkeletonLoader";
 import Button from "./Button";
 import { UserRole } from "../../stores/User Slices/userSlice";
+import { showErrorToast } from "../../util/errorHandler";
 
 interface JobOfferDialogProps {
     useIsOpen: () => boolean;
@@ -48,12 +49,17 @@ const JobOfferDialog = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            if(!useSelectedTemplate) {
+                showErrorToast("Please select a template");
+                return;
+            }
             if (candidateId) {
                 setUseIsLoadingSubmit(true);
                 await useUpdateOfferData(jobId, candidateId);
                 setUseIsLoadingSubmit(false);
             }
             onClose();
+            window.location.reload();
         } catch (err) {
             setUseIsLoadingSubmit(false);
             console.error("Error submitting offer:", err);
@@ -140,7 +146,7 @@ const JobOfferDialog = ({
                                                 await useSetOfferDetails(parseInt(e.target.value));
                                             }}
                                         >
-                                            <option value="">
+                                            <option value={-1}>
                                                 Choose Template
                                             </option>
                                             {templateList.map((t) => (
