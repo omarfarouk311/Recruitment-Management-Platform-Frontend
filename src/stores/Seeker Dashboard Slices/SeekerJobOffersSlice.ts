@@ -76,7 +76,7 @@ export const createSeekerJobOffersSlice: StateCreator<
                 Object.entries({
                     country: country,
                     city: city,
-                    status: status,
+                    status: status === '1'? 2 : status === '0'? 3 : 1,
                     page: seekerJobOffersPage,
                     sort: sortBy? (Math.abs(parseInt(sortBy)) === 2 ? parseInt(sortBy) / 2 : parseInt(sortBy)): undefined,
                     companyId: company? parseInt(company): undefined
