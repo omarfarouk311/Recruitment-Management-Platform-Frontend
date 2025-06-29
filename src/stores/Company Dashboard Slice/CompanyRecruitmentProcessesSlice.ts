@@ -185,7 +185,6 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 withCredentials: true
             });
         } catch (err) {
-            let errorMessage = "Something went wrong, please try again.";
             if (axios.isAxiosError(err) && err.response?.status === 401) {
                 const success = await authRefreshToken();
                 if (success) {
@@ -193,13 +192,13 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 }
             }
             else if (axios.isAxiosError(err) && err.response?.status === 404) {
-                errorMessage = "Recruitment process not found.";
+                showErrorToast("Recruitment process not found.");
             } else if(axios.isAxiosError(err) && err.response?.status === 400) {
                 err.response.data.validationErrors.map((value:string) => {
                     showErrorToast(value);
                 });
                 if(err.response.data.validationErrors.length === 0) {
-                    showErrorToast(err.response.data.message)
+                    showErrorToast("Recruitment process is currently in use by an open job")
                 }
             } else {
                 showErrorToast("Something went wrong, please try again.");
