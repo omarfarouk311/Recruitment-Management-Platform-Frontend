@@ -95,7 +95,6 @@ export const createSeekerJobOffersSlice: StateCreator<
                         dateRecieved: new Date(jobOffer.dateRecieved),
                         city: jobOffer.city,
                         country: jobOffer.country,
-                        status: parseInt(jobOffer.status) == 1 ? "Accepted": parseInt(jobOffer.status) == 0 ? "Rejected": "Pending",
                     })),
                 ],
                 seekerJobOffersHasMore: res.data.length === config.paginationLimit,
