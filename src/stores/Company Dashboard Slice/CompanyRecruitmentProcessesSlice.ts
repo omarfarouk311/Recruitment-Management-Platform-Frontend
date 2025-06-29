@@ -198,6 +198,9 @@ export const createCompanyRecruitmentProcessesSlice: StateCreator<
                 err.response.data.validationErrors.map((value:string) => {
                     showErrorToast(value);
                 });
+                if(err.response.data.validationErrors.length === 0) {
+                    showErrorToast(err.response.data.message)
+                }
             } else {
                 showErrorToast("Something went wrong, please try again.");
             }
