@@ -4,6 +4,7 @@ import axios from "axios";
 import config from "../../../config/config";
 import { CompanyJobsRecruiters, CompanyJobsRecruitersFilters } from "../../types/company";
 import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 const API_BASE_URL = config.API_BASE_URL;
 
 
@@ -179,7 +180,12 @@ export const createCompanyJobsRecruitersSlice: StateCreator<
     },
 
     CompanyJobsRecruitersAssign: async (recruiterId, recruiterName, jobId, candidates) => {
+        if(!candidates.length) {
+            showErrorToast("Please select at least one candidate");
+            return;
+        }
         set({ CompanyJobsRecruitersIsLoading: true });
+
         try {
             const res = await axios.patch(
                 `${API_BASE_URL}/candidates/assign-candidates`,

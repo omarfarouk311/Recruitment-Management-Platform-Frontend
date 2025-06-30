@@ -42,14 +42,16 @@ export default function ReviewsSection() {
             selectedValue={filters.rating}
             onSelect={(value) => setFilters({ rating: value }, id)}
           />
-          <button
-            hidden={userRole !== UserRole.SEEKER}
-            className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
-            title="Add a review"
-            onClick={() => setIsFormOpen(true)}
-          >
-            <PlusCircle size={30} />
-          </button>
+
+          {userRole === UserRole.SEEKER && 
+            <button
+              className="flex items-center text-sm font-semibold text-gray-500 hover:text-black"
+              title="Add a review"
+              onClick={() => setIsFormOpen(true)}
+            >
+              <PlusCircle  size={30} />
+            </button>
+          }
         </div>
       </div>
       <div className="mt-8">

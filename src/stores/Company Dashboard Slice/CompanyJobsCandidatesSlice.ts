@@ -4,6 +4,7 @@ import axios from "axios";
 import config from "../../../config/config";
 import { CompanyCandidates, CompanyCandidateFilters } from "../../types/candidates";
 import { authRefreshToken } from "../../util/authUtils";
+import { showErrorToast } from "../../util/errorHandler";
 
 
 export interface CompanyCandidatesSlice {
@@ -124,7 +125,10 @@ export const createCompanyCandidatesSlice: StateCreator<
 
 CompanyCandidatesMakeDecision: async (seekerIds, decision, jobId) => {
     try {
-        console.log(seekerIds, decision, jobId);
+        if(!seekerIds.length) {
+            showErrorToast("Please select at least one candidate");
+            return;
+        }
         const res = await axios.post(
             `${config.API_BASE_URL}/candidates/make-decision`,
             { jobId, decision, candidates: seekerIds },
@@ -276,9 +280,11 @@ CompanyCandidatesMakeDecision: async (seekerIds, decision, jobId) => {
         await CompanyCandidatesFetchCandidates();
     },
    CompanyCandidateUnAssign: async (jobId, candidates) => {
+    if(!candidates.length) {
+        showErrorToast("Please select at least one candidate");
+        return;
+    }
     set({ CompanyCandidatesIsLoading: true });
-    console.log("heree");
-    console.log(candidates);
     
     try {
         // 1. Unassign candidates

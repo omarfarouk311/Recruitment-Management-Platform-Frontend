@@ -91,10 +91,11 @@ export const createCompanyRecruitersSlice: StateCreator<
                     ? "Recruiter email not found." 
                     : "Something went wrong. Please try again.";
                 
-                await showErrorToast(errorMessage);
+                showErrorToast(errorMessage);
                 console.error("Error adding recruiter:", err);
                 throw new Error(errorMessage);
             }
+            throw err;
         } finally {
             set({ CompanyRecruitersIsLoading: false });
         }
