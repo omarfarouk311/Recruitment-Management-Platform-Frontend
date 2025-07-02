@@ -166,6 +166,7 @@ export default function ExperienceSection({
 
         {experiences.length > 1 && (
           <button
+            type = "button"
             className="mt-4 text-md font-semibold text-gray-500 hover:text-black"
             onClick={() => setShowAll((current) => !current)}
           >
